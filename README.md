@@ -14,6 +14,9 @@ What if we could have nearly the best of (1) and (2)? Let's try to mimic the suc
 For this, we need a mean to run HW very fast with a special SW library of elements (cells)
 Each of these elements are "floating". They need to be configured, and belong to a bigger structure. The configuration or the blueprints of what we architect does not need to be speedy. It could be described to an interpreter.
 
+We could compare this to high speed trains running on tracks. On the dashboard, we can change the train tracks slowly, without impairing the speediness of the trains themselves...
+
+
 Before reaching the level of embedding an interpreter, lots of basic blocks (cells) have to be built and refined.
 The more a code structure is simple, the easier it is to maintain and evolve.
 
