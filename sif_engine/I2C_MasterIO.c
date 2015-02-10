@@ -13,19 +13,6 @@
 #include "sebEngine.h"
 //~~~~~~~~~~~~~~~~~~~~~ global variables to use differently~~~~~~~~~~~
 
-#define SetSDAOutput()          { *(MIO->SDA->bbMode0) = 1;}
-#define SetSDAInput()           { *(MIO->SDA->bbMode0) = 0;}
-
-#define SetSCLOutput()          { *(MIO->SCL->bbMode0) = 1;}
-#define SetSCLInput()           { *(MIO->SCL->bbMode0) = 0;}
-
-#define SetSDALow SetSDAOutput
-#define SetSDAHigh SetSDAInput
-#define SetSCLLow SetSCLOutput
-#define SetSCLHigh SetSCLInput
-
-#define bit_SDA_Read()      (*(MIO->SDA->bbIn))
-
 u32 Receive (u32 u, u32 DoAck);
 u32 Transmit (u32 u, u8 bValue);
 u32 GenerateStart (u32 u, u8 SlaveAdr);
@@ -44,8 +31,9 @@ u32 NewI2C_MasterIO(I2C_MasterIO* M) {
   // configure the GPIOs
   // configure SDA pin
   IO_PinClockEnable(M->SDA);
-  IO_PinConfiguredAs(M->SDA,GPIO_AF16_DIGITAL_INPUT);  
-  IO_PinSetLow(M->SDA);
+  IO_PinConfiguredAs(M->SDA,GPIO_AF17_DIGITAL_OUTPUT);  
+  IO_PinSetHigh(M->SDA);  
+
   IO_PinSetSpeedMHz(M->SDA, 1);
   IO_PinEnablePullUp(M->SDA, ENABLE);
   IO_PinEnablePullDown(M->SDA, DISABLE);
@@ -53,8 +41,8 @@ u32 NewI2C_MasterIO(I2C_MasterIO* M) {
 
   // configure SCL pin
   IO_PinClockEnable(M->SCL);
-  IO_PinConfiguredAs(M->SCL,GPIO_AF16_DIGITAL_INPUT);  
-  IO_PinSetLow(M->SCL);
+  IO_PinConfiguredAs(M->SCL,GPIO_AF17_DIGITAL_OUTPUT);  
+  IO_PinSetHigh(M->SCL);
   IO_PinSetSpeedMHz(M->SCL, 1);
   IO_PinEnablePullUp(M->SCL, ENABLE);
   IO_PinEnablePullDown(M->SCL, DISABLE);
@@ -70,8 +58,8 @@ u32 SetI2C_MasterIO_Timings(I2C_MasterIO* M, u32 MaxBps ) {
 // Or we do by tuning the delay... we generate I2C traffic and we check how long and the bit rate... (takes more time, adaptive, could be dynamic too)
   
   M->MaxBps = MaxBps; // 400khz
-  // The MIO has its own hooks to setup first
-  //MIO->fnMasterScheme = I2C_MasterIO_STMA_Run; // run the state machine instead of a hardcoded stuff
+  // The M has its own hooks to setup first
+  //M->fnMasterScheme = I2C_MasterIO_STMA_Run; // run the state machine instead of a hardcoded stuff
   M->WaitParam = 1;
   NopsWait((u32) M);
   M->fnWaitMethod = TimerCountdownWait; // here we should take care of the timings, and choose the best scheme based on CPU MHz and bps of bus...    
@@ -82,8 +70,7 @@ u32 SetI2C_MasterIO_Timings(I2C_MasterIO* M, u32 MaxBps ) {
 
 //=============================================
 
-#define SetSDAOutput()          { *(MIO->SDA->bbMode0) = 1;}
-#define SetSDAInput()           { *(MIO->SDA->bbMode0) = 0;}
+
 
 //==============================================
 //=============== These are the optional I2C spy mode to see what is happening on a bus.
@@ -91,23 +78,23 @@ u32 SetI2C_MasterIO_Timings(I2C_MasterIO* M, u32 MaxBps ) {
 
 static u32 TimerCountdownWait(u32 u) {
   
-  I2C_MasterIO* MIO = (I2C_MasterIO*) u;
-  ArmBasicTimerCountdown(MIO->BT,MIO->BTn, MIO->WaitParam);
-  while(MIO->BT->CountDownDone[MIO->BTn]==0) ;
+  I2C_MasterIO* M = (I2C_MasterIO*) u;
+  ArmBasicTimerCountdown(M->BT,M->BTn, M->WaitParam);
+  while(M->BT->CountDownDone[M->BTn]==0) ;
   return 0;
 }
 
 static u32 NopsWait(u32 u) {
-  I2C_MasterIO* MIO = (I2C_MasterIO*) u;
-  u32 n = MIO->WaitParam;
+  I2C_MasterIO* M = (I2C_MasterIO*) u;
+  u32 n = M->WaitParam;
   while(n--) asm("nop\n");
   return 0;
 }
 
 static u32 WaitHere(u32 u, u32 delay) {
-  I2C_MasterIO* MIO = (I2C_MasterIO*) u;
-  MIO->WaitParam = delay;
-  if(MIO->fnWaitMethod) MIO->fnWaitMethod(u);
+  I2C_MasterIO* M = (I2C_MasterIO*) u;
+  M->WaitParam = delay;
+  if(M->fnWaitMethod) M->fnWaitMethod(u);
   return 0;
 }
  
@@ -131,22 +118,22 @@ static u32 ErrorRecovery (u32 u)
 
 static u32 GenerateStart (u32 u, u8 SlaveAdr) 
 {
-  I2C_MasterIO* MIO = (I2C_MasterIO*) u;
-  MIO->SlaveAdr = SlaveAdr;
-  SetSDAInput();//dir_I2C_SDA_IN;	// to check if I2C is idle... or stuck
+  I2C_MasterIO* M = (I2C_MasterIO*) u;
+  M->SlaveAdr = SlaveAdr;
+  IO_PinSetHigh(M->SDA);//dir_I2C_SDA_IN;	// to check if I2C is idle... or stuck
   WaitHere(u,1);
-  if(bit_I2C_SDA_Read()==0)	// Samsung decoder has I2C compatibility problems, it does not detect NACK in Read Mode...
+  if(IO_PinGet(M->SDA)==0)	// Samsung decoder has I2C compatibility problems, it does not detect NACK in Read Mode...
           ErrorRecovery(u);
 
   // Seb this is bugged, it's not a start bit if SCL is low...  it's too short.
-  SetSCLHigh();//bit_I2C_SCL_HIGH;
+  IO_PinSetHigh(M->SCL);//bit_I2C_SCL_HIGH;
   WaitHere(u,1);					
 
   // Fixed violation on Start hold time
-  SetSDALow();//bit_I2C_SDA_LOW;
+  IO_PinSetLow(M->SDA);//bit_I2C_SDA_LOW;
   WaitHere(u,1);
 
-  SetSCLLow();//bit_I2C_SCL_LOW;
+  IO_PinSetLow(M->SCL);//bit_I2C_SCL_LOW;
   WaitHere(u,1);
 
   return Transmit (u,SlaveAdr);				// Send the slave address
@@ -155,24 +142,24 @@ static u32 GenerateStart (u32 u, u8 SlaveAdr)
 
 static u32 Transmit(u32 u, u8 bValue) 
 {
-  I2C_MasterIO* MIO = (I2C_MasterIO*) u;
+  I2C_MasterIO* M = (I2C_MasterIO*) u;
   u8 loop;
 
   for (loop = 0; loop < 8; loop++) 
   {
       if (bValue & 0x80) {
-        SetSDAHigh();//bit_I2C_SDA_HIGH;
+        IO_PinSetHigh(M->SDA);//bit_I2C_SDA_HIGH;
       }else{ 
-        SetSDALow();//bit_I2C_SDA_LOW;
+        IO_PinSetLow(M->SDA);//bit_I2C_SDA_LOW;
       }
 
       WaitHere(u,1);// Sept 17
 //		dir_I2C_SDA_OUT;				// make sure SDA is configured as output (once DR initialised)
 
-      SetSCLHigh();//bit_I2C_SCL_HIGH;
+      IO_PinSetHigh(M->SCL);//bit_I2C_SCL_HIGH;
       WaitHere(u,1);//1028
       bValue <<= 1;
-      SetSCLLow();//bit_I2C_SCL_LOW;
+      IO_PinSetLow(M->SCL);//bit_I2C_SCL_LOW;
       WaitHere(u,1);
   }
 
@@ -180,19 +167,19 @@ static u32 Transmit(u32 u, u8 bValue)
   // bit_I2C_SCL = HIGH;
   // ack is READ to check if Slave is responding
 
-  SetSDAInput();//dir_I2C_SDA_IN;
+  IO_PinSetHigh(M->SDA);//dir_I2C_SDA_IN;
   WaitHere(u,1);
-  SetSCLHigh();//bit_I2C_SCL_HIGH;	// SCL = 1
+  IO_PinSetHigh(M->SCL);//bit_I2C_SCL_HIGH;	// SCL = 1
   WaitHere(u,1);					
 
   // Here we could sense NACK and manage error info to calling function
   // for debug to find ACK bit as long scl pulse...
   // Error = bit_I2C_SDA; // 1 = Error, 0 = Ok
-  SetSCLHigh();//bit_I2C_SCL_HIGH;	// SCL = 1
+  IO_PinSetHigh(M->SCL);//bit_I2C_SCL_HIGH;	// SCL = 1
   WaitHere(u,2);//	NOP;					
-  MIO->AckFail |= bit_I2C_SDA_Read();	// Acknowledge bit
+  M->AckFail |= IO_PinGet(M->SDA);	// Acknowledge bit
 
-  SetSCLLow();//bit_I2C_SCL_LOW;	// SCL = 0
+  IO_PinSetLow(M->SCL);//bit_I2C_SCL_LOW;	// SCL = 0
 
   WaitHere(u,1);// Sept 17
 
@@ -200,43 +187,43 @@ static u32 Transmit(u32 u, u8 bValue)
 
 //-	WaitHere(u,1);//	NOP;	add sept 17
 
-  return MIO->AckFail;
+  return M->AckFail;
 }
 
 
 static u32 Receive (u32 u, u32 DoAck) 
 { 
-  I2C_MasterIO* MIO = (I2C_MasterIO*) u;
+  I2C_MasterIO* M = (I2C_MasterIO*) u;
   u8 bValue, loop;
 
   bValue = 0;
-  SetSDAInput();//dir_I2C_SDA_IN; // make SDA as input before reading pin level
+  IO_PinSetHigh(M->SDA);//dir_I2C_SDA_IN; // make SDA as input before reading pin level
 
   for (loop = 0; loop < 8; loop ++) 
   {
       WaitHere(u,1);// NOP; NOP;	// 1 us delay
 
-      SetSCLHigh();//bit_I2C_SCL_HIGH;	// SCL = 1
+      IO_PinSetHigh(M->SCL);//bit_I2C_SCL_HIGH;	// SCL = 1
       WaitHere(u,2);					
       bValue <<= 1;
 
-      if(bit_I2C_SDA_Read()) bValue++;
-      SetSCLLow();//bit_I2C_SCL_LOW;	// SCL = 0
+      if(IO_PinGet(M->SDA)) bValue++;
+      IO_PinSetLow(M->SCL);//bit_I2C_SCL_LOW;	// SCL = 0
       WaitHere(u,1);//1028
   }
 
 // Manage the ackknowledge bit
   if(DoAck) {
-    SetSDALow();//bit_I2C_SDA_LOW;
+    IO_PinSetLow(M->SDA);//bit_I2C_SDA_LOW;
   }else{
-    SetSDAHigh();//bit_I2C_SDA_HIGH;
+    IO_PinSetHigh(M->SDA);//bit_I2C_SDA_HIGH;
   }
 
 //  SetSDAOutput();//dir_I2C_SDA_OUT; // make sure SDA is configured as output (once DR initialised)
   WaitHere(u,1);	// enlarge the pulse to see it on the scope
-  SetSCLHigh();//bit_I2C_SCL_HIGH;	// SCL = 1
+  IO_PinSetHigh(M->SCL);//bit_I2C_SCL_HIGH;	// SCL = 1
   WaitHere(u,1);
-  SetSCLLow();//bit_I2C_SCL_LOW;	// SCL = 0
+  IO_PinSetLow(M->SCL);//bit_I2C_SCL_LOW;	// SCL = 0
 
   WaitHere(u,1);//	NOP;	add sept 17
 
@@ -249,16 +236,16 @@ static u32 Receive (u32 u, u32 DoAck)
 
 static u32 GenerateStop (u32 u) {
   
-  I2C_MasterIO* MIO = (I2C_MasterIO*) u;
-  SetSCLLow();//bit_I2C_SCL_LOW;
+  I2C_MasterIO* M = (I2C_MasterIO*) u;
+  IO_PinSetLow(M->SCL);//bit_I2C_SCL_LOW;
   WaitHere(u,1);
-  SetSDALow();//bit_I2C_SDA_LOW;
+  IO_PinSetLow(M->SDA);//bit_I2C_SDA_LOW;
   WaitHere(u,1);							// Extra to make sure delay is ok
   
-  SetSCLHigh();//bit_I2C_SCL_HIGH;
+  IO_PinSetHigh(M->SCL);//bit_I2C_SCL_HIGH;
   WaitHere(u,1);
 
-  SetSDAHigh();//bit_I2C_SDA_HIGH;
+  IO_PinSetHigh(M->SDA);//bit_I2C_SDA_HIGH;
 //	WaitHere(u,1);
   return 0;
 }
@@ -270,9 +257,9 @@ static u32 GenerateStop (u32 u) {
 
 static u32 I2C_MIO_Start(u32 u, u32 SlaveAdr) {
 
-  I2C_MasterIO* MIO = (I2C_MasterIO*) u;
+  I2C_MasterIO* M = (I2C_MasterIO*) u;
 
-  MIO->AckFail = GenerateStart (u,SlaveAdr);				// Send the slave address
+  M->AckFail = GenerateStart (u,SlaveAdr);				// Send the slave address
   return 0; // no interrupt setup
 }
 
@@ -370,7 +357,7 @@ static StuffsArtery mySequence;
 
 void I2C_MasterIO_Test(void) {
 
-  u32 u = (u32)&gMIO;
+//  u32 u = (u32)&gMIO;
   
   IO_PinInit(&MIO_SDA, PH7 ); // Initialize some quick pointers
   IO_PinInit(&MIO_SCL, PH8 ); // Initialize some quick pointers
@@ -398,13 +385,14 @@ void I2C_MasterIO_Test(void) {
   
   while(1) {  
     
-  AddToSA(P, (u32) &I2C_StartWrite_LPS25H);
-  AddToSA(P, (u32) &I2C_Write_LPS25H);
-  AddToSA(P, (u32) &I2C_StartRead_LPS25H);
-  AddToSA(P, (u32) &I2C_Read_LPS25H);
-  JobToDo((u32)P);
-  
-  while(P->FlagEmptied==0);
+    AddToSA(P, (u32) &I2C_StartWrite_LPS25H);
+    AddToSA(P, (u32) &I2C_Write_LPS25H);
+    AddToSA(P, (u32) &I2C_StartRead_LPS25H);
+    AddToSA(P, (u32) &I2C_Read_LPS25H);
+    StartJobToDoInForeground((u32)P);
+    
+    while(P->FlagEmptied==0);
+    NOPs(1);
   
   };
 

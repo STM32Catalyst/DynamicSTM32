@@ -9,7 +9,8 @@ typedef struct {
  
 } OneJobType; // for schedulers?
 
-u32 StartJobToDo(u32 u); // when starting a sequence
+u32 StartJobToDoInBackground(u32 u); // This creates a non blocking, interrupt based sequence run
+u32 StartJobToDoInForeground(u32 u); // This creates a blocking sequence run. Returns when complete
 u32 JobToDo(u32 u);
 
 #endif

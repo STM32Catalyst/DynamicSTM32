@@ -60,8 +60,9 @@ void NewI2C_SlaveIO(I2C_SlaveIO* I2C_Slave, u8* SlaveAddresses, u8 SlaveAddresse
   // configure the GPIOs
   // configure SDA pin
   IO_PinClockEnable(I2C_Slave->SDA);
-  IO_PinConfiguredAs(I2C_Slave->SDA,GPIO_AF16_DIGITAL_INPUT);
-  IO_PinSetLow(I2C_Slave->SDA);
+  IO_PinSetHigh(I2C_Slave->SDA);
+  IO_PinConfiguredAs(I2C_Slave->SDA,GPIO_AF17_DIGITAL_OUTPUT);
+  //IO_PinSetLow(I2C_Slave->SDA);
   IO_PinSetSpeedMHz(I2C_Slave->SDA, 1);
   IO_PinEnablePullUp(I2C_Slave->SDA, ENABLE);
   IO_PinEnablePullDown(I2C_Slave->SDA, DISABLE);
@@ -94,10 +95,10 @@ void NewI2C_SlaveIO(I2C_SlaveIO* I2C_Slave, u8* SlaveAddresses, u8 SlaveAddresse
 
 }
 
-#define SetSDAOutput()          { *(S->SDA->bbMode0) = 1;}
-#define SetSDAInput()           { *(S->SDA->bbMode0) = 0;}
 
 
+//#define SetSDAOutput()          IO_PinSetHigh(S->SDA)
+//#define SetSDAInput()           IO_PinSetLow{S->SDA)
 
 //==============================================
 
@@ -106,29 +107,30 @@ u32 I2C_SlaveIO_SpyProcess(u32);
 // The code should be in RAM to change easily the behaviour, but the linker will be lost...
 static u32 I2C_SlaveIO_EXTI_IRQHandler(u32 u) {
 
-  I2C_SlaveIO* I2C_Slave = (I2C_SlaveIO*) u;
+  I2C_SlaveIO* S = (I2C_SlaveIO*) u;
 
   u8 EventMask; // local variables generates less code than global
   // Implementation is made to enable low power scheme: The max bus speed depends on the core frequency which could be stopped
   // it is not a pin, it is the pin mask... shit.
-  
-  EventMask = *(I2C_Slave->SDA->bbEXTI_PR);
-  EventMask <<= 1;
-  EventMask |= *(I2C_Slave->SDA->bbIn);
-  EventMask <<= 1;
-  EventMask |= *(I2C_Slave->SCL->bbEXTI_PR);
-  EventMask <<= 1;
-  EventMask |= *(I2C_Slave->SCL->bbIn);
 
-  I2C_Slave->EventMask = EventMask; // for debug
+  EventMask = 0;
+  if(IO_PinGetPR(S->SDA)) {
+     EventMask |= 0x8;
+     IO_PinClearPR(S->SDA);
+  };
+  if(IO_PinGet(S->SDA))
+     EventMask |= 0x4;
+  if(IO_PinGetPR(S->SCL)) {
+     EventMask |= 0x2;
+     IO_PinClearPR(S->SCL);     
+  }
+  if(IO_PinGet(S->SCL))
+     EventMask |= 0x1;
+  S->EventMask = EventMask; // for debug  
 
-  // release the pending bits (we could do it earlier if needed)
-  *(I2C_Slave->SDA->bbEXTI_PR)=1; // clear SDA pending bit // the SWAP asm instruction could speed up a bit here
-  *(I2C_Slave->SCL->bbEXTI_PR)=1; // clear SCL pending bit
-
-  I2C_Slave->I2C_Symbol = I2C_EventToSymbol[EventMask];
-  if(I2C_Slave->fnSlaveScheme) I2C_SlaveIO_STMA_Run((u32)(&I2C_Slave->STMA));// DIRECT Here we only use state machine which we can disable by zeroing the fnSlaveScheme, we pass the state machine as parameter
-  if(I2C_Slave->fnSpyScheme)I2C_SlaveIO_SpyProcess(u); // DIRECT we pass the I2C_Slave pointer here for the spy
+  S->I2C_Symbol = I2C_EventToSymbol[EventMask];
+  if(S->fnSlaveScheme) I2C_SlaveIO_STMA_Run((u32)(&S->STMA));// DIRECT Here we only use state machine which we can disable by zeroing the fnSlaveScheme, we pass the state machine as parameter
+  if(S->fnSpyScheme)I2C_SlaveIO_SpyProcess(u); // DIRECT we pass the I2C_Slave pointer here for the spy
 
   return 0;
 }
@@ -312,7 +314,7 @@ static u32 I2C_SlaveIO_sm_MakeSlaveIdle(u32 u) { // State S0 and state machine r
   I2C_Symbols I2C_Symbol = S->I2C_Symbol; // made local var as it is read only in this function  
   // SDA = input
   //  SetSDALow(); // will be low if turns output for ack bit... and stays input otherwise
-  SetSDAInput();
+  IO_PinSetHigh(S->SDA);//SetSDAInput();
   // SCL = input //never an output! no clock stretching!  SetSCLInput();
   S->TalkEnded = 1; // assume communication stopped
   
@@ -399,18 +401,18 @@ static u32 I2C_SlaveIO_sm_Receive8BitsAdr(u32 u) {
       case I2C_SDA0SCLFall:
       case I2C_SDA1SCLFall:
         if(S->Bitmask==1) 
-          SetSDAOutput(); // ackknowledge
+          IO_PinSetLow(S->SDA);//SetSDAOutput(); // ackknowledge
         
         if(S->Bitmask==0) {// transmit or receive next?
           S->Bitmask = 0x80; // byte to send next
           if(S->Data & 1) { // transmit mode now
             S->Data = S->Memory[S->SubAddress];
             // prepare SDA level for the first MSB bit, and we check if the data
-            if(S->Data & S->Bitmask) { SetSDAInput(); } else { SetSDAOutput(); }; // output low
+            if(S->Data & S->Bitmask) { /*SetSDAInput()*/IO_PinSetHigh(S->SDA); } else { IO_PinSetLow(S->SDA);/*SetSDAOutput();*/ }; // output low
             return S11_Transmit8BitData;
           };
           // continue receive data, next is the subaddress (next event is SCL rise edge as this one
-          SetSDAInput();
+          IO_PinSetHigh(S->SDA);//SetSDAInput();
           S->Data = 0x00;          
           return S5_Receiving8bitSubAdr; // same thing again with different action
         }
@@ -452,12 +454,12 @@ static u32 I2C_SlaveIO_sm_Receiving8bitSubAdr(u32 u) {
       case I2C_SDA0SCLFall:
       case I2C_SDA1SCLFall:
         if(S->Bitmask==1) 
-          SetSDAOutput(); // ackknowledge
+          IO_PinSetLow(S->SDA);//SetSDAOutput(); // ackknowledge
         
         if(S->Bitmask==0) {// get ready to receive data bytes now
           S->Bitmask = 0x80; // byte to send next
           // continue receive data
-          SetSDAInput();
+          IO_PinSetHigh(S->SDA);//SetSDAInput();
           S->Data = 0x00;          
           return S8_Receiving8bitData; // same thing again with different action
         }
@@ -502,12 +504,12 @@ static u32 I2C_SlaveIO_sm_Receiving8bitData(u32 u) {
       case I2C_SDA0SCLFall:
       case I2C_SDA1SCLFall:
         if(S->Bitmask==1) 
-          SetSDAOutput(); // ackknowledge
+          IO_PinSetLow(S->SDA);//SetSDAOutput(); // ackknowledge
         
         if(S->Bitmask==0) {// get ready to receive data bytes now
           S->Bitmask = 0x80; // byte to send next
           // continue receive data
-          SetSDAInput();
+          IO_PinSetHigh(S->SDA);//SetSDAInput();
           S->Data = 0x00;          
           return thisSx; // same thing again with different action
         }
@@ -551,7 +553,7 @@ static u32 I2C_SlaveIO_sm_Transmit8BitData(u32 u) {
       case I2C_SDA1SCLFall:
         // output the next data bit
         if(S->Bitmask==1) {
-          SetSDAInput(); // release for master to ack or not
+          IO_PinSetHigh(S->SDA);//SetSDAInput(); // release for master to ack or not
           S->Bitmask = 0; // finished
           return thisSx;
         };
@@ -562,13 +564,13 @@ static u32 I2C_SlaveIO_sm_Transmit8BitData(u32 u) {
           if(S->SubAddress>=S->MemoryCountof) // address wraps around the memory range
             S->SubAddress = 0; // wraps around
           S->Data = S->Memory[S->SubAddress];
-          if(S->Data & S->Bitmask) {SetSDAInput();}else{SetSDAOutput();};
+          if(S->Data & S->Bitmask) {IO_PinSetHigh(S->SDA);/*SetSDAInput();*/}else{IO_PinSetLow(S->SDA);/*SetSDAOutput();*/};
           S->MemoryRead = 1; // the 8 data bit were sent proper
           return thisSx; // same thing again with different action
         };
         
         S->Bitmask >>= 1;
-        if(S->Data & S->Bitmask) {SetSDAInput();}else{SetSDAOutput();};
+        if(S->Data & S->Bitmask) {IO_PinSetHigh(S->SDA);/*SetSDAInput();*/}else{IO_PinSetLow(S->SDA);/*SetSDAOutput();*/};
         return thisSx;
   };
 

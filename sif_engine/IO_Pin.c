@@ -12,104 +12,118 @@ GPIO_TypeDef* GPIOs[] = {
 };
 
 
-void IO_PinInit(IO_PinTypeDef* pIO_Pin, PinNameDef Name ) {
-  
+void IO_PinInit(IO_PinTypeDef* Pin, PinNameDef Name ) {
+
   GPIO_TypeDef* GPIOx = GPIOs[Name>>4];
-
   u8 PinPos = Name & 0xF;
-  pIO_Pin->Name = Name;
-  pIO_Pin->bbOut = (u8*)BITBAND_PERI((u32)&GPIOx->ODR,PinPos);
-  pIO_Pin->bbIn = (u8*)BITBAND_PERI((u32)&GPIOx->IDR,PinPos);
-  pIO_Pin->bbOut = (u8*)BITBAND_PERI((u32)&GPIOx->ODR,PinPos);
-  pIO_Pin->bbMode0 = (u8*)BITBAND_PERI((u32)&GPIOx->MODER,PinPos*2);
-  pIO_Pin->bbEXTI_PR = (u8*)BITBAND_PERI((u32)&EXTI->PR,PinPos);
+  if(Pin==0) while(1); // error
+  Check_Pin(Pin->Name); // out of range check, cost time  
+  
+  // initialize members
+  Pin->Name = Name;
+  Pin->GPIOx = GPIOs[Name>>4];
+  Pin->BitMask = 1L<<(Name&0xF);
 }
 
-void IO_PinClockEnable(IO_PinTypeDef* pIO_Pin) {
-  Check_Pin(pIO_Pin->Name); // out of range check, cost time
+u32 IO_PinGetPR(IO_PinTypeDef* Pin) {
+  
+  if((EXTI->PR)&(Pin->BitMask))
+    return 1;
+  
+  return 0;
+}
+void IO_PinClearPR(IO_PinTypeDef* Pin) {
+  
+  EXTI->PR = Pin->BitMask; // setting the bit will clear it
+}
+
+
+
+
+void IO_PinClockEnable(IO_PinTypeDef* Pin) {
   // we activate the clock of the corresponding GPIO port
-  ClearAndSetShiftedBits(RCC->AHB1ENR, 0, 1, (pIO_Pin->Name)>>4);
+  //ClearAndSetShiftedBits(RCC->AHB1ENR, 0, 1, (Pin->Name)>>4);
+  RCC->AHB1ENR |= 1<<(Pin->Name>>4);
 }
 
-void IO_PinSetHigh(IO_PinTypeDef* pIO_Pin) { // set the output register high
-  Check_Pin(pIO_Pin->Name); // out of range, cost time
-  *pIO_Pin->bbOut = 1;
+void IO_PinSetHigh(IO_PinTypeDef* Pin) { // set the output register high
+  Pin->GPIOx->BSRRL = Pin->BitMask; // set
 }
 
-void IO_PinSetLow(IO_PinTypeDef* pIO_Pin) { // set a pin low
-  Check_Pin(pIO_Pin->Name); // out of range
-  *pIO_Pin->bbOut = 0;
+void IO_PinSetLow(IO_PinTypeDef* Pin) { // set a pin low
+  Pin->GPIOx->BSRRH = Pin->BitMask; // reset
 }  
 
 // higher level
-void IO_PinSet(IO_PinTypeDef* pIO_Pin, u32 value) {
-  *pIO_Pin->bbOut = value;
+void IO_PinSet(IO_PinTypeDef* Pin, u32 value) {
+  if(value) {
+    IO_PinSetHigh(Pin); // set
+  }else{
+    IO_PinSetLow(Pin);
+  };
 }
   
-s32 IO_PinGet(IO_PinTypeDef* pIO_Pin) { // returns the value
-  Check_Pin(pIO_Pin->Name);
-  return *pIO_Pin->bbIn;
+s32 IO_PinGet(IO_PinTypeDef* Pin) { // returns the value
+  u8 Bit = 0;
+  if((Pin->GPIOx->IDR)&(Pin->BitMask))
+    Bit = 1;
+  return Bit;
 }
 
 // higher level
-void IO_PinToggle(IO_PinTypeDef* pIO_Pin) { // if pin name def is negative, can decide to do something?
-  *pIO_Pin->bbOut = ~*pIO_Pin->bbIn; // error check done below... twice
+void IO_PinToggle(IO_PinTypeDef* Pin) { // if pin name def is negative, can decide to do something?
+  IO_PinSet(Pin, IO_PinGet(Pin)^1);
 }
 
 // how about the input shmiddt trigger?
 
-void IO_PinSetSpeedMHz(IO_PinTypeDef* pIO_Pin, u32 MHz) {
+void IO_PinSetSpeedMHz(IO_PinTypeDef* Pin, u32 MHz) {
   // we can also take care of the output speed compensation
-  u32 set;
-  Check_Pin(pIO_Pin->Name);
+  u32 set = 0;
 
   if(MHz>=50)   {set = 3;} // 2 bits per speed
   else
     if(MHz>=25)     {set = 1;}
-      else
-        set = 0;
   
-  ClearAndSetShiftedBits(GPIOs[pIO_Pin->Name>>4]->OSPEEDR, 3, set, ((pIO_Pin->Name&0xF)*2));
+  ClearAndSetShiftedBits(GPIOs[Pin->Name>>4]->OSPEEDR, 3, set, ((Pin->Name&0xF)*2));
 }
 
-void IO_PinEnablePullUp(IO_PinTypeDef* pIO_Pin, FunctionalState Enable) {
+void IO_PinEnablePullUp(IO_PinTypeDef* Pin, FunctionalState Enable) {
 
-  Check_Pin(pIO_Pin->Name);
-  ClearAndSetShiftedBits(GPIOs[pIO_Pin->Name>>4]->PUPDR, 1, (Enable==DISABLE)?0:1, (pIO_Pin->Name&0xF)*2);  
+  ClearAndSetShiftedBits(GPIOs[Pin->Name>>4]->PUPDR, 1, (Enable==DISABLE)?0:1, (Pin->Name&0xF)*2);  
 }
 
-void IO_PinEnablePullDown(IO_PinTypeDef* pIO_Pin, FunctionalState Enable) {
+void IO_PinEnablePullDown(IO_PinTypeDef* Pin, FunctionalState Enable) {
   
-  Check_Pin(pIO_Pin->Name);
-  ClearAndSetShiftedBits(GPIOs[pIO_Pin->Name>>4]->PUPDR, 2, (Enable==DISABLE)?0:2, (pIO_Pin->Name&0xF)*2);  
+  ClearAndSetShiftedBits(GPIOs[Pin->Name>>4]->PUPDR, 2, (Enable==DISABLE)?0:2, (Pin->Name&0xF)*2);  
 } 
 
-void IO_PinEnableHighDrive(IO_PinTypeDef* pIO_Pin, FunctionalState Enable) {
+void IO_PinEnableHighDrive(IO_PinTypeDef* Pin, FunctionalState Enable) {
   
-  Check_Pin(pIO_Pin->Name);
-  ClearAndSetShiftedBits(GPIOs[pIO_Pin->Name>>4]->OTYPER, 1, (Enable==DISABLE)?1:0, pIO_Pin->Name&0xF);  // 0 push pull, 1 open drain
+  ClearAndSetShiftedBits(GPIOs[Pin->Name>>4]->OTYPER, 1, (Enable==DISABLE)?1:0, Pin->Name&0xF);  // 0 push pull, 1 open drain
 }
 
 
 // we should also catch if an alternate is already assigned to this pin, but all 16 values are valid...
-void IO_PinConfiguredAs(IO_PinTypeDef* pIO_Pin, u32 signal) {
-  
-  Check_Pin(pIO_Pin->Name);
-  
+void IO_PinConfiguredAs(IO_PinTypeDef* Pin, u32 signal) {
+ 
   if(signal & 0xF0) // special mode
   {
     switch(signal) { // this does not affect the alternate function value
       
     case GPIO_AF16_DIGITAL_INPUT:
-        ClearAndSetShiftedBits(GPIOs[pIO_Pin->Name>>4]->MODER, 3, 0, (pIO_Pin->Name&0xF)*2);  // 00 = input, 01 = output, 10 = alternate, 11 = analog
+//        ClearAndSetShiftedBits(GPIOs[Pin->Name>>4]->MODER, 3, 0, (Pin->Name&0xF)*2);  // 00 = input, 01 = output, 10 = alternate, 11 = analog
+        ClearAndSetShiftedBits(Pin->GPIOx->MODER, 3, 0, (Pin->Name&0xF)*2);  // 00 = input, 01 = output, 10 = alternate, 11 = analog
       break;
       
     case GPIO_AF17_DIGITAL_OUTPUT:
-        ClearAndSetShiftedBits(GPIOs[pIO_Pin->Name>>4]->MODER, 3, 1, (pIO_Pin->Name&0xF)*2);  // 00 = input, 01 = output, 10 = alternate, 11 = analog
+//        ClearAndSetShiftedBits(GPIOs[Pin->Name>>4]->MODER, 3, 1, (Pin->Name&0xF)*2);  // 00 = input, 01 = output, 10 = alternate, 11 = analog
+        ClearAndSetShiftedBits(Pin->GPIOx->MODER, 3, 1, (Pin->Name&0xF)*2);  // 00 = input, 01 = output, 10 = alternate, 11 = analog
       break;
       
     case GPIO_AF18_ANALOG:
-        ClearAndSetShiftedBits(GPIOs[pIO_Pin->Name>>4]->MODER, 3, 3, (pIO_Pin->Name&0xF)*2);  // 00 = input, 01 = output, 10 = alternate, 11 = analog
+//        ClearAndSetShiftedBits(GPIOs[Pin->Name>>4]->MODER, 3, 3, (Pin->Name&0xF)*2);  // 00 = input, 01 = output, 10 = alternate, 11 = analog
+        ClearAndSetShiftedBits(Pin->GPIOx->MODER, 3, 3, (Pin->Name&0xF)*2);  // 00 = input, 01 = output, 10 = alternate, 11 = analog
       break;
       
     case GPIO_AF20_DISABLED:
@@ -121,10 +135,12 @@ void IO_PinConfiguredAs(IO_PinTypeDef* pIO_Pin, u32 signal) {
     return;
   }
   
-  pIO_Pin->AF = signal;
+  Pin->AF = signal;
   // normal alternate function 0..15
-  ClearAndSetShiftedBits(GPIOs[pIO_Pin->Name>>4]->AFR[(pIO_Pin->Name>>3)&1], 15, signal, (pIO_Pin->Name&0x7)*4);  // 32 bit = 8 pin x 4 bit field
-  ClearAndSetShiftedBits(GPIOs[pIO_Pin->Name>>4]->MODER, 3, 2, (pIO_Pin->Name&0xF)*2);  // 00 = input, 01 = output, 10 = alternate, 11 = analog
+//  ClearAndSetShiftedBits(GPIOs[Pin->Name>>4]->AFR[(Pin->Name>>3)&1], 15, signal, (Pin->Name&0x7)*4);  // 32 bit = 8 pin x 4 bit field
+//  ClearAndSetShiftedBits(GPIOs[Pin->Name>>4]->MODER, 3, 2, (Pin->Name&0xF)*2);  // 00 = input, 01 = output, 10 = alternate, 11 = analog
+  ClearAndSetShiftedBits(Pin->GPIOx->AFR[(Pin->Name>>3)&1], 15, signal, (Pin->Name&0x7)*4);  // 32 bit = 8 pin x 4 bit field
+  ClearAndSetShiftedBits(Pin->GPIOx->MODER, 3, 2, (Pin->Name&0xF)*2);  // 00 = input, 01 = output, 10 = alternate, 11 = analog
 }
 
 // Alternate function: We need to find the right alternate function for the corresponding Peripheral...

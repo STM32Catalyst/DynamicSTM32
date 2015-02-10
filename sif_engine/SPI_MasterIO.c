@@ -218,16 +218,6 @@ u32 sq_SPI_MIO_DMA_Interrupt(u32 u){
 //======================------------------------>
 // This code has been transformed from a hardcoded blocking IO bit bang SPI driver.
 
-#define SPIIO_Set_CLK_Low               IO_PinSetLow(S->SCK)
-#define SPIIO_Set_CLK_High              IO_PinSetHigh(S->SCK)
-#define SPIIO_Set_CLK_Out               IO_PinSetOutput(S->SCK)
-
-#define SPIIO_Set_SDA_Low               IO_PinSetLow(S->MOSI)
-#define SPIIO_Set_SDA_High              IO_PinSetHigh(S->MOSI)
-#define SPIIO_Set_SDA_In                IO_PinSetInput(S->MOSI)
-#define SPIIO_Set_SDA_Out               IO_PinSetOutput(S->MOSI)
-#define SPIIO_Get_SDA                   IO_PinRead(S->MOSI)
-
 //===== 8>< ~~~~ debug end
 #define SPI_DELAY 1
 static u32 SPI_MIO_SendByte(u32 u, u8 byte)
@@ -236,94 +226,94 @@ static u32 SPI_MIO_SendByte(u32 u, u8 byte)
   SPI_MasterIO* S = (SPI_MasterIO*) u;
   
   // bit 7
-  SPIIO_Set_CLK_Low;
+  IO_PinSetLow(S->SCK);
   if(byte & 0x80)
-    SPIIO_Set_SDA_High;
+    IO_PinSetHigh(S->MOSI);
   else
-    SPIIO_Set_SDA_Low;
+    IO_PinSetLow(S->MOSI);
   WaitHere(u, 1);
   
-  SPIIO_Set_CLK_High;
+  IO_PinSetHigh(S->SCK);
   WaitHere(u, 1);
   
   // bit 6
-  SPIIO_Set_CLK_Low;
+  IO_PinSetLow(S->SCK);
   if(byte & 0x40)
-    SPIIO_Set_SDA_High;
+    IO_PinSetHigh(S->MOSI);
   else
-    SPIIO_Set_SDA_Low;
+    IO_PinSetLow(S->MOSI);
   WaitHere(u, 1);
   
-  SPIIO_Set_CLK_High;
+  IO_PinSetHigh(S->SCK);
   WaitHere(u, 1);
 
   // bit 5
-  SPIIO_Set_CLK_Low;
+  IO_PinSetLow(S->SCK);
   if(byte & 0x20)
-    SPIIO_Set_SDA_High;
+    IO_PinSetHigh(S->MOSI);
   else
-    SPIIO_Set_SDA_Low;
+    IO_PinSetLow(S->MOSI);
   WaitHere(u, 1);
   
-  SPIIO_Set_CLK_High;
+  IO_PinSetHigh(S->SCK);
   WaitHere(u, 1);
 
   // bit 4
-  SPIIO_Set_CLK_Low;
+  IO_PinSetLow(S->SCK);
   if(byte & 0x10)
-    SPIIO_Set_SDA_High;
+    IO_PinSetHigh(S->MOSI);
   else
-    SPIIO_Set_SDA_Low;
+    IO_PinSetLow(S->MOSI);
   WaitHere(u, 1);
   
-  SPIIO_Set_CLK_High;
+  IO_PinSetHigh(S->SCK);
   WaitHere(u, 1);
 
   // bit 3
-  SPIIO_Set_CLK_Low;
+  IO_PinSetLow(S->SCK);
   if(byte & 0x08)
-    SPIIO_Set_SDA_High;
+    IO_PinSetHigh(S->MOSI);
   else
-    SPIIO_Set_SDA_Low;
+    IO_PinSetLow(S->MOSI);
   WaitHere(u, 1);
   
-  SPIIO_Set_CLK_High;
+  IO_PinSetHigh(S->SCK);
   WaitHere(u, 1);
 
   // bit 2
-  SPIIO_Set_CLK_Low;
+  IO_PinSetLow(S->SCK);
   if(byte & 0x04)
-    SPIIO_Set_SDA_High;
+    IO_PinSetHigh(S->MOSI);
   else
-    SPIIO_Set_SDA_Low;
+    IO_PinSetLow(S->MOSI);
   WaitHere(u, 1);
   
-  SPIIO_Set_CLK_High;
+  IO_PinSetHigh(S->SCK);
   WaitHere(u, 1);
 
   // bit 1
-  SPIIO_Set_CLK_Low;
+  IO_PinSetLow(S->SCK);
   if(byte & 0x02)
-    SPIIO_Set_SDA_High;
+    IO_PinSetHigh(S->MOSI);
   else
-    SPIIO_Set_SDA_Low;
+    IO_PinSetLow(S->MOSI);
   WaitHere(u, 1);
   
-  SPIIO_Set_CLK_High;
+  IO_PinSetHigh(S->SCK);
   WaitHere(u, 1);
 
   // bit 0
-  SPIIO_Set_CLK_Low;
+  IO_PinSetLow(S->SCK);
   if(byte & 0x01)
-    SPIIO_Set_SDA_High;
+    IO_PinSetHigh(S->MOSI);
   else
-    SPIIO_Set_SDA_Low;
+    IO_PinSetLow(S->MOSI);
   WaitHere(u, 1);
   
-  SPIIO_Set_CLK_High;
+  IO_PinSetHigh(S->SCK);
   WaitHere(u, 1);
   
-  SPIIO_Set_CLK_Low;
+  IO_PinSetLow(S->SCK);
   
   return 0;
 }
@@ -333,81 +323,81 @@ static u32 SPI_MIO_ReadByte(u32 u)
   SPI_MasterIO* S = (SPI_MasterIO*) u;
   u8 byte = 0;
   
-  SPIIO_Set_SDA_In; //added by seb for devices which don't have dummy byte in SPI3W mode
+  IO_PinSetInput(S->MOSI); //added by seb for devices which don't have dummy byte in SPI3W mode
   
   // bit 7
-  SPIIO_Set_CLK_Low;
+  IO_PinSetLow(S->SCK);
   WaitHere(u, 1);
-  if(SPIIO_Get_SDA)
+  if(IO_PinRead(S->MOSI))
     byte |= 0x80;
   
-  SPIIO_Set_CLK_High;
+  IO_PinSetHigh(S->SCK);
   WaitHere(u, 1);
   
   // bit 6
-  SPIIO_Set_CLK_Low;
+  IO_PinSetLow(S->SCK);
   WaitHere(u, 1);
-  if(SPIIO_Get_SDA)
+  if(IO_PinRead(S->MOSI))
     byte |= 0x40;
   
-  SPIIO_Set_CLK_High;
+  IO_PinSetHigh(S->SCK);
   WaitHere(u, 1);
 
     // bit 5
-  SPIIO_Set_CLK_Low;
+  IO_PinSetLow(S->SCK);
   WaitHere(u, 1);
-  if(SPIIO_Get_SDA)
+  if(IO_PinRead(S->MOSI))
     byte |= 0x20;
   
-  SPIIO_Set_CLK_High;
+  IO_PinSetHigh(S->SCK);
   WaitHere(u, 1);
 
     // bit 4
-  SPIIO_Set_CLK_Low;
+  IO_PinSetLow(S->SCK);
   WaitHere(u, 1);
-  if(SPIIO_Get_SDA)
+  if(IO_PinRead(S->MOSI))
     byte |= 0x10;
   
-  SPIIO_Set_CLK_High;
+  IO_PinSetHigh(S->SCK);
   WaitHere(u, 1);
 
     // bit 3
-  SPIIO_Set_CLK_Low;
+  IO_PinSetLow(S->SCK);
   WaitHere(u, 1);
-  if(SPIIO_Get_SDA)
+  if(IO_PinRead(S->MOSI))
     byte |= 0x08;
   
-  SPIIO_Set_CLK_High;
+  IO_PinSetHigh(S->SCK);
   WaitHere(u, 1);
 
     // bit 2
-  SPIIO_Set_CLK_Low;
+  IO_PinSetLow(S->SCK);
   WaitHere(u, 1);
-  if(SPIIO_Get_SDA)
+  if(IO_PinRead(S->MOSI))
     byte |= 0x04;
   
-  SPIIO_Set_CLK_High;
+  IO_PinSetHigh(S->SCK);
   WaitHere(u, 1);
 
     // bit 1
-  SPIIO_Set_CLK_Low;
+  IO_PinSetLow(S->SCK);
   WaitHere(u, 1);
-  if(SPIIO_Get_SDA)
+  if(IO_PinRead(S->MOSI))
     byte |= 0x02;
   
-  SPIIO_Set_CLK_High;
+  IO_PinSetHigh(S->SCK);
   WaitHere(u, 1);
 
     // bit 0
-  SPIIO_Set_CLK_Low;
+  IO_PinSetLow(S->SCK);
   WaitHere(u, 1);
-  if(SPIIO_Get_SDA)
+  if(IO_PinRead(S->MOSI))
     byte |= 0x01;
   
-  SPIIO_Set_CLK_High;
+  IO_PinSetHigh(S->SCK);
   WaitHere(u, 1);
 
-  SPIIO_Set_CLK_Low;
+  IO_PinSetLow(S->SCK);
   return byte;
 }
 

@@ -98,4 +98,7 @@ u32 ClockGateEnable_PPP(u32 PPP_Adr, FunctionalState Enable);
 
 u32 HookIRQ_PPP(u32 PPP_Adr, u32 fn, u32 ct);
 
+void NewMainLoopServicing(void);
+u32 MainLoopServicingSA(u32 u);
+
 #endif

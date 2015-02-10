@@ -161,7 +161,7 @@ u32 EXTI_PinShareSameNVIC(u32 PinName1, u32 PinName2) {
 u32 sq_EXTI_Interrupt(u32 u) { // (n, fn, ct); n can be the pin name this is only for the GPIOs. For non GPIOs, a separate function should be created.
   u32* p = (u32*) u;
   IO_PinTypeDef* Pin = (IO_PinTypeDef*)p[0];
-  EXTI_Interrupt(Pin->Name & 0xF, p[1]);
+  EXTI_Interrupt(Pin->Name & 0xF, (FunctionalState) p[1]);
   return p[1]; // if 0, continue, if 1 an interrupt will come, so return to the top.
 }
 

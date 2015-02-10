@@ -38,4 +38,6 @@
 
 #include "sebSequencer.h"
 
+#include "RFFE_MasterIO.h"    
+
 #endif

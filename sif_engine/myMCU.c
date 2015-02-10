@@ -120,5 +120,43 @@ u32 HookIRQ_PPP(u32 PPP_Adr, u32 fn, u32 ct) {
     }
   }
   
+  
   while(1);
+}
+
+
+//======================================================================
+// Here this will be called by Main Loop
+// Any process which needs servicing at non critical time can be called back from main loop
+// Using a FIFO of Jobs to run. This FIFO will have to be replenished regularly
+
+static u32 MainLoopList[100]; // list of pointers
+StuffsArtery myMainLoopSequence; // this can be accessed by anyone, through a global function callback...
+
+u32 MainLoopServicingSA(u32 u) {
+  
+  u32 CallbackArmed = 0;
+  // one task will be called everytime this function being polled by main loop.
+  StuffsArtery* SA = (StuffsArtery*) u;
+
+  if(SA->bCount==0) return 0; // nothing to do
+  
+  // one job to handle now
+  ClipSA_Down(SA);
+  OneJobType* Job = (OneJobType*)SA->Out;
+  if(Job->fnJob) {
+    CallbackArmed = Job->fnJob((u32)Job->ctJobs);//, Job->Param1, Job->Param2, Job->Param3);
+  }else{
+    while(1); // error, no function to call; Did you initialize the SA before your periph_Init() function? Otherwise, it is still 00000 inside...
+  };
+  
+  if(CallbackArmed) while(1); // here is the main loop! no interrupt will come back here.
+  
+  return CallbackArmed; // if non zero, then it is a problem because we won't come back here
+}
+
+void NewMainLoopServicing(void) {
+  
+  StuffsArtery* P = &myMainLoopSequence; // program
+  NewSA(P, (u32)&MainLoopList[0], countof(MainLoopList));  
 }

@@ -18,7 +18,7 @@ void Test_ConcurrentSPI_MasterHW(void);
 void Test_ConcurrentSPI_MasterHW2(void); // the sequences trigger the jobs directly as they are added to see if it works.
 vu8 choice=6; // default choice after reset
 void I2C_MasterIO_Test(void);
-
+void RFFE_Test(void);
 
 BasicTimer Timer6_us, Timer7_ms;
 
@@ -44,7 +44,7 @@ void SebMainTest(void) {
       Test_ConcurrentSPI_MasterHW();
       break;
     case 5:
-      Test_ConcurrentSPI_MasterHW2();
+      RFFE_Test(); // Tested ok on Feb 10, 2015 using ST HVDAC device example
       break;
     case 6:
       I2C_MasterIO_Test();
@@ -167,8 +167,6 @@ void SebExample1(void) {
 
 
 //====----> Extra level, here the Master is also using the same concept
-static I2C_MasterIO gMIO;
-static IO_PinTypeDef MIO_SDA, MIO_SCL;
 static BasicTimer BT;
 
 void SebExample2(void) {
@@ -345,12 +343,8 @@ const OneJobType INT4_Arm = { sq_EXTI_Interrupt, {(u32) &INT4, ENABLE } };
 const OneJobType INT4_Disarm = { sq_EXTI_Interrupt, {(u32) &INT4, DISABLE }};
 
 //========== The sequence of 100 pointed jobs
-
 static u32 List[100]; // list of pointers
 static StuffsArtery mySequence;
-
-
-
 
 
 void Test_SPI_MasterHW(void) {
@@ -454,10 +448,9 @@ void Test_SPI_MasterHW(void) {
     AddToSA(P, (u32) &SPI4_ReadAllShadow);
     AddToSA(P, (u32) &SPI4_Stop);
     
-    JobToDo((u32)&mySequence);
+    StartJobToDoInForeground((u32)&mySequence);
     while(mySequence.FlagEmptied==0);
     NOPs(1);
-    mySequence.FlagEmptied = 0; // clear the flag here
   }
 }
 
@@ -644,17 +637,14 @@ void Test_ConcurrentSPI_MasterHW(void) {
 //  tmp = __get_PRIMASK(); // if you don't do this, the interrupts might come within JobToDo... causing some delays from time to time. No hangups.
 //  __set_PRIMASK(tmp | 1);
   
-    StartJobToDo((u32)&mySequenceA);
-    StartJobToDo((u32)&mySequenceB);
-    StartJobToDo((u32)&mySequenceC);
+    StartJobToDoInBackground((u32)&mySequenceA);
+    StartJobToDoInBackground((u32)&mySequenceB);
+    StartJobToDoInBackground((u32)&mySequenceC);
   
 //  __set_PRIMASK(tmp);
     
     while((mySequenceA.FlagEmptied==0)||(mySequenceB.FlagEmptied==0)||(mySequenceC.FlagEmptied==0));
     NOPs(1);
-    mySequenceA.FlagEmptied = 0; // clear the flag here
-    mySequenceB.FlagEmptied = 0; // clear the flag here
-    mySequenceC.FlagEmptied = 0; // clear the flag here
 
   }
 }

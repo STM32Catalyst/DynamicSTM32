@@ -44,36 +44,28 @@ GPIO_AF20_DISABLED = 0x14
 // Function pointers are challenging for linkers...
 typedef struct {
   PinNameDef   Name; // with the pin name we can precook the bitband addresses below
-  u8*   bbOut; // points to the output bit
-  u8*   bbIn; // points to the read bit
-  u8*   bbMode0;
-  u8*   bbEXTI_PR; // direct access to the edge pending bit
+  GPIO_TypeDef* GPIOx;
+  u32    BitMask;
   u8    AF; // the chosen alternate function (difficult to manage right now)
 } IO_PinTypeDef; // 40 bytes per fast GPIO in Fast access should use RAM.
 
-/* bit banding instructions for bit streaming */
-#define BITBAND_SRAM_REF   0x20000000
-#define BITBAND_SRAM_BASE  0x22000000
-#define BITBAND_SRAM(a,b) ((BITBAND_SRAM_BASE +  (a-BITBAND_SRAM_REF)*32 + (b*4)))  // Convert SRAM address
-#define BITBAND_PERI_REF   0x40000000
-#define BITBAND_PERI_BASE  0x42000000
-#define BITBAND_PERI(a,b) ((BITBAND_PERI_BASE +  (a-BITBAND_PERI_REF)*32 + (b*4)))  // Convert PERI address
 
+void IO_PinInit(IO_PinTypeDef* Pin, PinNameDef Name);
 
+void IO_PinClockEnable(IO_PinTypeDef* Pin);
+void IO_PinSetHigh(IO_PinTypeDef* Pin);
+void IO_PinSetLow(IO_PinTypeDef* Pin);
+void IO_PinSet(IO_PinTypeDef* Pin, u32 value);
+s32 IO_PinGet(IO_PinTypeDef* Pin);
+void IO_PinToggle(IO_PinTypeDef* Pin);
+void IO_PinSetSpeedMHz(IO_PinTypeDef* Pin, u32 MHz);
+void IO_PinEnablePullUp(IO_PinTypeDef* Pin, FunctionalState Enable);
+void IO_PinEnablePullDown(IO_PinTypeDef* Pin, FunctionalState Enable);
+void IO_PinEnableHighDrive(IO_PinTypeDef* Pin, FunctionalState Enable);
+void IO_PinConfiguredAs(IO_PinTypeDef* Pin, u32 signal);
 
-void IO_PinInit(IO_PinTypeDef* pIO_Pin, PinNameDef Name);
-
-void IO_PinClockEnable(IO_PinTypeDef* pIO_Pin);
-void IO_PinSetHigh(IO_PinTypeDef* pIO_Pin);
-void IO_PinSetLow(IO_PinTypeDef* pIO_Pin);
-void IO_PinSet(IO_PinTypeDef* pIO_Pin, u32 value);
-s32 IO_PinGet(IO_PinTypeDef* pIO_Pin);
-void IO_PinToggle(IO_PinTypeDef* pIO_Pin);
-void IO_PinSetSpeedMHz(IO_PinTypeDef* pIO_Pin, u32 MHz);
-void IO_PinEnablePullUp(IO_PinTypeDef* pIO_Pin, FunctionalState Enable);
-void IO_PinEnablePullDown(IO_PinTypeDef* pIO_Pin, FunctionalState Enable);
-void IO_PinEnableHighDrive(IO_PinTypeDef* pIO_Pin, FunctionalState Enable);
-void IO_PinConfiguredAs(IO_PinTypeDef* pIO_Pin, u32 signal);
+u32 IO_PinGetPR(IO_PinTypeDef* Pin);
+void IO_PinClearPR(IO_PinTypeDef* Pin);
 
 #define IO_PinSetInput(p) IO_PinConfiguredAs((p), GPIO_AF16_DIGITAL_INPUT)
 #define IO_PinSetOutput(p) IO_PinConfiguredAs((p), GPIO_AF17_DIGITAL_OUTPUT)
