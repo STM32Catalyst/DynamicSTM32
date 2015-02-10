@@ -45,7 +45,26 @@ Have a look at the code example to understand the mecanics of the software.
 
 Hope will be fun. The baseline works, and higher level smart features are still missing to make it very versatile.
 
+This folder is added to an IAR bigger standard application project which is main loop'ed base (no RTOS).
+The MCU is STM32437 with SYSCLK at 96MHz, and this clock is currently manually entered in this code.
 
+Next big add-ons will be:
 
+1. Support of General and Advanced Timers (programmable pulses and triggers)
+2. Support of Analog functions (including DMAs) (DAC and ADCs)
+3. Redesign the Slave State machines to use the same sequencer used in Master mode
+4. Add SPI Slave support
+5. Add Main loop task FIFO for non speed critical jobs, fired by timer interrupt or other background tasks
+6. Add support to launch in parralel multiple sequencers and have a mean for them to wait for each others in a milestone step
+7. Add 16x2 simple LCD Char using SPI in main loop
+8. Add Keyboard (5 way joystick)
+9. Add I2C EEPROM support
+10. Add Bluetooth protocol to have COM Port accessible from Phone or PC apps. (protocol handlers)
+11. Add Sensors support
+12. Clocks management (knowing the external crystal value, find the lowest clock that fits the required performance)
+13. HW Management (MCU finds out itself which HW resource to use like DMA Streams and Channels)
+14. How to pause a sequence (say waiting for interrupt from Sensor to run I2C read, pause it for main loop to use I2C bus to talk to other devices asap)
+
+Once the base line grows with more complex structures, things will become interesting
 
 
