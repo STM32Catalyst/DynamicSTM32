@@ -14,7 +14,7 @@ u32 TimerCountdownWait(u32 u);
 u32 NopsWait(u32 u);
 u32 WaitHere(u32 u, u32 delay);
 
-void NewSPI_MasterIO_RX_TX(SPI_MasterIO* S, DMA_Stream_TypeDef* RX_Stream, u32 DMA_RX_Channel, DMA_Stream_TypeDef* TX_Stream, u32 DMA_TX_Channel) {
+void NewSPI_MasterIO_RX_TX(SPI_MasterIO* S) {
 
   u8 n; // NSSs sweep
 // we have to initialize the state machine first
@@ -25,28 +25,25 @@ void NewSPI_MasterIO_RX_TX(SPI_MasterIO* S, DMA_Stream_TypeDef* RX_Stream, u32 D
   // configure MISO pin
   IO_PinClockEnable(S->MISO);
   IO_PinSetHigh(S->MISO);  
-  IO_PinConfiguredAs(S->MISO,GPIO_AF16_DIGITAL_INPUT);  
+  IO_PinSetInput(S->MISO);  
   IO_PinSetSpeedMHz(S->MISO, 1);
-  IO_PinEnablePullUp(S->MISO, ENABLE);
-  IO_PinEnablePullDown(S->MISO, DISABLE);
+  IO_PinEnablePullUpDown(S->MISO, ENABLE, DISABLE);
   IO_PinEnableHighDrive(S->MISO, ENABLE);
  
   // configure MOSI pin
   IO_PinClockEnable(S->MOSI);
   IO_PinSetHigh(S->MOSI);
-  IO_PinConfiguredAs(S->MOSI,GPIO_AF17_DIGITAL_OUTPUT);  
+  IO_PinSetOutput(S->MOSI);  
   IO_PinSetSpeedMHz(S->MOSI, 1);
-  IO_PinEnablePullUp(S->MOSI, ENABLE);
-  IO_PinEnablePullDown(S->MOSI, DISABLE);
+  IO_PinEnablePullUpDown(S->MOSI, ENABLE, DISABLE);
   IO_PinEnableHighDrive(S->MOSI, ENABLE);
 
   // configure SCK pin
   IO_PinClockEnable(S->SCK);
   IO_PinSetHigh(S->SCK);
-  IO_PinConfiguredAs(S->SCK,GPIO_AF17_DIGITAL_OUTPUT);  
+  IO_PinSetOutput(S->SCK);  
   IO_PinSetSpeedMHz(S->SCK, 1);
-  IO_PinEnablePullUp(S->SCK, ENABLE);
-  IO_PinEnablePullDown(S->SCK, DISABLE);
+  IO_PinEnablePullUpDown(S->SCK, ENABLE, DISABLE);
   IO_PinEnableHighDrive(S->SCK, ENABLE);
   
   // configure all the NSSs pins
@@ -54,32 +51,46 @@ void NewSPI_MasterIO_RX_TX(SPI_MasterIO* S, DMA_Stream_TypeDef* RX_Stream, u32 D
     if(S->NSSs[n]==0) break;
     IO_PinClockEnable(S->NSSs[n]);
     IO_PinSetHigh(S->NSSs[n]);    
-    IO_PinConfiguredAs(S->NSSs[n],GPIO_AF17_DIGITAL_OUTPUT);  
+    IO_PinSetOutput(S->NSSs[n]);  
     IO_PinSetSpeedMHz(S->NSSs[n], 1);
-    IO_PinEnablePullUp(S->NSSs[n], ENABLE);
-    IO_PinEnablePullDown(S->NSSs[n], DISABLE);
+    IO_PinEnablePullUpDown(S->NSSs[n], ENABLE, DISABLE);
     IO_PinEnableHighDrive(S->NSSs[n], ENABLE); // push pull enabled
   };
   
   // We need to initialize the hooks for DMA_RX...
 //  HookIRQ_PPP((u32)S->DMA_RX->Stream, (u32)JobToDo, (u32)S->SA); // From DMA Stream, place the hooks
-  S->fnWaitMethod = TimerCountdownWait; // here we should take care of the timings, and choose the best scheme based on CPU MHz and bps of bus...  
-  S->WaitParam = 1;
-  // interrupt configuration, only for TX side.... RX is driven by TX DMA which controls the clock pulses generation
-  NopsWait((u32)S);
 }
 
-u32 SetSPI_MasterIO_Timings(SPI_MasterIO* S, u32 MaxBps, u32 CPol, u32 CPha, u32 FirstBit ) { // 1200000, SPI_CPOL_Low, SPI_CPHA_1Edge, SPI_FirstBit_MSB
+u32 SetSPI_MasterIO_Timings(SPI_MasterIO* M, u32 MaxBps, u32 CPol, u32 CPha, u32 FirstBit, MCUClockTree* T ) { // 1200000, SPI_CPOL_Low, SPI_CPHA_1Edge, SPI_FirstBit_MSB
 
-  // members of the structure related to timings should be initialized
-  // Here we should decide which delay strategy for the required speed based on SYSCLK and BT availables
-  u32 bps = MaxBps;
+  if(CPol!=SPI_CPOL_Low) while(1); // not supported yet
+  if(CPha!=SPI_CPHA_1Edge) while(1); // not supported yet
   
-  S->fnWaitMethod = NopsWait; // here we should take care of the timings, and choose the best scheme based on CPU MHz and bps of bus...  
-  S->WaitParam = 1;
+  u32 HalfClockPeriod_Hz;
+  u32 HalfClockPeriod_us;
   
-  S->MaxBps = MaxBps;
-  S->ActualBps = bps;
+  M->MaxBps = MaxBps; // 400khz
+  
+  HalfClockPeriod_Hz = MaxBps*2; // Timers runs at 1MHz max overflow speed. 500kHz = 2us
+  
+  if(M->BT) {
+    
+    M->WaitParam = 1000000 / ( M->BT->OverflowPeriod_us * HalfClockPeriod_Hz);
+    if(M->WaitParam) {
+      M->fnWaitMethod = TimerCountdownWait; // here we should take care of the timings, and choose the best scheme based on CPU MHz and bps of bus...    
+      return 0; // found a tick period compatible with this Basic Timer
+    };
+    // otherwise, the strategy will be NOPs.
+  }
+
+  // Delay will use S/W NOPs because the incoming sys frequency is too low or the bit rate too high
+  //!!! In IAR, 96MHz core STM32F437, No optimisation: WaitParam = 2. With max optimisation for speed: WaitParam = 20 (400kHz)
+  // Later, we will use the help of the BT with precise time to tune it dynamically.... more high tech and requires some time to tune.
+  M->fnWaitMethod = NopsWait;
+  
+  HalfClockPeriod_us = (T->CoreClk_Hz )/(MaxBps*12); // Here the feedclock is the core speed for IO emulated we assume 1 cycle per instruction which is not realistic.
+  // it should not be zero or the delays won't scale for the communication
+  M->WaitParam = HalfClockPeriod_us;
   
   return 0;
 }
@@ -401,5 +412,14 @@ static u32 SPI_MIO_ReadByte(u32 u)
   return byte;
 }
 
+static IO_PinTypeDef MISO, MOSI, SCK, NSS;
 
+void SPI_MasterIO_Test(void) {
+  
+  // We are going to write a message of a preinitialized 2x16 char LCD Display
+  MCUInitClocks();
+  
+  
+  
+}
 

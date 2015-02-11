@@ -41,6 +41,8 @@ void IO_PinClearPR(IO_PinTypeDef* Pin) {
 
 
 void IO_PinClockEnable(IO_PinTypeDef* Pin) {
+  
+  BookPin(Pin->Name);
   // we activate the clock of the corresponding GPIO port
   //ClearAndSetShiftedBits(RCC->AHB1ENR, 0, 1, (Pin->Name)>>4);
   RCC->AHB1ENR |= 1<<(Pin->Name>>4);
@@ -97,6 +99,11 @@ void IO_PinEnablePullDown(IO_PinTypeDef* Pin, FunctionalState Enable) {
   
   ClearAndSetShiftedBits(GPIOs[Pin->Name>>4]->PUPDR, 2, (Enable==DISABLE)?0:2, (Pin->Name&0xF)*2);  
 } 
+
+void IO_PinEnablePullUpDown(IO_PinTypeDef* Pin, FunctionalState UpEnable, FunctionalState DownEnable) {
+  IO_PinEnablePullUp(Pin, UpEnable);
+  IO_PinEnablePullDown(Pin, DownEnable);
+}
 
 void IO_PinEnableHighDrive(IO_PinTypeDef* Pin, FunctionalState Enable) {
   
@@ -1118,8 +1125,68 @@ u32 GetPinAF(PinNameDef PinName, u32 PPP_Adr) {
 }
 
 
+//=============================================================================
+// Resource allocation, conflict detection
 
+// First, we need to check when a GPIO is being used
+u8 BookedPin[MAX_PACKAGE_PIN];
 
+void BookPin(u32 PinName) {
   
+  if(PinName>MAX_PACKAGE_PIN)
+    while(1); // not possible
+  
+  if(BookedPin[PinName]!=0)
+    while(1); // this pin is already used
+  
+  BookedPin[PinName] = 1; // booked
+}
 
+void FreePin(u32 PinName) {
 
+  if(PinName>MAX_PACKAGE_PIN)
+    while(1); // not possible
+
+  BookedPin[PinName] = 0; // booked
+}
+
+//===========---------
+// This is a bit delicate to find out how to manage it...
+// The AF which are unique are the ones from 0 to F
+u8 BookedAF[MAX_PACKAGE_PIN];
+
+void BookAF(u32 PinName, u32 AF) {
+  if(PinName>MAX_PACKAGE_PIN)
+    while(1); // not possible
+  
+  if(   (BookedPin[PinName]!=0) 
+     && (BookedPin[PinName]!=AF) ) // we can reassign the same AF value if we want...
+    while(1); // this pin is already used
+  
+  if(AF==0) AF = 0x80; // the value 0 becomes 80 when used
+  BookedAF[PinName] = AF; // booked
+}
+
+void FreeAF(u32 PinName) {
+  if(PinName>MAX_PACKAGE_PIN)
+    while(1); // not possible
+  
+  if(BookedPin[PinName]!=0)
+    while(1); // this pin is already used
+  
+  BookedPin[PinName] = 1; // booked
+}
+
+//===================================================
+// Sequencer related function
+u32 sq_PinSetLowJob(u32 u) {
+  
+  IO_PinSetLow((IO_PinTypeDef*)u);
+  return 0; // done, immediate
+}
+
+u32 sq_PinSetHighJob(u32 u) {
+  
+  IO_PinSetHigh((IO_PinTypeDef*)u);
+  return 0; // done, immediate
+}

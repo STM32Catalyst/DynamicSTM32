@@ -13,9 +13,9 @@ typedef struct {
   u32 bCount;
   
   u32 MaxBps; // this is the maximum required baudrate
-  u32 ActualBps; // HW bit rate (does not include delays between bytes)
+//  u32 ActualBps; // HW bit rate (does not include delays between bytes)
 //  u32 AverageBps; // Averate bit rate per job
-  u32 FeedClockMHz; // SPI Clock feed. Internally only plays with PSC = 2^(n+1)
+//  u32 FeedClockMHz; // SPI Clock feed. Internally only plays with PSC = 2^(n+1)
   
   StuffsArtery* SA; // this points to Job feeding
   
@@ -32,8 +32,8 @@ typedef struct {
 
   
 
-void NewRFFE_MasterIO_RX_TX(RFFE_MasterIO* S, DMA_Stream_TypeDef* RX_Stream, u32 DMA_RX_Channel, DMA_Stream_TypeDef* TX_Stream, u32 DMA_TX_Channel);
-u32 SetRFFE_MasterIO_Timings(RFFE_MasterIO* S, u32 MaxBps, u32 CPol, u32 CPha, u32 FirstBit ); // 1200000, SPI_CPOL_Low, SPI_CPHA_1Edge, SPI_FirstBit_MSB
+void NewRFFE_MasterIO_RX_TX(RFFE_MasterIO* M);
+u32 SetRFFE_MasterIO_Timings(RFFE_MasterIO* M, u32 MaxBps, MCUClockTree* T ); // 1200000, SPI_CPOL_Low, SPI_CPHA_1Edge, SPI_FirstBit_MSB
 // GPIOs?
 
 // Available SPI Functions For Sequencer use

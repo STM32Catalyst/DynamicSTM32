@@ -27,30 +27,27 @@ void NewSPI_MasterHW_RX_TX(SPI_MasterHW* S, DMA_Stream_TypeDef* RX_Stream, u32 D
   // configure MISO pin
   IO_PinClockEnable(S->MISO);
   IO_PinSetHigh(S->MISO);  
-  IO_PinConfiguredAs(S->MISO,GPIO_AF16_DIGITAL_INPUT);  
+  IO_PinSetInput(S->MISO);  
   IO_PinSetSpeedMHz(S->MISO, 1);
-  IO_PinEnablePullUp(S->MISO, ENABLE);
-  IO_PinEnablePullDown(S->MISO, DISABLE);
+  IO_PinEnablePullUpDown(S->MISO, ENABLE, DISABLE);
   IO_PinEnableHighDrive(S->MISO, ENABLE);
   IO_PinConfiguredAs(S->MISO,GetPinAF(S->MISO->Name,(u32)S->SPI));  
 
   // configure MOSI pin
   IO_PinClockEnable(S->MOSI);
   IO_PinSetHigh(S->MOSI);
-  IO_PinConfiguredAs(S->MOSI,GPIO_AF17_DIGITAL_OUTPUT);  
+  IO_PinSetOutput(S->MOSI);  
   IO_PinSetSpeedMHz(S->MOSI, 1);
-  IO_PinEnablePullUp(S->MOSI, ENABLE);
-  IO_PinEnablePullDown(S->MOSI, DISABLE);
+  IO_PinEnablePullUpDown(S->MOSI, ENABLE, DISABLE);
   IO_PinEnableHighDrive(S->MOSI, ENABLE);
   IO_PinConfiguredAs(S->MOSI,GetPinAF(S->MOSI->Name,(u32)S->SPI));    
 
   // configure SCK pin
   IO_PinClockEnable(S->SCK);
   IO_PinSetHigh(S->SCK);
-  IO_PinConfiguredAs(S->SCK,GPIO_AF17_DIGITAL_OUTPUT);  
+  IO_PinSetOutput(S->SCK);  
   IO_PinSetSpeedMHz(S->SCK, 1);
-  IO_PinEnablePullUp(S->SCK, ENABLE);
-  IO_PinEnablePullDown(S->SCK, DISABLE);
+  IO_PinEnablePullUpDown(S->SCK, ENABLE, DISABLE);
   IO_PinEnableHighDrive(S->SCK, ENABLE);
   IO_PinConfiguredAs(S->SCK,GetPinAF(S->SCK->Name,(u32)S->SPI));    
   
@@ -59,10 +56,9 @@ void NewSPI_MasterHW_RX_TX(SPI_MasterHW* S, DMA_Stream_TypeDef* RX_Stream, u32 D
     if(S->NSSs[n]==0) break;
     IO_PinClockEnable(S->NSSs[n]);
     IO_PinSetHigh(S->NSSs[n]);    
-    IO_PinConfiguredAs(S->NSSs[n],GPIO_AF17_DIGITAL_OUTPUT);  
+    IO_PinSetOutput(S->NSSs[n]);  
     IO_PinSetSpeedMHz(S->NSSs[n], 1);
-    IO_PinEnablePullUp(S->NSSs[n], ENABLE);
-    IO_PinEnablePullDown(S->NSSs[n], DISABLE);
+    IO_PinEnablePullUpDown(S->NSSs[n], ENABLE, DISABLE);
     IO_PinEnableHighDrive(S->NSSs[n], ENABLE); // push pull enabled
   };
   

@@ -24,11 +24,10 @@ typedef struct {
   u8 BTn; //  a number between 0 and 3
 
   u32 (*fnWaitMethod)(u32);
-//  u32 ctWaitMethod;
+  u32 ctWaitMethod;
   u32 WaitParam;
   
   u32 MaxBps; // input
-  u32 FeedClockMHz; // MCU clock as it is by S/W
   
   StuffsArtery* SA; // this points to Job feeding  
   
@@ -40,7 +39,7 @@ typedef struct {
 
 
 u32 NewI2C_MasterIO(I2C_MasterIO* MIO);
-u32 SetI2C_MasterIO_Timings(I2C_MasterIO* M, u32 MaxBps );
+u32 SetI2C_MasterIO_Timings( I2C_MasterIO* M, u32 MaxBps, MCUClockTree* T);
 
 u32 sq_I2C_MIO_StartJob(u32 u);
 u32 sq_I2C_MIO_StopJob(u32 u);

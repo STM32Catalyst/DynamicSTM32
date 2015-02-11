@@ -22,6 +22,7 @@
 #define SebDMA2_Stream7
 
 #include "myMCU.h"
+#include "SebClocks.h"
 #include "alternates.h"
 #include "sebNVIC.h"
 #include "sebDMA.h"

@@ -12,8 +12,8 @@ static u32 RS232_UARTs_IRQHandler(u32 u) {
   if((RS->USART->CR1 & USART_FLAG_RXNE)&&(RS->USART->SR & USART_FLAG_RXNE)) {  // dummy read of the data to clear the pending interrupt, this will clear PE, RXNE and FE bits
     // WHAT IF BV IS NOT ASSIGNED?
     if(RS->BV_RX==0)      while(1);
-    RS->BV_RX->In = RS->USART->DR; // byte received, prep to place in BV_RX
-    GlueBV_Up(RS->BV_RX); // add this byte to the head of this data (fresh is head), and possibly trigger a use of it, we can't delay it!
+    // byte received, prep to place in BV_RX
+    AddToBV(RS->BV_RX, RS->USART->DR); // add this byte to the head of this data (fresh is head), and possibly trigger a use of it, we can't delay it!
   };
   
   // we should also add the error management here
@@ -49,28 +49,26 @@ void NewRs232HW(SerialRs232* RS, USART_TypeDef* USART) {
   // second, we initialize the IO pins when they exist
   // configure the GPIOs
   // configure RX pin
-  if(RS->fRX) {
-    IO_PinInit(RS->fRX, RS->fRX->Name ); // Initialize some quick pointers
-    IO_PinClockEnable(RS->fRX);
-    IO_PinConfiguredAs(RS->fRX,GPIO_AF16_DIGITAL_INPUT);    
-    IO_PinSetLow(RS->fRX);
-    IO_PinSetSpeedMHz(RS->fRX, 1);
-    IO_PinEnablePullUp(RS->fRX, ENABLE);
-    IO_PinEnablePullDown(RS->fRX, DISABLE);
-    IO_PinEnableHighDrive(RS->fRX, ENABLE);
-    IO_PinConfiguredAs(RS->fRX,GPIO_AF_USART1); // to change later! based on pin name
+  if(RS->RX) {
+    IO_PinInit(RS->RX, RS->RX->Name ); // Initialize some quick pointers
+    IO_PinClockEnable(RS->RX);
+    IO_PinSetInput(RS->RX);
+    IO_PinSetLow(RS->RX);
+    IO_PinSetSpeedMHz(RS->RX, 1);
+    IO_PinEnablePullUpDown(RS->RX, ENABLE, DISABLE);
+    IO_PinEnableHighDrive(RS->RX, ENABLE);
+    IO_PinConfiguredAs(RS->RX,GPIO_AF_USART1); // to change later! based on pin name
   }
 
-  if(RS->fTX) {
-    IO_PinInit(RS->fTX, RS->fTX->Name  ); // Initialize some quick pointers    
-    IO_PinClockEnable(RS->fTX);
-    IO_PinSetLow(RS->fTX);
-    IO_PinConfiguredAs(RS->fTX,GPIO_AF17_DIGITAL_OUTPUT);    
-    IO_PinSetSpeedMHz(RS->fTX, 1);
-    IO_PinEnablePullUp(RS->fTX, ENABLE);
-    IO_PinEnablePullDown(RS->fTX, DISABLE);
-    IO_PinEnableHighDrive(RS->fTX, ENABLE);
-    IO_PinConfiguredAs(RS->fTX,GPIO_AF_USART1); // to change later! based on pin name
+  if(RS->TX) {
+    IO_PinInit(RS->TX, RS->TX->Name  ); // Initialize some quick pointers    
+    IO_PinClockEnable(RS->TX);
+    IO_PinSetLow(RS->TX);
+    IO_PinSetOutput(RS->TX);    
+    IO_PinSetSpeedMHz(RS->TX, 1);
+    IO_PinEnablePullUpDown(RS->TX, ENABLE, DISABLE);
+    IO_PinEnableHighDrive(RS->TX, ENABLE);
+    IO_PinConfiguredAs(RS->TX,GPIO_AF_USART1); // to change later! based on pin name
   }
  
 }
@@ -168,8 +166,8 @@ void TestSebUART(void) {
   
   char* pu8;
   u32 tmp = 0;
-  Rs232.fRX = &Rs232RX;
-  Rs232.fTX = &Rs232TX;
+  Rs232.RX = &Rs232RX;
+  Rs232.TX = &Rs232TX;
   NewRs232HW(&Rs232, USART1); // The HW connectivity, handle, register base, RX pin, TX pin, CTS pin, RTS pin, if non null.
   SetRs232Timings(&Rs232, 115200, 2, 1); // Things depending on time and internal clocks
   // we have also to initialize the BV_TX and BV_RX at higher level...
@@ -185,17 +183,15 @@ void TestSebUART(void) {
   // first test is to fill this FIFO from main loop.
   pu8 = (char*)Hello1;
   while(*pu8) {// empty string check first
-    Rs232.BV_TX->In = *pu8;
     Wait_us(500);
-    GlueBV_Up(Rs232.BV_TX); // add to head (new)
+    AddToBV(Rs232.BV_TX, *pu8); // add to head (new)
     pu8++;
   };
 
   __set_PRIMASK(tmp | 1);  
   pu8 = (char*)Hello2;
   while(*pu8) {// empty string check first
-    Rs232.BV_TX->In = *pu8;
-    GlueBV_Up(Rs232.BV_TX); // add to head (new)
+    AddToBV(Rs232.BV_TX, *pu8); // add to head (new)
     pu8++;
   };
   __set_PRIMASK(tmp);

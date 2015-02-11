@@ -72,6 +72,8 @@ void EXTI_SetEdgesEnable(u32 PinName, u8 RisingEnabled, u8 FallingEnabled) {
 
   u32 n = PinName & 0xF; // the pin index 0..15
   u32 p = (PinName >> 4) & 0xF; // the port name index 0..15 (ABCDEFGHIJKL...)
+  
+  BookEXTI(PinName);
   // configure the right GPIO (we should have a check if is was already assigned... for this we need RAM flags...
   ClearAndSetShiftedBits(SYSCFG->EXTICR[n>>2], 15, p, ((n%4)<<2));  // 32 bit = 8 pin x 4 bit field: Which GPIOx for this EXTI channel?
 
@@ -166,6 +168,29 @@ u32 sq_EXTI_Interrupt(u32 u) { // (n, fn, ct); n can be the pin name this is onl
 }
 
 
+//===============================================
+// Resource overbooking sanity check
+
+u8 BookedEXTI[16];
+
+void BookEXTI(u32 PinName) {
+  
+  if(PinName>MAX_PACKAGE_PIN)
+    while(1); // not possible
+
+  if(BookedEXTI[PinName % 16]!=0)
+    while(1); // this EXTI is already used
+  
+  BookedEXTI[PinName % 16] = PinName>>4; // which GPIO is used for this EXTI
+}
+
+void FreeEXTI(u32 PinName) {
+  
+  if(PinName>MAX_PACKAGE_PIN)
+    while(1); // not possible
+
+  BookedEXTI[PinName % 16] = 0; // which GPIO is used for this EXTI  
+}
 
 
 

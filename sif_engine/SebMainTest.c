@@ -15,8 +15,8 @@ void SebExample1(void);
 void SebExample2(void);
 void Test_SPI_MasterHW(void);;
 void Test_ConcurrentSPI_MasterHW(void);
-void Test_ConcurrentSPI_MasterHW2(void); // the sequences trigger the jobs directly as they are added to see if it works.
-vu8 choice=6; // default choice after reset
+
+vu8 choice=5; // default choice after reset
 void I2C_MasterIO_Test(void);
 void RFFE_Test(void);
 
@@ -24,6 +24,8 @@ BasicTimer Timer6_us, Timer7_ms;
 
 
 void SebMainTest(void) {
+  
+  MCUInitClocks();
   
   while(choice==0) ; // stop the emulator, change choice and let it run
 
@@ -101,23 +103,23 @@ void SebExample1(void) {
   mySlave.SCL = &mySCL; // link the pin to the slave
   NewI2C_SlaveIO(&mySlave, (u8*)mySlaveAdresses, countof(mySlaveAdresses), mySlaveMemory, countof(mySlaveMemory));
   SpyI2C_SlaveIO(&mySlave); // this is to go to spy code as well
-
+/*
   mySlave.fnBusFree = u32_fn_u32; // no hooks on the I2C Slave events, for breakpoint purpose, points to a return function... (default is 0)
   mySlave.ctBusFree = 1;
   mySlave.fnReceived = u32_fn_u32;
   mySlave.ctReceived = 2;
   mySlave.fnTransmitted = u32_fn_u32;
   mySlave.ctTransmitted = 3;
-  
+*/  
   // RS232 cell definition
   // Pin definition, RX1=PB7, TX1=PB6
   IO_PinInit(&myRs232RX, PB7 ); // Initialize some quick pointers
   IO_PinInit(&myRs232TX, PB6 ); // Initialize some quick pointers
   // Hook the pins to the RS232 USART (if pin not used, put null pointer)
-  myRs232.fRX = &myRs232RX;
-  myRs232.fTX = &myRs232TX;
-  myRs232.fRTS = 0;
-  myRs232.fCTS = 0;
+  myRs232.RX = &myRs232RX;
+  myRs232.TX = &myRs232TX;
+  myRs232.RTS = 0;
+  myRs232.CTS = 0;
   NewRs232HW( &myRs232, USART1); // The HW connectivity, handle, register base, RX pin, TX pin, CTS pin, RTS pin, if non null.
   // we have also to initialize the BV_TX and BV_RX at higher level...
   // Initialize the Byte Vein from RX1 to fill up until full for now. (depends if you short RX/TX or not)
@@ -135,7 +137,7 @@ void SebExample1(void) {
   //===============
 
   while(1) {
-
+#if 1
     // here we will use the I2C single master to generate events...
 
     // can put a breakpoint here
@@ -159,7 +161,7 @@ void SebExample1(void) {
     myRxBuf[0] = I2CIO_Receive(1);
     myRxBuf[1] = I2CIO_Receive(1);
     myRxBuf[2] = I2CIO_Receive(0);
-    
+#endif    
     Wait_ms(100); // let it flush, here could be too fast
   }
   
@@ -183,14 +185,14 @@ void SebExample2(void) {
   mySlave.fSCL = &mySCL; // link the pin to the slave
   NewI2C_SlaveIO(&mySlave, (u8*)mySlaveAdresses, countof(mySlaveAdresses), mySlaveMemory, countof(mySlaveMemory));
   SpyI2C_SlaveIO(&mySlave); // this is to go to spy code as well
-
+/*
   mySlave.fnBusFree = u32_fn_u32; // no hooks on the I2C Slave events, for breakpoint purpose, points to a return function... (default is 0)
   mySlave.ctBusFree = 1;
   mySlave.fnReceived = u32_fn_u32;
   mySlave.ctReceived = 2;
   mySlave.fnTransmitted = u32_fn_u32;
   mySlave.ctTransmitted = 3;
-
+*/
   //====----> RS232 cell definition  
   // RS232 cell definition
   // Pin definition, RX1=PB7, TX1=PB6
@@ -220,16 +222,13 @@ void SebExample2(void) {
   gMIO.SDA = &MIO_SDA; // global shared resource, to be generic later
   gMIO.SCL = &MIO_SCL; // global shared resource, to be generic later
 
-  BT.FeedClockMHz = 96/2; // 96MHz (this should later come from RAM global structure)  
-  NewBasicTimer_us(&BT, TIM6, 1); // usec countdown
+  NewBasicTimer_us(&BT, TIM6, 1, GetMCUClockTree()); // usec countdown
   gMIO.Job = &Job;
   gMIO.BT = &BT;
   gMIO.BTn = 0; // use Countdown[0]
   
-  gMIO.FeedClockMHz = 96; // MCU clock as it is by S/W
-  
   NewI2C_MasterIO(&gMIO);
-  SetI2C_MasterIO_Timings(&gMIO, 400*1000 );
+  SetI2C_MasterIO_Timings( &gMIO, 400*1000, GetMCUClockTree());
   
   // now we need to activate everything after all the architecture is done (the other end of the BV_TX, BV_RX)
   NVIC_BasicTimersEnable(ENABLE);// used by I2C Master (#0/4)
@@ -490,10 +489,9 @@ void Test_ConcurrentSPI_MasterHW(void) {
   // INT6 setupS
   IO_PinInit(&INT6, PG6);
   IO_PinClockEnable(&INT6);
-  IO_PinConfiguredAs(&INT6,GPIO_AF16_DIGITAL_INPUT);    
+  IO_PinSetInput(&INT6);    
 //  IO_PinSetLow(RS->fRX);//  IO_PinSetSpeedMHz(RS->fRX, 1);//  IO_PinEnableHighDrive(RS->fRX, ENABLE);
-  IO_PinEnablePullUp(&INT6, ENABLE);
-  IO_PinEnablePullDown(&INT6, DISABLE);
+  IO_PinEnablePullUpDown(&INT6, ENABLE, DISABLE);
   EXTI_SetEdgesEnable(INT6.Name, DISABLE, ENABLE);
   
 
@@ -529,10 +527,9 @@ void Test_ConcurrentSPI_MasterHW(void) {
   // INT5 setupS
   IO_PinInit(&INT5, PA1);
   IO_PinClockEnable(&INT5);
-  IO_PinConfiguredAs(&INT5,GPIO_AF16_DIGITAL_INPUT);    
+  IO_PinSetInput(&INT5);    
 //  IO_PinSetLow(RS->fRX);//  IO_PinSetSpeedMHz(RS->fRX, 1);//  IO_PinEnableHighDrive(RS->fRX, ENABLE);
-  IO_PinEnablePullUp(&INT5, ENABLE);
-  IO_PinEnablePullDown(&INT5, DISABLE);
+  IO_PinEnablePullUpDown(&INT5, ENABLE, DISABLE);
   EXTI_SetEdgesEnable(INT5.Name, DISABLE, ENABLE);
   
 // ====---> SPI4
@@ -567,10 +564,9 @@ void Test_ConcurrentSPI_MasterHW(void) {
   // INT4 setup
   IO_PinInit(&INT4, PG2);
   IO_PinClockEnable(&INT4);
-  IO_PinConfiguredAs(&INT4,GPIO_AF16_DIGITAL_INPUT);    
+  IO_PinSetInput(&INT4);    
 //  IO_PinSetLow(RS->fRX);//  IO_PinSetSpeedMHz(RS->fRX, 1);//  IO_PinEnableHighDrive(RS->fRX, ENABLE);
-  IO_PinEnablePullUp(&INT4, ENABLE);
-  IO_PinEnablePullDown(&INT4, DISABLE);
+  IO_PinEnablePullUpDown(&INT4, ENABLE, DISABLE);
   EXTI_SetEdgesEnable(INT4.Name, DISABLE, ENABLE);
   
   // put the hooks in place
@@ -582,11 +578,8 @@ void Test_ConcurrentSPI_MasterHW(void) {
   
 //===========
   // here we test the Basic Timer delays
-
-  Timer6_us.FeedClockMHz = 96/2; // 96MHz (this should later come from RAM global structure)  
-  Timer7_ms.FeedClockMHz = 96/2; // 96MHz (this should later come from RAM global structure)  
-  NewBasicTimer_us(&Timer6_us, TIM6, 10);// 1us tick period
-  NewBasicTimer_us(&Timer7_ms, TIM7, 1000);// 1ms period
+  NewBasicTimer_us(&Timer6_us, TIM6, 10, GetMCUClockTree());// 1us tick period
+  NewBasicTimer_us(&Timer7_ms, TIM7, 1000, GetMCUClockTree());// 1ms period
   NVIC_BasicTimersEnable(ENABLE);
   
   // 0 is free
@@ -651,6 +644,3 @@ void Test_ConcurrentSPI_MasterHW(void) {
 
 
 
-void Test_ConcurrentSPI_MasterHW2(void) { // this one does not work. The stack never ends. We need to take care of sequences which do not use interrupt, not to call StartJobToDo which disable interrupts...
-
-}

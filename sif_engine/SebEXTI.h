@@ -17,6 +17,13 @@ void NVIC_EXTIsEnable(FunctionalState Enable);
 u32 EXTI_PinShareSameNVIC(u32 PinName1, u32 PinName2);
 
 u32 EXTI_Interrupt(u32 n, FunctionalState Enable);
+
 u32 sq_EXTI_Interrupt(u32 u);
 
+//=========================
+void BookEXTI(u32 PinName);
+void FreeEXTI(u32 PinName);
+
+void BookAF(u32 PinName, u32 AF);
+void FreeAF(u32 PinName);
 #endif

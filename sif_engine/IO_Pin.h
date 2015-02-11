@@ -61,6 +61,7 @@ void IO_PinToggle(IO_PinTypeDef* Pin);
 void IO_PinSetSpeedMHz(IO_PinTypeDef* Pin, u32 MHz);
 void IO_PinEnablePullUp(IO_PinTypeDef* Pin, FunctionalState Enable);
 void IO_PinEnablePullDown(IO_PinTypeDef* Pin, FunctionalState Enable);
+void IO_PinEnablePullUpDown(IO_PinTypeDef* Pin, FunctionalState UpEnable, FunctionalState DownEnable);
 void IO_PinEnableHighDrive(IO_PinTypeDef* Pin, FunctionalState Enable);
 void IO_PinConfiguredAs(IO_PinTypeDef* Pin, u32 signal);
 
@@ -76,5 +77,25 @@ void IO_PinClearPR(IO_PinTypeDef* Pin);
 
 // helper function to deal with signals and alternate functions on pins
 u32 GetPinAF(PinNameDef PinName, u32 PPP_Adr);
+
+//==========================================
+// Sequencer compatible functions
+u32 sq_PinSetLowJob(u32 u);
+u32 sq_PinSetHighJob(u32 u);
+
+//=============================================================================
+// Resource allocation, conflict detection
+// These functions should be embedded in the clock enable or creation of entities
+// If all pins of a GPIO are freed, the clock enable can be turned off for power saving
+// Eventually the clock enable function will be replaced by this.
+void BookPin(u32 PinName);
+void FreePin(u32 PinName);
+
+void BookAF(u32 PinName, u32 AF);
+void FreeAF(u32 PinName);
+
+// These functions for now are global, they are unique resources.
+
+
 
 #endif

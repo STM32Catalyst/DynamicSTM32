@@ -62,6 +62,7 @@ u32 GetBV_Down(ByteVein* BV);
 u32 GetBV_Up(ByteVein* BV);
 */
 
+u32 AddToBV(ByteVein* BV, u32 In);
 
 
 #endif

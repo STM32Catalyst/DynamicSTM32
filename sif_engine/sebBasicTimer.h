@@ -7,13 +7,13 @@
 typedef struct {
 
   TIM_TypeDef* TIM; //#define TIM6                ((TIM_TypeDef *) TIM6_BASE)
-  u32 scheme; // the way the timer is being used...
+//  u32 scheme; // the way the timer is being used...
 
 //===--- These are enablers for slave function to work or not, for I2C spy to work or not.
   u32 fnCountDown[BT_MAX_COUNTDOWN]; // First Function to call when an overflow occured
   u32 ctCountDown[BT_MAX_COUNTDOWN];
   
-  u32 FeedClockMHz;
+  u32 FeedClockMHz; // for debug only, not really needed
   u32 OverflowPeriod_us;
 
   u32 InitialCountDown[BT_MAX_COUNTDOWN];
@@ -27,7 +27,7 @@ typedef struct {
 // This structure can be used on global variables and assigned to HW Timers. TIM6/7 of STM32F437 for example.
 // Hardcoded SYSCLK = 96MHz for now.
 
-void NewBasicTimer_us(BasicTimer* BT, TIM_TypeDef* T, u32 Period_us); // initialize the structure and corresponding HW
+void NewBasicTimer_us(BasicTimer* BT, TIM_TypeDef* T, u32 Period_us, MCUClockTree* Tree); // initialize the structure and corresponding HW
 void HookBasicTimerCountdown(BasicTimer* BT, u32 n, u32 fn, u32 ct);// make use of countdowns to trigger a hook with programmable delay. This scheme can generate auto repeat event.
 void ArmBasicTimerCountdown(BasicTimer* BT, u32 n, u32 ticks);
 void ReArmBasicTimerCountdown(BasicTimer* BT, u32 n);

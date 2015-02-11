@@ -52,9 +52,10 @@ typedef struct {
 
 
 
-void NewSPI_MasterIO_RX_TX(SPI_MasterIO* S, DMA_Stream_TypeDef* RX_Stream, u32 DMA_RX_Channel, DMA_Stream_TypeDef* TX_Stream, u32 DMA_TX_Channel);
-u32 SetSPI_MasterIO_Timings(SPI_MasterIO* S, u32 MaxBps, u32 CPol, u32 CPha, u32 FirstBit ); // 1200000, SPI_CPOL_Low, SPI_CPHA_1Edge, SPI_FirstBit_MSB
-// GPIOs?
+void NewSPI_MasterIO_RX_TX(SPI_MasterIO* S);
+u32 SetSPI_MasterIO_Timings(SPI_MasterIO* M, u32 MaxBps, u32 CPol, u32 CPha, u32 FirstBit, MCUClockTree* T ); // 1200000, SPI_CPOL_Low, SPI_CPHA_1Edge, SPI_FirstBit_MSB
+
+void SPI_MasterIO_Test(void);
 
 // Available SPI Functions For Sequencer use
 u32 sq_SPI_MIO_StartJob(u32 u); // SPI_MasterHW* and bitmask for NSS to go low

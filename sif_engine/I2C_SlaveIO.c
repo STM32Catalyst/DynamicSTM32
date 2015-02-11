@@ -35,61 +35,59 @@ extern u32 I2C_SlaveIO_RAM24C02_States2fn[32]; // this contains the state machin
 
 //--------- this will become later global resources --------
 
-void NewI2C_SlaveIO(I2C_SlaveIO* I2C_Slave, u8* SlaveAddresses, u8 SlaveAddressesCountof, u8* pMemory, u32 MemoryCountof) {
+void NewI2C_SlaveIO(I2C_SlaveIO* S, u8* SlaveAddresses, u8 SlaveAddressesCountof, u8* pMemory, u32 MemoryCountof) {
 
-  u32 pinSDA = I2C_Slave->SDA->Name;
-  u32 pinSCL = I2C_Slave->SCL->Name;
+  u32 pinSDA = S->SDA->Name;
+  u32 pinSCL = S->SCL->Name;
 // we have to initialize the state machine first
-  I2C_Slave->STMA.State = 0;
-  I2C_Slave->STMA.fnStates = I2C_SlaveIO_RAM24C02_States2fn;
-  I2C_Slave->STMA.ct = (u32)I2C_Slave;
-  I2C_SlaveIO_STMA_Run((u32)&(I2C_Slave->STMA));// run from state 0 (this ones does not use any I2C_Symbol as input)
-  I2C_Slave->Addresses = SlaveAddresses;
-  I2C_Slave->AddressesCountof = SlaveAddressesCountof;
-  I2C_Slave->SubAddressInitial = I2C_Slave->SubAddress = 0;
-  I2C_Slave->MemoryRead = 0;
-  I2C_Slave->MemoryWritten = 0;
-  I2C_Slave->Memory = pMemory;
-  I2C_Slave->MemoryCountof = MemoryCountof;
-  I2C_Slave->Bitmask = 0;
-  I2C_Slave->Data = 0;
-  I2C_Slave->BusBusy = 0; // should be not available until a start or a stop is seen on the bus
+  S->STMA.State = 0;
+  S->STMA.fnStates = I2C_SlaveIO_RAM24C02_States2fn;
+  S->STMA.ct = (u32)S;
+  I2C_SlaveIO_STMA_Run((u32)&(S->STMA));// run from state 0 (this ones does not use any I2C_Symbol as input)
+  S->Addresses = SlaveAddresses;
+  S->AddressesCountof = SlaveAddressesCountof;
+  S->SubAddressInitial = S->SubAddress = 0;
+  S->MemoryRead = 0;
+  S->MemoryWritten = 0;
+  S->Memory = pMemory;
+  S->MemoryCountof = MemoryCountof;
+  S->Bitmask = 0;
+  S->Data = 0;
+  S->BusBusy = 0; // should be not available until a start or a stop is seen on the bus
 
-  I2C_Slave->TalkEnded = 0;
+  S->TalkEnded = 0;
 
   // configure the GPIOs
   // configure SDA pin
-  IO_PinClockEnable(I2C_Slave->SDA);
-  IO_PinSetHigh(I2C_Slave->SDA);
-  IO_PinConfiguredAs(I2C_Slave->SDA,GPIO_AF17_DIGITAL_OUTPUT);
-  //IO_PinSetLow(I2C_Slave->SDA);
-  IO_PinSetSpeedMHz(I2C_Slave->SDA, 1);
-  IO_PinEnablePullUp(I2C_Slave->SDA, ENABLE);
-  IO_PinEnablePullDown(I2C_Slave->SDA, DISABLE);
-  IO_PinEnableHighDrive(I2C_Slave->SDA, DISABLE);
+  IO_PinClockEnable(S->SDA);
+  IO_PinSetHigh(S->SDA);
+  IO_PinSetOutput(S->SDA);
+  //IO_PinSetLow(S->SDA);
+  IO_PinSetSpeedMHz(S->SDA, 1);
+  IO_PinEnablePullUpDown(S->SDA, ENABLE, DISABLE);
+  IO_PinEnableHighDrive(S->SDA, DISABLE);
 
   // configure SCL pin
-  IO_PinClockEnable(I2C_Slave->SCL);
-  IO_PinConfiguredAs(I2C_Slave->SCL,GPIO_AF16_DIGITAL_INPUT);
-  IO_PinSetLow(I2C_Slave->SCL);
-  IO_PinSetSpeedMHz(I2C_Slave->SCL, 1);
-  IO_PinEnablePullUp(I2C_Slave->SCL, ENABLE);
-  IO_PinEnablePullDown(I2C_Slave->SCL, DISABLE);
-  IO_PinEnableHighDrive(I2C_Slave->SCL, DISABLE);
+  IO_PinClockEnable(S->SCL);
+  IO_PinSetInput(S->SCL);
+  IO_PinSetLow(S->SCL);
+  IO_PinSetSpeedMHz(S->SCL, 1);
+  IO_PinEnablePullUpDown(S->SCL, ENABLE, DISABLE);
+  IO_PinEnableHighDrive(S->SCL, DISABLE);
 
   // let's setup the edge configuration first
   EXTI_SetEdgesEnable(pinSDA, ENABLE, ENABLE); // GPIO, channel and edge configuration
   EXTI_SetEdgesEnable(pinSCL, ENABLE, ENABLE); // GPIO, channel and edge configuration
 
   // The I2C_Slave has its own hooks to setup first
-  I2C_Slave->fnSlaveScheme = I2C_SlaveIO_STMA_Run; // run the state machine instead of a hardcoded stuff
+  S->fnSlaveScheme = I2C_SlaveIO_STMA_Run; // run the state machine instead of a hardcoded stuff
   
   // debug code optional hook here
   // for now we hook the corresponding IRQ to the IRQ handler for EXTI channels
   // putting a non zero hook is needed to activate the EXTI interrupt enable going to NVIC channel
-  HookEXTIn(pinSDA & 0xF, (u32) I2C_SlaveIO_EXTI_IRQHandler , (u32)I2C_Slave); // this will move to EXTI cell later, it will activate the EXTI Interrupt enable, not the NVIC (later)
+  HookEXTIn(pinSDA & 0xF, (u32) I2C_SlaveIO_EXTI_IRQHandler , (u32)S); // this will move to EXTI cell later, it will activate the EXTI Interrupt enable, not the NVIC (later)
   EXTI_Interrupt(pinSDA &0xF, ENABLE);
-  HookEXTIn(pinSCL & 0xF, (u32) (EXTI_PinShareSameNVIC(pinSDA,pinSCL)?(u32_fn_u32):(I2C_SlaveIO_EXTI_IRQHandler)), (u32)I2C_Slave); // shares the same IRQ handler, so don't call the same handler twice!
+  HookEXTIn(pinSCL & 0xF, (u32) (EXTI_PinShareSameNVIC(pinSDA,pinSCL)?(u32_fn_u32):(I2C_SlaveIO_EXTI_IRQHandler)), (u32)S); // shares the same IRQ handler, so don't call the same handler twice!
   EXTI_Interrupt(pinSCL & 0xF, ENABLE);
 // not needed if they share the same IRQ  fnEXTI_n_Hook_To(pinSCL & 0xF, (u32) I2C_SlaveIO_EXTI_IRQHandler, (u32)&gI2C_Slave); // this will move to EXTI cell later
 
@@ -155,62 +153,63 @@ u32 SpyI2C_SlaveIO(I2C_SlaveIO* u) {
 
   u->fnSpyScheme = I2C_SlaveIO_SpyProcess;
   u->I2C_BitCounter = 0;
-  return (u32)u;
+  return 0;
 }
 
 u32 UnSpyI2C_SlaveIO(I2C_SlaveIO* u) {
 
   u->fnSpyScheme = 0;
-  return (u32)u;
+  return 0;
 }
 
 const u8 HexToAscii[] = {  '0','1','2','3','4','5','6','7','8','9','A','B','C','D','E','F' };
 
 static u32 I2C_SlaveIO_SpyProcess(u32 u) {
 
-  I2C_SlaveIO* I2C_Slave = (I2C_SlaveIO*) u;
-  I2C_Symbols I2C_Symbol = I2C_Slave->I2C_Symbol;
+  I2C_SlaveIO* S = (I2C_SlaveIO*) u;
+  I2C_Symbols I2C_Symbol = S->I2C_Symbol;
   
-  if(I2C_Slave->BV==0) while(1);// you forgot to point to a BV global structure... pointer is null.
+  if(S->BV==0) while(1);// you forgot to point to a BV global structure... pointer is null.
 
   switch(I2C_Symbol) {
   case I2C_Start:    // SDA goes low while SCL remains high
-    I2C_Slave->BV->In = 'S'; GlueBV_Up(I2C_Slave->BV);//    I2C_Slave->I2C_String[I2C_Slave->I2C_String_Index++] = 'S';
-    I2C_Slave->I2C_BitCounter = 0;
-    I2C_Slave->I2C_Nibble = 0;
+    AddToBV(S->BV, 'S');//    I2C_Slave->I2C_String[I2C_Slave->I2C_String_Index++] = 'S';
+    S->I2C_BitCounter = 0;
+    S->I2C_Nibble = 0;
     return 0;
   case I2C_Stop:     // SDA goes high while SCL remains high
-    I2C_Slave->BV->In = 'P'; GlueBV_Up(I2C_Slave->BV);I2C_Slave->BV->In = 0x0A; GlueBV_Up(I2C_Slave->BV);    // add a LF to format line by line//    I2C_Slave->I2C_String[I2C_Slave->I2C_String_Index++] = 'P';
+    AddToBV(S->BV, 'P'); 
+    AddToBV(S->BV, 0x0A);    // add a LF to format line by line//    I2C_Slave->I2C_String[I2C_Slave->I2C_String_Index++] = 'P';
     return 0;
   case I2C_SDA1SCLRise:  // SCL went high and SDA is high
-    I2C_Slave->I2C_Nibble|=1;
-    I2C_Slave->I2C_BitCounter++;
-    if(I2C_Slave->I2C_BitCounter==4)
-    {I2C_Slave->BV->In = HexToAscii[I2C_Slave->I2C_Nibble & 0xF]; GlueBV_Up(I2C_Slave->BV);};      //I2C_Slave->I2C_String[I2C_Slave->I2C_String_Index++] = HexToAscii[I2C_Slave->I2C_Nibble & 0xF];
-    if(I2C_Slave->I2C_BitCounter==8)
-      {I2C_Slave->BV->In = HexToAscii[I2C_Slave->I2C_Nibble & 0xF]; GlueBV_Up(I2C_Slave->BV);};      //I2C_Slave->I2C_String[I2C_Slave->I2C_String_Index++] = HexToAscii[I2C_Slave->I2C_Nibble & 0xF];
-    if(I2C_Slave->I2C_BitCounter==9) {
-      I2C_Slave->BV->In = 'n'; GlueBV_Up(I2C_Slave->BV);//      I2C_Slave->I2C_String[I2C_Slave->I2C_String_Index++] = (I2C_Symbol==I2C_BitLow)?'a':'n';
-      I2C_Slave->I2C_BitCounter = 0;
+    S->I2C_Nibble|=1;
+    S->I2C_BitCounter++;
+    if(S->I2C_BitCounter==4)
+      AddToBV(S->BV, HexToAscii[S->I2C_Nibble & 0xF]);      //I2C_Slave->I2C_String[I2C_Slave->I2C_String_Index++] = HexToAscii[I2C_Slave->I2C_Nibble & 0xF];
+    if(S->I2C_BitCounter==8)
+      AddToBV(S->BV, HexToAscii[S->I2C_Nibble & 0xF]);      //I2C_Slave->I2C_String[I2C_Slave->I2C_String_Index++] = HexToAscii[I2C_Slave->I2C_Nibble & 0xF];
+    if(S->I2C_BitCounter==9) {
+      AddToBV(S->BV, 'n');//      I2C_Slave->I2C_String[I2C_Slave->I2C_String_Index++] = (I2C_Symbol==I2C_BitLow)?'a':'n';
+      S->I2C_BitCounter = 0;
     };
-    I2C_Slave->I2C_Nibble<<=1;
+    S->I2C_Nibble<<=1;
     return 0;
   case I2C_SDA0SCLRise:   // SCL went high and SDA is low
-    I2C_Slave->I2C_BitCounter++;
-    if(I2C_Slave->I2C_BitCounter==4)
-    {I2C_Slave->BV->In = HexToAscii[I2C_Slave->I2C_Nibble & 0xF]; GlueBV_Up(I2C_Slave->BV);};      //I2C_Slave->I2C_String[I2C_Slave->I2C_String_Index++] = HexToAscii[I2C_Slave->I2C_Nibble & 0xF];
-    if(I2C_Slave->I2C_BitCounter==8)
-      {I2C_Slave->BV->In = HexToAscii[I2C_Slave->I2C_Nibble & 0xF]; GlueBV_Up(I2C_Slave->BV);};      //I2C_Slave->I2C_String[I2C_Slave->I2C_String_Index++] = HexToAscii[I2C_Slave->I2C_Nibble & 0xF];
-    if(I2C_Slave->I2C_BitCounter==9) {
-      I2C_Slave->BV->In = 'a'; GlueBV_Up(I2C_Slave->BV);//      I2C_Slave->I2C_String[I2C_Slave->I2C_String_Index++] = (I2C_Symbol==I2C_BitLow)?'a':'n';
-      I2C_Slave->I2C_BitCounter = 0;
+    S->I2C_BitCounter++;
+    if(S->I2C_BitCounter==4)
+      AddToBV(S->BV, HexToAscii[S->I2C_Nibble & 0xF]);      //I2C_Slave->I2C_String[I2C_Slave->I2C_String_Index++] = HexToAscii[I2C_Slave->I2C_Nibble & 0xF];
+    if(S->I2C_BitCounter==8)
+      AddToBV(S->BV, HexToAscii[S->I2C_Nibble & 0xF]);      //I2C_Slave->I2C_String[I2C_Slave->I2C_String_Index++] = HexToAscii[I2C_Slave->I2C_Nibble & 0xF];
+    if(S->I2C_BitCounter==9) {
+      AddToBV(S->BV, 'a');//      I2C_Slave->I2C_String[I2C_Slave->I2C_String_Index++] = (I2C_Symbol==I2C_BitLow)?'a':'n';
+      S->I2C_BitCounter = 0;
     };
-    I2C_Slave->I2C_Nibble<<=1;
+    S->I2C_Nibble<<=1;
     return 0;
   case I2C_Error:     // wrong transition due to noise on bus, too fast bus or too slow MCU
-    I2C_Slave->BV->In = '?'; GlueBV_Up(I2C_Slave->BV);    //I2C_Slave->I2C_String[I2C_Slave->I2C_String_Index++] = '?';
-    I2C_Slave->I2C_BitCounter = 0;
-    I2C_Slave->I2C_Nibble = 0;
+    AddToBV(S->BV, '?');    //I2C_Slave->I2C_String[I2C_Slave->I2C_String_Index++] = '?';
+    S->I2C_BitCounter = 0;
+    S->I2C_Nibble = 0;
     return 0;
   };
 

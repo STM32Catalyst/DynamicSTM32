@@ -17,51 +17,63 @@ u32 TimerCountdownWait(u32 u);
 u32 NopsWait(u32 u);
 u32 WaitHere(u32 u, u32 delay);
 
-void NewRFFE_MasterIO_RX_TX(RFFE_MasterIO* S, DMA_Stream_TypeDef* RX_Stream, u32 DMA_RX_Channel, DMA_Stream_TypeDef* TX_Stream, u32 DMA_TX_Channel) {
+void NewRFFE_MasterIO_RX_TX(RFFE_MasterIO* M) {
 
   // configure the GPIOs
-  if(S->SDATA==0) while(1); // a pin must be hooked here
-  if(S->SCLK==0) while(1); // a pin must be hooked here
+  if(M->SDATA==0) while(1); // a pin must be hooked here
+  if(M->SCLK==0) while(1); // a pin must be hooked here
   
   // configure SDATA pin
-  IO_PinClockEnable(S->SDATA);
-  IO_PinSetLow(S->SDATA);  
-  IO_PinConfiguredAs(S->SDATA,GPIO_AF17_DIGITAL_OUTPUT);  
-  IO_PinSetSpeedMHz(S->SDATA, 1);
-  IO_PinEnablePullUp(S->SDATA, DISABLE);
-  IO_PinEnablePullDown(S->SDATA, ENABLE);
-  IO_PinEnableHighDrive(S->SDATA, ENABLE);
+  IO_PinClockEnable(M->SDATA);
+  IO_PinSetLow(M->SDATA);  
+  IO_PinSetOutput(M->SDATA);  
+  IO_PinSetSpeedMHz(M->SDATA, 1);
+  IO_PinEnablePullUpDown(M->SDATA, DISABLE, ENABLE);
+  IO_PinEnableHighDrive(M->SDATA, ENABLE);
  
   // configure SCLK pin
-  IO_PinClockEnable(S->SCLK);
-  IO_PinSetLow(S->SCLK);
-  IO_PinConfiguredAs(S->SCLK,GPIO_AF17_DIGITAL_OUTPUT);  
-  IO_PinSetSpeedMHz(S->SCLK, 1);
-  IO_PinEnablePullUp(S->SCLK, DISABLE);
-  IO_PinEnablePullDown(S->SCLK, ENABLE);
-  IO_PinEnableHighDrive(S->SCLK, ENABLE);
+  IO_PinClockEnable(M->SCLK);
+  IO_PinSetLow(M->SCLK);
+  IO_PinSetOutput(M->SCLK);  
+  IO_PinSetSpeedMHz(M->SCLK, 1);
+  IO_PinEnablePullUpDown(M->SCLK, DISABLE, ENABLE);
+  IO_PinEnableHighDrive(M->SCLK, ENABLE);
   
   // We need to initialize the hooks for DMA_RX...
 //  HookIRQ_PPP((u32)S->DMA_RX->Stream, (u32)JobToDo, (u32)S->SA); // From DMA Stream, place the hooks
-  S->fnWaitMethod = TimerCountdownWait; // here we should take care of the timings, and choose the best scheme based on CPU MHz and bps of bus...  
-  S->WaitParam = 1;
-  // interrupt configuration, only for TX side.... RX is driven by TX DMA which controls the clock pulses generation
-  NopsWait((u32)S);
 }
 
-u32 SetRFFE_MasterIO_Timings(RFFE_MasterIO* S, u32 MaxBps, u32 CPol, u32 CPha, u32 FirstBit ) { // 1200000, RFFE_CPOL_Low, RFFE_CPHA_1Edge, RFFE_FirstBit_MSB
+u32 SetRFFE_MasterIO_Timings(RFFE_MasterIO* M, u32 MaxBps, MCUClockTree* T ) { // 1200000, RFFE_CPOL_Low, RFFE_CPHA_1Edge, RFFE_FirstBit_MSB
 
-  // members of the structure related to timings should be initialized
-  // Here we should decide which delay strategy for the required speed based on SYSCLK and BT availables
-  u32 bps = MaxBps;
+  u32 HalfClockPeriod_Hz;
+  u32 HalfClockPeriod_us;
   
-  S->fnWaitMethod = NopsWait; // here we should take care of the timings, and choose the best scheme based on CPU MHz and bps of bus...  
-  S->WaitParam = 1;
+  M->MaxBps = MaxBps; // 400khz
   
-  S->MaxBps = MaxBps;
-  S->ActualBps = bps;
+  HalfClockPeriod_Hz = MaxBps*2; // Timers runs at 1MHz max overflow speed. 500kHz = 2us
+  
+  if(M->BT) {
+    
+    M->WaitParam = 1000000 / ( M->BT->OverflowPeriod_us * HalfClockPeriod_Hz);
+    if(M->WaitParam) {
+      M->fnWaitMethod = TimerCountdownWait; // here we should take care of the timings, and choose the best scheme based on CPU MHz and bps of bus...    
+      return 0; // found a tick period compatible with this Basic Timer
+    };
+    // otherwise, the strategy will be NOPs.
+  }
+
+  // Delay will use S/W NOPs because the incoming sys frequency is too low or the bit rate too high
+  //!!! In IAR, 96MHz core STM32F437, No optimisation: WaitParam = 2. With max optimisation for speed: WaitParam = 20 (400kHz)
+  // Later, we will use the help of the BT with precise time to tune it dynamically.... more high tech and requires some time to tune.
+  M->fnWaitMethod = NopsWait;
+  
+  HalfClockPeriod_us = (T->CoreClk_Hz )/(MaxBps*12); // Here the feedclock is the core speed for IO emulated we assume 1 cycle per instruction which is not realistic.
+  // it should not be zero or the delays won't scale for the communication
+  M->WaitParam = HalfClockPeriod_us;
   
   return 0;
+  
+  
 }
 
 
@@ -83,7 +95,10 @@ static u32 NopsWait(u32 u) {
 static u32 WaitHere(u32 u, u32 delay) {
   RFFE_MasterIO* MIO = (RFFE_MasterIO*) u;
   MIO->WaitParam = delay;
-  if(MIO->fnWaitMethod) MIO->fnWaitMethod(u);
+  if(MIO->fnWaitMethod) {MIO->fnWaitMethod(u);
+  }else{
+    while(1); // forgot to put something or trying to be as fast as possible? :-)
+  };
   return 0;
 }
 
@@ -96,8 +111,8 @@ static u32 RFFE_MIO_Start(u32 u, u32 Command) {
   S->ParityError = 0;
   IO_PinSetLow(S->SCLK);
   IO_PinSetLow(S->SDATA);
-  IO_PinConfiguredAs(S->SCLK,GPIO_AF17_DIGITAL_OUTPUT);  
-  IO_PinConfiguredAs(S->SDATA,GPIO_AF17_DIGITAL_OUTPUT);    
+  IO_PinSetOutput(S->SCLK);  
+  IO_PinSetOutput(S->SDATA);    
   
 // we don't make sure NSS are high at first.
   IO_PinSetOutput(S->SDATA);
@@ -200,7 +215,7 @@ u32 RFFE_MIO_BusPark(u32 u) {
   WaitHere(u, 1);  
   IO_PinSetLow(S->SCLK);  
     // SDATA becomes input
-  IO_PinConfiguredAs(S->SDATA,GPIO_AF16_DIGITAL_INPUT); 
+  IO_PinSetInput(S->SDATA);
   WaitHere(u, 1);  
   
   return 0;
@@ -365,6 +380,8 @@ const OneJobType RFFE_Stop = { sq_RFFE_MIO_StopJob,  {(u32)&myRFFE, 0} };
 // That device could become a higher abstract cell later on...
 void RFFE_Test(void) {
   
+  MCUInitClocks();
+  
   IO_PinInit(&RFFE_SDATA, PI6);
   IO_PinInit(&RFFE_SCLK, PI5);
   myRFFE.SDATA = &RFFE_SDATA;
@@ -374,12 +391,11 @@ void RFFE_Test(void) {
   NewSA(P, (u32)&RFFE_List[0], countof(RFFE_List));
   myRFFE.SA = P;
   
-  BT.FeedClockMHz = 96/2; // 96MHz (this should later come from RAM global structure)  
-  NewBasicTimer_us(&BT, TIM6, 1); // usec countdown
-  myRFFE.BT = &BT;
+//  NewBasicTimer_us(&BT, TIM6, 1, GetMCUClockTree()); // usec countdown
+//  myRFFE.BT = &BT;
   
-  NewRFFE_MasterIO_RX_TX(&myRFFE, 0, 0, 0, 0); // this will configure the IO pins too.
-  SetRFFE_MasterIO_Timings(&myRFFE, 26000000, 0, 0, 0 ); // RFFE max clock speed is 26Mhz
+  NewRFFE_MasterIO_RX_TX(&myRFFE); // this will configure the IO pins too.
+  SetRFFE_MasterIO_Timings(&myRFFE, 26000000, GetMCUClockTree() ); // RFFE max clock speed is 26Mhz
   
   // Now we create a sequence to try on RFFE...
   

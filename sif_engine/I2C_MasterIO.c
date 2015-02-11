@@ -31,38 +31,52 @@ u32 NewI2C_MasterIO(I2C_MasterIO* M) {
   // configure the GPIOs
   // configure SDA pin
   IO_PinClockEnable(M->SDA);
-  IO_PinConfiguredAs(M->SDA,GPIO_AF17_DIGITAL_OUTPUT);  
+  IO_PinSetOutput(M->SDA);  
   IO_PinSetHigh(M->SDA);  
 
   IO_PinSetSpeedMHz(M->SDA, 1);
-  IO_PinEnablePullUp(M->SDA, ENABLE);
-  IO_PinEnablePullDown(M->SDA, DISABLE);
+  IO_PinEnablePullUpDown(M->SDA, ENABLE, DISABLE);
   IO_PinEnableHighDrive(M->SDA, DISABLE);
 
   // configure SCL pin
   IO_PinClockEnable(M->SCL);
-  IO_PinConfiguredAs(M->SCL,GPIO_AF17_DIGITAL_OUTPUT);  
+  IO_PinSetOutput(M->SCL);  
   IO_PinSetHigh(M->SCL);
   IO_PinSetSpeedMHz(M->SCL, 1);
-  IO_PinEnablePullUp(M->SCL, ENABLE);
-  IO_PinEnablePullDown(M->SCL, DISABLE);
+  IO_PinEnablePullUpDown(M->SCL, ENABLE, DISABLE);
   IO_PinEnableHighDrive(M->SCL, DISABLE);
  
   return 0;
 }
 
+//
+u32 SetI2C_MasterIO_Timings(I2C_MasterIO* M, u32 MaxBps, MCUClockTree* T ) { 
 
-u32 SetI2C_MasterIO_Timings(I2C_MasterIO* M, u32 MaxBps ) { 
-
-// In theory, knowing the clocks information, we should be able to find a strategy for I2C.
-// Or we do by tuning the delay... we generate I2C traffic and we check how long and the bit rate... (takes more time, adaptive, could be dynamic too)
+  u32 HalfClockPeriod_Hz;
+  u32 HalfClockPeriod_us;
   
   M->MaxBps = MaxBps; // 400khz
-  // The M has its own hooks to setup first
-  //M->fnMasterScheme = I2C_MasterIO_STMA_Run; // run the state machine instead of a hardcoded stuff
-  M->WaitParam = 1;
-  NopsWait((u32) M);
-  M->fnWaitMethod = TimerCountdownWait; // here we should take care of the timings, and choose the best scheme based on CPU MHz and bps of bus...    
+  
+  HalfClockPeriod_Hz = MaxBps*2; // Timers runs at 1MHz max overflow speed. 500kHz = 2us
+  
+  if(M->BT) {
+    
+    M->WaitParam = 1000000 / ( M->BT->OverflowPeriod_us * HalfClockPeriod_Hz);
+    if(M->WaitParam) {
+      M->fnWaitMethod = TimerCountdownWait; // here we should take care of the timings, and choose the best scheme based on CPU MHz and bps of bus...    
+      return 0; // found a tick period compatible with this Basic Timer
+    };
+    // otherwise, the strategy will be NOPs.
+  }
+
+  // Delay will use S/W NOPs because the incoming sys frequency is too low or the bit rate too high
+  //!!! In IAR, 96MHz core STM32F437, No optimisation: WaitParam = 2. With max optimisation for speed: WaitParam = 20 (400kHz)
+  // Later, we will use the help of the BT with precise time to tune it dynamically.... more high tech and requires some time to tune.
+  M->fnWaitMethod = NopsWait;
+  
+  HalfClockPeriod_us = (T->CoreClk_Hz )/(MaxBps*12); // Here the feedclock is the core speed for IO emulated we assume 1 cycle per instruction which is not realistic.
+  // it should not be zero or the delays won't scale for the communication
+  M->WaitParam = HalfClockPeriod_us;
   
   return 0;
 }
@@ -79,21 +93,21 @@ u32 SetI2C_MasterIO_Timings(I2C_MasterIO* M, u32 MaxBps ) {
 static u32 TimerCountdownWait(u32 u) {
   
   I2C_MasterIO* M = (I2C_MasterIO*) u;
-  ArmBasicTimerCountdown(M->BT,M->BTn, M->WaitParam);
+  ArmBasicTimerCountdown(M->BT,M->BTn, M->WaitParam * M->ctWaitMethod);
   while(M->BT->CountDownDone[M->BTn]==0) ;
   return 0;
 }
 
 static u32 NopsWait(u32 u) {
   I2C_MasterIO* M = (I2C_MasterIO*) u;
-  u32 n = M->WaitParam;
+  u32 n = M->ctWaitMethod * M->WaitParam;
   while(n--) asm("nop\n");
   return 0;
 }
 
 static u32 WaitHere(u32 u, u32 delay) {
   I2C_MasterIO* M = (I2C_MasterIO*) u;
-  M->WaitParam = delay;
+  M->ctWaitMethod = delay;
   if(M->fnWaitMethod) M->fnWaitMethod(u);
   return 0;
 }
@@ -358,22 +372,19 @@ static StuffsArtery mySequence;
 void I2C_MasterIO_Test(void) {
 
 //  u32 u = (u32)&gMIO;
+  MCUInitClocks();
   
   IO_PinInit(&MIO_SDA, PH7 ); // Initialize some quick pointers
   IO_PinInit(&MIO_SCL, PH8 ); // Initialize some quick pointers
   gMIO.SDA = &MIO_SDA; // global shared resource, to be generic later
   gMIO.SCL = &MIO_SCL; // global shared resource, to be generic later
 
-  BT.FeedClockMHz = 96/2; // 96MHz (this should later come from RAM global structure)  
-  NewBasicTimer_us(&BT, TIM6, 1); // usec countdown
+  NewBasicTimer_us(&BT, TIM6, 1, GetMCUClockTree()); // usec countdown
   gMIO.BT = &BT;
   gMIO.BTn = 0; // use Countdown[0]
-
-  gMIO.FeedClockMHz = 96; // MCU clock as it is by S/W
-  gMIO.MaxBps = 400000; // 400khz
   
   NewI2C_MasterIO(&gMIO);
-  SetI2C_MasterIO_Timings(&gMIO, 400*1000 );
+  SetI2C_MasterIO_Timings(&gMIO, 400*1000, GetMCUClockTree() );
   
   // all zero: no action
   NVIC_BasicTimersEnable(ENABLE);

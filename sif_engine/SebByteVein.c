@@ -194,6 +194,13 @@ u32 GetBV_Up(ByteVein* BV) {
 }
 */
 
+u32 AddToBV(ByteVein* BV, u32 In) {
+  
+  BV->In = In;
+  return GlueBV_Up(BV);
+}
+
+
 // reading the strand content: The strand does not kill the bits when cut!
 
 static ByteVein BV; // for test program
@@ -205,16 +212,14 @@ void BV_Test(void) {
   u32 n;
   NewBV(&BV, (u32)BVR, (s32)sizeof(BVR));
     
-  for(n=0;n<32;n++) { 
-    BV.In = n; GlueBV_Up(&BV); 
-  };
+  for(n=0;n<32;n++)
+    AddToBV(&BV, n); 
 
   for(n=0;n<32;n++)
     ClipBV_Down(&BV);
   
-  for(n=0;n<32;n++) { 
-    BV.In = 100 + n; GlueBV_Up(&BV);
-  };
+  for(n=0;n<32;n++)
+    AddToBV(&BV, 100 + n);
   
   for(n=0;n<32;n++) 
     ClipBV_Down(&BV);

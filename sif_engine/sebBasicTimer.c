@@ -33,9 +33,10 @@ static u32 BasicTimer_CountDownModeIRQHandler(u32 u) {
   return 0;
 }
 
-void NewBasicTimer_us(BasicTimer* BT, TIM_TypeDef* T, u32 Period_us) {// if Period_us = 0, disable the timer
+void NewBasicTimer_us(BasicTimer* BT, TIM_TypeDef* T, u32 Period_us, MCUClockTree * Tree) {// if Period_us = 0, disable the timer
 
   // the structure should be edited by caller and only the specifics done here.
+  BT->FeedClockMHz = Tree->APB1Clk_Hz; // all basic timers are using this one.
   u32 cy,psc,arr;
   if(Period_us==0) while(1); // invalid choice
   
@@ -178,10 +179,8 @@ static u32 ToggleLED4(u32 u) {
 static BasicTimer Timer6, Timer7;
 void fnTIM67_Test(void) {
   
-  Timer6.FeedClockMHz = 96/2; // 96MHz (this should later come from RAM global structure)  
-  Timer7.FeedClockMHz = 96/2; // 96MHz (this should later come from RAM global structure)  
-  NewBasicTimer_us(&Timer6, TIM6, 1000);// 1ms tick period
-  NewBasicTimer_us(&Timer7, TIM7, 10);// 10us period
+  NewBasicTimer_us(&Timer6, TIM6, 1000, GetMCUClockTree());// 1ms tick period
+  NewBasicTimer_us(&Timer7, TIM7, 10, GetMCUClockTree());// 10us period
   NVIC_BasicTimersEnable(ENABLE);
   
   HookBasicTimerCountdown(&Timer6, 1, (u32)ToggleLED1, (u32)&Timer6); 

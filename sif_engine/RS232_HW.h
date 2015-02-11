@@ -9,11 +9,11 @@ typedef struct {
   ByteVein* BV_TX; // data flowing to TX pin of MCU
   ByteVein* BV_RX; // data flowing to RX pin of MCU
   
-  IO_PinTypeDef* fTX;
-  IO_PinTypeDef* fRX; // The receive pin (which can be woken up if EXTI compatible)
+  IO_PinTypeDef* TX;
+  IO_PinTypeDef* RX; // The receive pin (which can be woken up if EXTI compatible)
   
-  IO_PinTypeDef* fCTS; // if 0, not used
-  IO_PinTypeDef* fRTS; // if 0, not used
+  IO_PinTypeDef* CTS; // if 0, not used
+  IO_PinTypeDef* RTS; // if 0, not used
   
 //  u32 (*fnOut)(u32); // What to do when ready to send (TX)
 //  u32 ctOut;

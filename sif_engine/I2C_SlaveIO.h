@@ -108,7 +108,7 @@ typedef struct {
 
 
 void TestI2C_SlaveIO(void);
-void NewI2C_SlaveIO(I2C_SlaveIO* I2C_Slave, u8* SlaveAddresses, u8 SlaveAddressesCountof, u8* pMemory, u32 MemoryCountof);
+void NewI2C_SlaveIO(I2C_SlaveIO* S, u8* SlaveAddresses, u8 SlaveAddressesCountof, u8* pMemory, u32 MemoryCountof);
 
 u32 SpyI2C_SlaveIO(I2C_SlaveIO* u);
 u32 UnSpyI2C_SlaveIO(I2C_SlaveIO* u);
