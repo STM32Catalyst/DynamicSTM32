@@ -27,7 +27,6 @@ void NewRFFE_MasterIO_RX_TX(RFFE_MasterIO* M) {
   IO_PinClockEnable(M->SDATA);
   IO_PinSetLow(M->SDATA);  
   IO_PinSetOutput(M->SDATA);  
-  IO_PinSetSpeedMHz(M->SDATA, 1);
   IO_PinEnablePullUpDown(M->SDATA, DISABLE, ENABLE);
   IO_PinEnableHighDrive(M->SDATA, ENABLE);
  
@@ -35,7 +34,6 @@ void NewRFFE_MasterIO_RX_TX(RFFE_MasterIO* M) {
   IO_PinClockEnable(M->SCLK);
   IO_PinSetLow(M->SCLK);
   IO_PinSetOutput(M->SCLK);  
-  IO_PinSetSpeedMHz(M->SCLK, 1);
   IO_PinEnablePullUpDown(M->SCLK, DISABLE, ENABLE);
   IO_PinEnableHighDrive(M->SCLK, ENABLE);
   
@@ -49,6 +47,8 @@ u32 SetRFFE_MasterIO_Timings(RFFE_MasterIO* M, u32 MaxBps, MCUClockTree* T ) { /
   u32 HalfClockPeriod_us;
   
   M->MaxBps = MaxBps; // 400khz
+  IO_PinSetSpeedMHz(M->SDATA, 1);
+  IO_PinSetSpeedMHz(M->SCLK, 1);
   
   HalfClockPeriod_Hz = MaxBps*2; // Timers runs at 1MHz max overflow speed. 500kHz = 2us
   
@@ -76,31 +76,29 @@ u32 SetRFFE_MasterIO_Timings(RFFE_MasterIO* M, u32 MaxBps, MCUClockTree* T ) { /
   
 }
 
-
 static u32 TimerCountdownWait(u32 u) {
   
-  RFFE_MasterIO* MIO = (RFFE_MasterIO*) u;
-  ArmBasicTimerCountdown(MIO->BT,MIO->BTn, MIO->WaitParam);
-  while(MIO->BT->CountDownDone[MIO->BTn]==0) ;
+  RFFE_MasterIO* M = (RFFE_MasterIO*) u;
+  ArmBasicTimerCountdown(M->BT,M->BTn, M->WaitParam * M->ctWaitMethod);
+  while(M->BT->CountDownDone[M->BTn]==0) ;
   return 0;
 }
 
 static u32 NopsWait(u32 u) {
-  RFFE_MasterIO* MIO = (RFFE_MasterIO*) u;
-  u32 n = MIO->WaitParam;
+  RFFE_MasterIO* M = (RFFE_MasterIO*) u;
+  u32 n = M->ctWaitMethod * M->WaitParam;
   while(n--) asm("nop\n");
   return 0;
 }
 
 static u32 WaitHere(u32 u, u32 delay) {
-  RFFE_MasterIO* MIO = (RFFE_MasterIO*) u;
-  MIO->WaitParam = delay;
-  if(MIO->fnWaitMethod) {MIO->fnWaitMethod(u);
-  }else{
-    while(1); // forgot to put something or trying to be as fast as possible? :-)
-  };
+  RFFE_MasterIO* M = (RFFE_MasterIO*) u;
+  M->ctWaitMethod = delay;
+  if(M->fnWaitMethod) M->fnWaitMethod(u);
   return 0;
 }
+
+
 
 //=============-------------->
 
@@ -321,6 +319,8 @@ u32 sq_RFFE_MIO_DMA_Interrupt(u32 u){
 //===================================================
 // Now it is time to check if the communication works...
 
+#ifdef ADD_EXAMPLES_TO_PROJECT
+
 #define REG_WRITE               (2<<5)
 #define REG_READ                (3<<5)
 #define EXT_REG_WRITE(bc)       (bc)
@@ -458,3 +458,5 @@ void RFFE_Test(void) {
   };// loop
   
 }
+
+#endif

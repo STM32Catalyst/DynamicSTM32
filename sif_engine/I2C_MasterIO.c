@@ -33,8 +33,6 @@ u32 NewI2C_MasterIO(I2C_MasterIO* M) {
   IO_PinClockEnable(M->SDA);
   IO_PinSetOutput(M->SDA);  
   IO_PinSetHigh(M->SDA);  
-
-  IO_PinSetSpeedMHz(M->SDA, 1);
   IO_PinEnablePullUpDown(M->SDA, ENABLE, DISABLE);
   IO_PinEnableHighDrive(M->SDA, DISABLE);
 
@@ -42,7 +40,6 @@ u32 NewI2C_MasterIO(I2C_MasterIO* M) {
   IO_PinClockEnable(M->SCL);
   IO_PinSetOutput(M->SCL);  
   IO_PinSetHigh(M->SCL);
-  IO_PinSetSpeedMHz(M->SCL, 1);
   IO_PinEnablePullUpDown(M->SCL, ENABLE, DISABLE);
   IO_PinEnableHighDrive(M->SCL, DISABLE);
  
@@ -56,6 +53,10 @@ u32 SetI2C_MasterIO_Timings(I2C_MasterIO* M, u32 MaxBps, MCUClockTree* T ) {
   u32 HalfClockPeriod_us;
   
   M->MaxBps = MaxBps; // 400khz
+
+  IO_PinSetSpeedMHz(M->SDA, 1);
+  IO_PinSetSpeedMHz(M->SCL, 1);
+
   
   HalfClockPeriod_Hz = MaxBps*2; // Timers runs at 1MHz max overflow speed. 500kHz = 2us
   
@@ -354,6 +355,7 @@ u32 sq_I2C_MIO_DMA_Interrupt(u32 u) {
  
 //===================================================================
 // translated example with sequencer scheme
+#ifdef ADD_EXAMPLES_TO_PROJECT
 static I2C_MasterIO gMIO;
 static IO_PinTypeDef MIO_SDA, MIO_SCL;
 static BasicTimer BT;
@@ -408,4 +410,4 @@ void I2C_MasterIO_Test(void) {
   };
 
 };
-
+#endif

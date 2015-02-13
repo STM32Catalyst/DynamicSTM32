@@ -28,7 +28,6 @@ void NewSPI_MasterHW_RX_TX(SPI_MasterHW* S, DMA_Stream_TypeDef* RX_Stream, u32 D
   IO_PinClockEnable(S->MISO);
   IO_PinSetHigh(S->MISO);  
   IO_PinSetInput(S->MISO);  
-  IO_PinSetSpeedMHz(S->MISO, 1);
   IO_PinEnablePullUpDown(S->MISO, ENABLE, DISABLE);
   IO_PinEnableHighDrive(S->MISO, ENABLE);
   IO_PinConfiguredAs(S->MISO,GetPinAF(S->MISO->Name,(u32)S->SPI));  
@@ -37,7 +36,6 @@ void NewSPI_MasterHW_RX_TX(SPI_MasterHW* S, DMA_Stream_TypeDef* RX_Stream, u32 D
   IO_PinClockEnable(S->MOSI);
   IO_PinSetHigh(S->MOSI);
   IO_PinSetOutput(S->MOSI);  
-  IO_PinSetSpeedMHz(S->MOSI, 1);
   IO_PinEnablePullUpDown(S->MOSI, ENABLE, DISABLE);
   IO_PinEnableHighDrive(S->MOSI, ENABLE);
   IO_PinConfiguredAs(S->MOSI,GetPinAF(S->MOSI->Name,(u32)S->SPI));    
@@ -46,7 +44,6 @@ void NewSPI_MasterHW_RX_TX(SPI_MasterHW* S, DMA_Stream_TypeDef* RX_Stream, u32 D
   IO_PinClockEnable(S->SCK);
   IO_PinSetHigh(S->SCK);
   IO_PinSetOutput(S->SCK);  
-  IO_PinSetSpeedMHz(S->SCK, 1);
   IO_PinEnablePullUpDown(S->SCK, ENABLE, DISABLE);
   IO_PinEnableHighDrive(S->SCK, ENABLE);
   IO_PinConfiguredAs(S->SCK,GetPinAF(S->SCK->Name,(u32)S->SPI));    
@@ -57,7 +54,6 @@ void NewSPI_MasterHW_RX_TX(SPI_MasterHW* S, DMA_Stream_TypeDef* RX_Stream, u32 D
     IO_PinClockEnable(S->NSSs[n]);
     IO_PinSetHigh(S->NSSs[n]);    
     IO_PinSetOutput(S->NSSs[n]);  
-    IO_PinSetSpeedMHz(S->NSSs[n], 1);
     IO_PinEnablePullUpDown(S->NSSs[n], ENABLE, DISABLE);
     IO_PinEnableHighDrive(S->NSSs[n], ENABLE); // push pull enabled
   };
@@ -189,10 +185,19 @@ u32 SetSPI_MasterHW_Timings(SPI_MasterHW* S, u32 MaxBps, u32 CPol, u32 CPha, u32
   // members of the structure related to timings should be initialized
   u32 bps;
   u32 psc;
+  u8 n;
   SPI_InitTypeDef  SPI_InitStructure;
     
   S->MaxBps = MaxBps;
   
+  IO_PinSetSpeedMHz(S->MISO, 1); 
+  IO_PinSetSpeedMHz(S->MOSI, 1);  
+  IO_PinSetSpeedMHz(S->SCK, 1);
+  for(n=0;n<16;n++) {
+    if(S->NSSs[n]==0) break;
+    IO_PinSetSpeedMHz(S->NSSs[n], 1);
+  };
+
   for(psc=0;psc<8;psc++) { // try all possible prescaler values
     bps = (1000000 * S->FeedClockMHz) >> (psc + 1);
     if(bps<=MaxBps) break;

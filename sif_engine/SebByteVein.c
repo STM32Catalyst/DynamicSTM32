@@ -1,8 +1,5 @@
 
 #include "sebEngine.h"
-#if 1 //def SIF_ENGINE
-
-
 
 
 u32 HookBV_NoLongerEmpty(ByteVein* BV, u32 (*fn)(u32), u32 ct) {
@@ -202,7 +199,7 @@ u32 AddToBV(ByteVein* BV, u32 In) {
 
 
 // reading the strand content: The strand does not kill the bits when cut!
-
+#ifdef ADD_EXAMPLES_TO_PROJECT
 static ByteVein BV; // for test program
 static u8 BVR[512]; // the assigned buffer for this byte strand
 
@@ -233,7 +230,5 @@ void BV_Test(void) {
   
   while(1);
 }
-
-
-
 #endif
+

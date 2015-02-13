@@ -1,5 +1,4 @@
 #include "sebEngine.h"
-#ifdef SIF_ENGINE
 
 // TODO: Rename I2C_Slave by SIO for the local variables.
 
@@ -93,7 +92,7 @@ void NewI2C_SlaveIO(I2C_SlaveIO* S, u8* SlaveAddresses, u8 SlaveAddressesCountof
 
 }
 
-
+//TODO: Create a Timings here
 
 //#define SetSDAOutput()          IO_PinSetHigh(S->SDA)
 //#define SetSDAInput()           IO_PinSetLow{S->SDA)
@@ -577,7 +576,7 @@ static u32 I2C_SlaveIO_sm_Transmit8BitData(u32 u) {
 }
 
 //================= At the end we have the test function to check functionality
-#if 0 // example takes RAM in global variables.. disabled by default
+#ifdef ADD_EXAMPLES_TO_PROJECT // example takes RAM in global variables.. disabled by default
 static u8 I2C_SlaveAdresses[] = { 0x40, 0xB0, 0xC0, 0xD0 }; // ram is faster
 static u8 I2C_SlaveMemory[256];
 static u8 RxBuf[10];
@@ -642,4 +641,4 @@ void TestI2C_SlaveIO(void) {
 #endif // I2C Slave IO example
 
 
-#endif
+

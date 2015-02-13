@@ -54,7 +54,6 @@ void NewRs232HW(SerialRs232* RS, USART_TypeDef* USART) {
     IO_PinClockEnable(RS->RX);
     IO_PinSetInput(RS->RX);
     IO_PinSetLow(RS->RX);
-    IO_PinSetSpeedMHz(RS->RX, 1);
     IO_PinEnablePullUpDown(RS->RX, ENABLE, DISABLE);
     IO_PinEnableHighDrive(RS->RX, ENABLE);
     IO_PinConfiguredAs(RS->RX,GPIO_AF_USART1); // to change later! based on pin name
@@ -65,7 +64,6 @@ void NewRs232HW(SerialRs232* RS, USART_TypeDef* USART) {
     IO_PinClockEnable(RS->TX);
     IO_PinSetLow(RS->TX);
     IO_PinSetOutput(RS->TX);    
-    IO_PinSetSpeedMHz(RS->TX, 1);
     IO_PinEnablePullUpDown(RS->TX, ENABLE, DISABLE);
     IO_PinEnableHighDrive(RS->TX, ENABLE);
     IO_PinConfiguredAs(RS->TX,GPIO_AF_USART1); // to change later! based on pin name
@@ -85,6 +83,10 @@ void SetRs232Timings(SerialRs232* RS, u32 BaudRate, u32 Parity2, u32 StopBits){ 
         - Hardware flow control disabled (RTS and CTS signals)
         - Receive and transmit enabled
   */
+  
+  IO_PinSetSpeedMHz(RS->RX, 1);
+  IO_PinSetSpeedMHz(RS->TX, 1);
+    
   USART_InitTypeDef USART_InitStructure;
   USART_InitStructure.USART_BaudRate = 115200;
   USART_InitStructure.USART_WordLength = USART_WordLength_9b;
@@ -151,7 +153,7 @@ void SetRs232BVs(SerialRs232* RS, ByteVein* BV_TX, ByteVein*BV_RX) {
 }
 
 // Here is an example of using RS232 cell
-#if 1 // enable the example
+#ifdef ADD_EXAMPLES_TO_PROJECT // enable the example
 static u8 Rs232TXBuf[512]; // should be declared by the other party (if any)
 static u8 Rs232RXBuf[512]; // the one who receive should declare its buffer, not the transmitting one, which flow control must be done by receiver.
 static ByteVein BV_TX,BV_RX;

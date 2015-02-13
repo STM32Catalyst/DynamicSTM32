@@ -39,6 +39,9 @@ void NewBasicTimer_us(BasicTimer* BT, TIM_TypeDef* T, u32 Period_us, MCUClockTre
   BT->FeedClockMHz = Tree->APB1Clk_Hz; // all basic timers are using this one.
   u32 cy,psc,arr;
   if(Period_us==0) while(1); // invalid choice
+
+  if(BT->OverflowPeriod_us)
+    while(1); // already booked! Free the timer first before reusing it!
   
   BT->TIM = T;
   BT->OverflowPeriod_us = Period_us;
@@ -86,6 +89,7 @@ void HookBasicTimerCountdown(BasicTimer* BT, u32 n, u32 fn, u32 ct) {
 
 void ArmBasicTimerCountdown(BasicTimer* BT, u32 n, u32 ticks) {
   
+  BT->CountDownDone[n] = 0; // clear this flag
   BT->CountDown[n] = BT->InitialCountDown[n] = ticks+1; //rounding up this will run wild as soon as written!
   BT->TIM->DIER |= 0x0001; // Enable INT
 }
@@ -139,9 +143,30 @@ u32 sq_ReArmBasicTimerCountdown(u32 u) { //(BasicTimer* BT, u32 n)
   return 1; // this will cause an interrupt later
 }
 
+//======================== Dynamic allocation of a timer countdown
+
+u32 GetFreeTimerCountdownIndex(u32 u) {
+  
+  u32 n;
+  BasicTimer* BT = (BasicTimer*) u;
+  
+  for(n=0;n<BT_MAX_COUNTDOWN;n++)
+    if(BT->InitialCountDown[n]==0)
+      return n;
+  
+  return -1; // no more resource available
+}
+
+u32 SetFreeTimerCountdownIndex(u32 u, u32 n) {
+  
+  BasicTimer* BT = (BasicTimer*) u;
+  BT->InitialCountDown[n] = 0;
+  return 0;
+}
+
 
 //=============-----> This is to test the timer functionality
-
+#ifdef ADD_EXAMPLES_TO_PROJECT
 static u32 ToggleLED1(u32 u) {
   BasicTimer* T = (BasicTimer*) u;
 // we directly use u as a parameter, not a pointer of structure as here it is very simple and fixed
@@ -193,4 +218,5 @@ void fnTIM67_Test(void) {
   ArmBasicTimerCountdown(&Timer7, 2, 1000);
   while(1);
 }
+#endif
 

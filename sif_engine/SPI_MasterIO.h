@@ -45,14 +45,14 @@ typedef struct {
   u8 BTn; //  a number between 0 and 3
 
   u32 (*fnWaitMethod)(u32);
-//  u32 ctWaitMethod;
+  u32 ctWaitMethod;
   u32 WaitParam;
 
 } SPI_MasterIO;
 
 
 
-void NewSPI_MasterIO_RX_TX(SPI_MasterIO* S);
+void NewSPI_MasterIO_RX_TX(SPI_MasterIO* M);
 u32 SetSPI_MasterIO_Timings(SPI_MasterIO* M, u32 MaxBps, u32 CPol, u32 CPha, u32 FirstBit, MCUClockTree* T ); // 1200000, SPI_CPOL_Low, SPI_CPHA_1Edge, SPI_FirstBit_MSB
 
 void SPI_MasterIO_Test(void);

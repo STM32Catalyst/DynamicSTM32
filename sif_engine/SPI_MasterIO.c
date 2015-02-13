@@ -14,47 +14,48 @@ u32 TimerCountdownWait(u32 u);
 u32 NopsWait(u32 u);
 u32 WaitHere(u32 u, u32 delay);
 
-void NewSPI_MasterIO_RX_TX(SPI_MasterIO* S) {
+void NewSPI_MasterIO_RX_TX(SPI_MasterIO* M) {
 
   u8 n; // NSSs sweep
 // we have to initialize the state machine first
   
   // configure the GPIOs
-  if(S->MOSI!=S->MISO) while(1); // MOSI must be MISO to work in this bidir only implementation
+//  if(M->MOSI!=M->MISO) while(1); // MOSI must be MISO to work in this bidir only implementation
+  if((M->MOSI==0)&&(M->MISO==0)) while(1);
   
-  // configure MISO pin
-  IO_PinClockEnable(S->MISO);
-  IO_PinSetHigh(S->MISO);  
-  IO_PinSetInput(S->MISO);  
-  IO_PinSetSpeedMHz(S->MISO, 1);
-  IO_PinEnablePullUpDown(S->MISO, ENABLE, DISABLE);
-  IO_PinEnableHighDrive(S->MISO, ENABLE);
+  if((M->MISO)&&(M->MOSI!=M->MISO)) { // If MISO=MOSI then we don't configure the input pin
+    // configure MISO pin
+    IO_PinClockEnable(M->MISO);
+    IO_PinSetHigh(M->MISO);  
+    IO_PinSetInput(M->MISO);  
+    IO_PinEnablePullUpDown(M->MISO, ENABLE, DISABLE);
+    IO_PinEnableHighDrive(M->MISO, ENABLE);
+  };
  
   // configure MOSI pin
-  IO_PinClockEnable(S->MOSI);
-  IO_PinSetHigh(S->MOSI);
-  IO_PinSetOutput(S->MOSI);  
-  IO_PinSetSpeedMHz(S->MOSI, 1);
-  IO_PinEnablePullUpDown(S->MOSI, ENABLE, DISABLE);
-  IO_PinEnableHighDrive(S->MOSI, ENABLE);
-
+  if(M->MOSI) {
+    IO_PinClockEnable(M->MOSI);
+    IO_PinSetHigh(M->MOSI);
+    IO_PinSetOutput(M->MOSI);  
+    IO_PinEnablePullUpDown(M->MOSI, ENABLE, DISABLE);
+    IO_PinEnableHighDrive(M->MOSI, ENABLE);
+  };
+  
   // configure SCK pin
-  IO_PinClockEnable(S->SCK);
-  IO_PinSetHigh(S->SCK);
-  IO_PinSetOutput(S->SCK);  
-  IO_PinSetSpeedMHz(S->SCK, 1);
-  IO_PinEnablePullUpDown(S->SCK, ENABLE, DISABLE);
-  IO_PinEnableHighDrive(S->SCK, ENABLE);
+  IO_PinClockEnable(M->SCK);
+  IO_PinSetHigh(M->SCK);
+  IO_PinSetOutput(M->SCK);  
+  IO_PinEnablePullUpDown(M->SCK, ENABLE, DISABLE);
+  IO_PinEnableHighDrive(M->SCK, ENABLE);
   
   // configure all the NSSs pins
   for(n=0;n<16;n++) {
-    if(S->NSSs[n]==0) break;
-    IO_PinClockEnable(S->NSSs[n]);
-    IO_PinSetHigh(S->NSSs[n]);    
-    IO_PinSetOutput(S->NSSs[n]);  
-    IO_PinSetSpeedMHz(S->NSSs[n], 1);
-    IO_PinEnablePullUpDown(S->NSSs[n], ENABLE, DISABLE);
-    IO_PinEnableHighDrive(S->NSSs[n], ENABLE); // push pull enabled
+    if(M->NSSs[n]==0) break;
+    IO_PinClockEnable(M->NSSs[n]);
+    IO_PinSetHigh(M->NSSs[n]);    
+    IO_PinSetOutput(M->NSSs[n]);  
+    IO_PinEnablePullUpDown(M->NSSs[n], ENABLE, DISABLE);
+    IO_PinEnableHighDrive(M->NSSs[n], ENABLE); // push pull enabled
   };
   
   // We need to initialize the hooks for DMA_RX...
@@ -63,6 +64,7 @@ void NewSPI_MasterIO_RX_TX(SPI_MasterIO* S) {
 
 u32 SetSPI_MasterIO_Timings(SPI_MasterIO* M, u32 MaxBps, u32 CPol, u32 CPha, u32 FirstBit, MCUClockTree* T ) { // 1200000, SPI_CPOL_Low, SPI_CPHA_1Edge, SPI_FirstBit_MSB
 
+  u8 n;
   if(CPol!=SPI_CPOL_Low) while(1); // not supported yet
   if(CPha!=SPI_CPHA_1Edge) while(1); // not supported yet
   
@@ -70,7 +72,16 @@ u32 SetSPI_MasterIO_Timings(SPI_MasterIO* M, u32 MaxBps, u32 CPol, u32 CPha, u32
   u32 HalfClockPeriod_us;
   
   M->MaxBps = MaxBps; // 400khz
+
+  IO_PinSetSpeedMHz(M->MISO, 1);  
+  IO_PinSetSpeedMHz(M->MOSI, 1);
+  IO_PinSetSpeedMHz(M->SCK, 1);
   
+  for(n=0;n<16;n++) {
+    if(M->NSSs[n]==0) break;
+    IO_PinSetSpeedMHz(M->NSSs[n], 1);  
+  };
+
   HalfClockPeriod_Hz = MaxBps*2; // Timers runs at 1MHz max overflow speed. 500kHz = 2us
   
   if(M->BT) {
@@ -96,29 +107,30 @@ u32 SetSPI_MasterIO_Timings(SPI_MasterIO* M, u32 MaxBps, u32 CPol, u32 CPha, u32
 }
 
 
+
+
 static u32 TimerCountdownWait(u32 u) {
   
-  SPI_MasterIO* MIO = (SPI_MasterIO*) u;
-  ArmBasicTimerCountdown(MIO->BT,MIO->BTn, MIO->WaitParam);
-  while(MIO->BT->CountDownDone[MIO->BTn]==0) ;
+  SPI_MasterIO* M = (SPI_MasterIO*) u;
+  ArmBasicTimerCountdown(M->BT,M->BTn, M->WaitParam * M->ctWaitMethod);
+  while(M->BT->CountDownDone[M->BTn]==0) ;
   return 0;
 }
 
 static u32 NopsWait(u32 u) {
-  SPI_MasterIO* MIO = (SPI_MasterIO*) u;
-  u32 n = MIO->WaitParam;
+  SPI_MasterIO* M = (SPI_MasterIO*) u;
+  u32 n = M->ctWaitMethod * M->WaitParam;
   while(n--) asm("nop\n");
   return 0;
 }
 
 static u32 WaitHere(u32 u, u32 delay) {
-  SPI_MasterIO* MIO = (SPI_MasterIO*) u;
-  MIO->WaitParam = delay;
-  if(MIO->fnWaitMethod) MIO->fnWaitMethod(u);
+  SPI_MasterIO* M = (SPI_MasterIO*) u;
+  M->ctWaitMethod = delay;
+  if(M->fnWaitMethod) M->fnWaitMethod(u);
   return 0;
 }
-
-
+ 
 
 
 //=============-------------->
@@ -412,6 +424,8 @@ static u32 SPI_MIO_ReadByte(u32 u)
   return byte;
 }
 
+#ifdef ADD_EXAMPLES_TO_PROJECT
+
 static IO_PinTypeDef MISO, MOSI, SCK, NSS;
 
 void SPI_MasterIO_Test(void) {
@@ -421,5 +435,9 @@ void SPI_MasterIO_Test(void) {
   
   
   
+  
+  
 }
 
+
+#endif

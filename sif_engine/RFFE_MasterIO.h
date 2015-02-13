@@ -23,7 +23,7 @@ typedef struct {
   u8 BTn; //  a number between 0 and 3
 
   u32 (*fnWaitMethod)(u32);
-//  u32 ctWaitMethod;
+  u32 ctWaitMethod;
   u32 WaitParam;
   
   u8 ParityError : 1;

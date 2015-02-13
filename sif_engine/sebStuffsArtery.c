@@ -1,6 +1,6 @@
 
 #include "sebEngine.h"
-#if 1 //def SIF_ENGINE
+
 
 
 u32 HookSA_NoLongerEmpty(StuffsArtery* SA, u32 (*fn)(u32), u32 ct) {
@@ -181,6 +181,8 @@ u32 AddToSA(StuffsArtery* SA, u32 In) {
   return GlueSA_Up(SA);
 }
 
+
+#ifdef ADD_EXAMPLES_TO_PROJECT
 // reading the strand content: The strand does not kill the bits when cut!
 
 static StuffsArtery SA; // for test program
@@ -216,6 +218,6 @@ void SA_Test(void) {
   while(1);
 }
 
-
-
 #endif
+
+

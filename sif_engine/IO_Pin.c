@@ -1181,12 +1181,18 @@ void FreeAF(u32 PinName) {
 // Sequencer related function
 u32 sq_PinSetLowJob(u32 u) {
   
-  IO_PinSetLow((IO_PinTypeDef*)u);
+  u32* p = (u32*) u;
+  IO_PinTypeDef* Pin = (IO_PinTypeDef*)p[0];
+  
+  IO_PinSetLow(Pin);
   return 0; // done, immediate
 }
 
 u32 sq_PinSetHighJob(u32 u) {
-  
-  IO_PinSetHigh((IO_PinTypeDef*)u);
+
+  u32* p = (u32*) u;
+  IO_PinTypeDef* Pin = (IO_PinTypeDef*)p[0];
+
+  IO_PinSetHigh(Pin);
   return 0; // done, immediate
 }

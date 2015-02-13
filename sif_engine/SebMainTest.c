@@ -1,6 +1,8 @@
 
 #include "SebEngine.h"
 
+#ifdef ADD_EXAMPLES_TO_PROJECT
+
 // This file is the example architect, like we would dynamically create a train track and let it go...
 // Or a dynamically reprogrammable FPGA for the ultimate goal.
 
@@ -15,8 +17,9 @@ void SebExample1(void);
 void SebExample2(void);
 void Test_SPI_MasterHW(void);;
 void Test_ConcurrentSPI_MasterHW(void);
+void TestCode(void);
 
-vu8 choice=5; // default choice after reset
+vu8 choice=7; // default choice after reset
 void I2C_MasterIO_Test(void);
 void RFFE_Test(void);
 
@@ -52,8 +55,10 @@ void SebMainTest(void) {
       I2C_MasterIO_Test();
       break;
     case 7:
+      NHD_LCD16x2Test();
       break;
     case 8:
+      TestCode();
       break;
     case 9:
       break;
@@ -642,5 +647,38 @@ void Test_ConcurrentSPI_MasterHW(void) {
   }
 }
 
+#else
+void SebMainTest(void) {
+  
+  return; // no example activated
+}
+
+#endif
+u8 Utl_FrameCompare(int16_t* s16p_rawFrame, int16_t* s16p_calibFrame, int16_t s16_hiThres, int16_t s16_loThres, int16_t s16_nodeThers, int16_t s32_len);
 
 
+
+volatile int16_t* s16p_rawFrameV;
+volatile int16_t* s16p_calibFrameV;
+volatile int16_t s16_hiThresV;
+volatile int16_t s16_loThresV;
+volatile int16_t s16_nodeThersV;
+volatile int32_t s32_lenV;
+u8 result;
+
+void TestCode(void) {
+  
+int16_t* s16p_rawFrame = (int16_t*) s16p_rawFrameV;
+int16_t* s16p_calibFrame = (int16_t*) s16p_calibFrameV;
+int16_t s16_hiThres = s16_hiThresV;
+int16_t s16_loThres = s16_loThresV;
+int16_t s16_nodeThers = s16_nodeThersV;
+int32_t s32_len = s32_lenV;
+  
+  result = Utl_FrameCompare(s16p_rawFrame, s16p_calibFrame, s16_hiThres, s16_loThres, s16_nodeThers, (u16)s32_len);
+  
+}
+u8 Utl_FrameCompare(int16_t* s16p_rawFrame, int16_t* s16p_calibFrame, int16_t s16_hiThres, int16_t s16_loThres, int16_t s16_nodeThers, int16_t s32_len)
+{
+             return FALSE;
+}

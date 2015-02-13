@@ -36,4 +36,10 @@ void NVIC_BasicTimersEnable(FunctionalState Enable); // This must be done to act
 u32 sq_HookBasicTimerCountdown(u32 u); // (BasicTimer* BT, u32 n, u32 fn, u32 ct) // BT, countdown_nb, fn to call, ct to call
 u32 sq_ArmBasicTimerCountdown(u32 u); //(BasicTimer* BT, u32 n, u32 ticks)
 u32 sq_ReArmBasicTimerCountdown(u32 u); //(BasicTimer* BT, u32 n)
+
+// smart resource allocation facilities function
+// it will be used at a higher living cell which manages all timers which can countdown time.
+u32 GetFreeTimerCountdownIndex(u32 u);
+u32 SetFreeTimerCountdownIndex(u32 u, u32 n);
+
 #endif
