@@ -22,15 +22,15 @@ u32 I2SClk_Hz;
 u32 ETH_Clk_Hz; // external feed
 u32 OTG_Clk_Hz; // external feed
 
-//  IO_PinTypeDef* SDA; // we need the pointer to the pin
+//  IO_Pin_t* SDA; // we need the pointer to the pin
 //  u32 (*fnWaitMethod)(u32);
 //  u32 ctWaitMethod;
   
-} MCUClockTree; // there should be only one globally for this one
+} MCUClocks_t; // there should be only one globally for this one
 
 void MCUInitClocks(void);
 
-MCUClockTree* GetMCUClockTree(void);
+MCUClocks_t* GetMCUClockTree(void);
 
 
 #endif

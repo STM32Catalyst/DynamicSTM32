@@ -13,7 +13,7 @@ const u8 u4ToHexChar[] = { '0','1','2','3','4','5','6','7','8','9','A','B','C','
 #define PutCharHex(a)      PutChar(u4ToHexChar[(a) & 0xF]);
 #define PutCharDec(a)      PutChar('0'+((a)%10));
 
-u32 SebPrintf(PrintfTools* T, const char *str,...)
+u32 SebPrintf(PrintfHk_t* T, const char *str,...)
 {
   u32 arg, arg1;
   s8 k;	

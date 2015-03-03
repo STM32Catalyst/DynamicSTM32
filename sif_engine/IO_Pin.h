@@ -47,26 +47,26 @@ typedef struct {
   GPIO_TypeDef* GPIOx;
   u32    BitMask;
   u8    AF; // the chosen alternate function (difficult to manage right now)
-} IO_PinTypeDef; // 40 bytes per fast GPIO in Fast access should use RAM.
+} IO_Pin_t; // 40 bytes per fast GPIO in Fast access should use RAM.
 
 
-void IO_PinInit(IO_PinTypeDef* Pin, PinNameDef Name);
+IO_Pin_t* IO_PinInit(IO_Pin_t* Pin, PinNameDef Name);
 
-void IO_PinClockEnable(IO_PinTypeDef* Pin);
-void IO_PinSetHigh(IO_PinTypeDef* Pin);
-void IO_PinSetLow(IO_PinTypeDef* Pin);
-void IO_PinSet(IO_PinTypeDef* Pin, u32 value);
-s32 IO_PinGet(IO_PinTypeDef* Pin);
-void IO_PinToggle(IO_PinTypeDef* Pin);
-void IO_PinSetSpeedMHz(IO_PinTypeDef* Pin, u32 MHz);
-void IO_PinEnablePullUp(IO_PinTypeDef* Pin, FunctionalState Enable);
-void IO_PinEnablePullDown(IO_PinTypeDef* Pin, FunctionalState Enable);
-void IO_PinEnablePullUpDown(IO_PinTypeDef* Pin, FunctionalState UpEnable, FunctionalState DownEnable);
-void IO_PinEnableHighDrive(IO_PinTypeDef* Pin, FunctionalState Enable);
-void IO_PinConfiguredAs(IO_PinTypeDef* Pin, u32 signal);
+void IO_PinClockEnable(IO_Pin_t* Pin);
+void IO_PinSetHigh(IO_Pin_t* Pin);
+void IO_PinSetLow(IO_Pin_t* Pin);
+void IO_PinSet(IO_Pin_t* Pin, u32 value);
+s32 IO_PinGet(IO_Pin_t* Pin);
+void IO_PinToggle(IO_Pin_t* Pin);
+void IO_PinSetSpeedMHz(IO_Pin_t* Pin, u32 MHz);
+void IO_PinEnablePullUp(IO_Pin_t* Pin, FunctionalState Enable);
+void IO_PinEnablePullDown(IO_Pin_t* Pin, FunctionalState Enable);
+void IO_PinEnablePullUpDown(IO_Pin_t* Pin, FunctionalState UpEnable, FunctionalState DownEnable);
+void IO_PinEnableHighDrive(IO_Pin_t* Pin, FunctionalState Enable);
+void IO_PinConfiguredAs(IO_Pin_t* Pin, u32 signal);
 
-u32 IO_PinGetPR(IO_PinTypeDef* Pin);
-void IO_PinClearPR(IO_PinTypeDef* Pin);
+u32 IO_PinGetPR(IO_Pin_t* Pin);
+void IO_PinClearPR(IO_Pin_t* Pin);
 
 #define IO_PinSetInput(p) IO_PinConfiguredAs((p), GPIO_AF16_DIGITAL_INPUT)
 #define IO_PinSetOutput(p) IO_PinConfiguredAs((p), GPIO_AF17_DIGITAL_OUTPUT)

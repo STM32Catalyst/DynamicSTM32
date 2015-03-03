@@ -1,7 +1,7 @@
 
 #include "sebEngine.h"
 
-const DMA_StreamInfoType DMA_StreamInfo[] = {
+const DMA_StreamInfo_t DMA_StreamInfo[] = {
 
   {DMA1, DMA1_Stream0, 0, DMA1_Stream0_IRQn, DMA_FLAG_TCIF0 | DMA_FLAG_HTIF0 | DMA_FLAG_TEIF0 | DMA_FLAG_DMEIF0 | DMA_FLAG_FEIF0, DMA_FLAG_TCIF0 },
   {DMA1, DMA1_Stream1, 1, DMA1_Stream1_IRQn, DMA_FLAG_TCIF1 | DMA_FLAG_HTIF1 | DMA_FLAG_TEIF1 | DMA_FLAG_DMEIF1 | DMA_FLAG_FEIF1, DMA_FLAG_TCIF1 },
@@ -48,7 +48,7 @@ typedef struct {
   SignalList Signal;
   u32 Direction;
   
-} DMA_StreamChannelInfoType; // this points to a const data
+} DMA_StreamChannelInfo_t; // this points to a const data
 */
 //#define DMA_DIR_PeripheralToMemory        ((uint32_t)0x00000000)
 //#define DMA_DIR_MemoryToPeripheral        ((uint32_t)0x00000040) 
@@ -66,7 +66,7 @@ typedef struct {
 #define SAI1 0
 #endif
 
-const DMA_StreamChannelInfoType DMA_StreamChannelInfo[] = {
+const DMA_StreamChannelInfo_t DMA_StreamChannelInfo[] = {
 //========================= DMA 1 ======================================================================================  
   {DMA1, DMA2_Stream0, 0, DMA_Channel_0, (u32)SPI3, SPI3_RX, DMA_DIR_PeripheralToMemory},
   {DMA1, DMA2_Stream0, 0, DMA_Channel_1, (u32)I2C1, I2C1_RX, DMA_DIR_PeripheralToMemory},

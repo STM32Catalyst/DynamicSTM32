@@ -6,14 +6,14 @@ typedef struct {
   
   USART_TypeDef* USART; // The corresponding HW peripheral
   // DMAStream* xxx
-  ByteVein* BV_TX; // data flowing to TX pin of MCU
-  ByteVein* BV_RX; // data flowing to RX pin of MCU
+  ByteVein_t* BV_TX; // data flowing to TX pin of MCU
+  ByteVein_t* BV_RX; // data flowing to RX pin of MCU
   
-  IO_PinTypeDef* TX;
-  IO_PinTypeDef* RX; // The receive pin (which can be woken up if EXTI compatible)
+  IO_Pin_t* TX;
+  IO_Pin_t* RX; // The receive pin (which can be woken up if EXTI compatible)
   
-  IO_PinTypeDef* CTS; // if 0, not used
-  IO_PinTypeDef* RTS; // if 0, not used
+  IO_Pin_t* CTS; // if 0, not used
+  IO_Pin_t* RTS; // if 0, not used
   
 //  u32 (*fnOut)(u32); // What to do when ready to send (TX)
 //  u32 ctOut;
@@ -21,10 +21,14 @@ typedef struct {
 //  u32 (*fnIn)(u32); // What to do when received data (RX)
 //  u32 ctIn;
   
-} SerialRs232;
+  PrintfHk_t Print;
+  
+} Rs232_t;
 
-void NewRs232HW(SerialRs232* RS, USART_TypeDef* USART);
+void NewRs232HW(Rs232_t* RS, USART_TypeDef* USART);
 void NVIC_Rs232sEnable(FunctionalState Enable);
-void SetRs232BVs(SerialRs232* RS, ByteVein* BV_TX, ByteVein*BV_RX);
-void SetRs232Timings(SerialRs232* RS, u32 BaudRate, u32 Parity2, u32 StopBits);
+void SetRs232BVs(Rs232_t* RS, ByteVein_t* BV_TX, ByteVein_t* BV_RX);
+void SetRs232Timings(Rs232_t* RS, u32 BaudRate, u32 Parity2, u32 StopBits);
+
+u32 RS232_putchar(Rs232_t* RS, u32 c);
 #endif

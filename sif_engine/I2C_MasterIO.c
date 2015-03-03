@@ -25,7 +25,7 @@ u32 TimerCountdownWait(u32 u);
 u32 NopsWait(u32 u);
 //--------- this will become later global resources --------
 
-u32 NewI2C_MasterIO(I2C_MasterIO* M) {
+u32 NewI2C_MasterIO(I2C_MasterIO_t* M) {
 
 // we have to initialize the state machine first
   // configure the GPIOs
@@ -47,7 +47,7 @@ u32 NewI2C_MasterIO(I2C_MasterIO* M) {
 }
 
 //
-u32 SetI2C_MasterIO_Timings(I2C_MasterIO* M, u32 MaxBps, MCUClockTree* T ) { 
+u32 SetI2C_MasterIO_Timings(I2C_MasterIO_t* M, u32 MaxBps, MCUClocks_t* T ) { 
 
   u32 HalfClockPeriod_Hz;
   u32 HalfClockPeriod_us;
@@ -60,9 +60,9 @@ u32 SetI2C_MasterIO_Timings(I2C_MasterIO* M, u32 MaxBps, MCUClockTree* T ) {
   
   HalfClockPeriod_Hz = MaxBps*2; // Timers runs at 1MHz max overflow speed. 500kHz = 2us
   
-  if(M->BT) {
+  if(M->Timer) {
     
-    M->WaitParam = 1000000 / ( M->BT->OverflowPeriod_us * HalfClockPeriod_Hz);
+    M->WaitParam = 1000000 / ( M->Timer->OverflowPeriod_us * HalfClockPeriod_Hz);
     if(M->WaitParam) {
       M->fnWaitMethod = TimerCountdownWait; // here we should take care of the timings, and choose the best scheme based on CPU MHz and bps of bus...    
       return 0; // found a tick period compatible with this Basic Timer
@@ -93,21 +93,21 @@ u32 SetI2C_MasterIO_Timings(I2C_MasterIO* M, u32 MaxBps, MCUClockTree* T ) {
 
 static u32 TimerCountdownWait(u32 u) {
   
-  I2C_MasterIO* M = (I2C_MasterIO*) u;
-  ArmBasicTimerCountdown(M->BT,M->BTn, M->WaitParam * M->ctWaitMethod);
-  while(M->BT->CountDownDone[M->BTn]==0) ;
+  I2C_MasterIO_t* M = (I2C_MasterIO_t*) u;
+  ArmTimerCountdown(M->Timer, M->Cn, M->WaitParam * M->ctWaitMethod);
+  while(M->Timer->CountDownDone[M->Cn]==0) ;
   return 0;
 }
 
 static u32 NopsWait(u32 u) {
-  I2C_MasterIO* M = (I2C_MasterIO*) u;
+  I2C_MasterIO_t* M = (I2C_MasterIO_t*) u;
   u32 n = M->ctWaitMethod * M->WaitParam;
   while(n--) asm("nop\n");
   return 0;
 }
 
 static u32 WaitHere(u32 u, u32 delay) {
-  I2C_MasterIO* M = (I2C_MasterIO*) u;
+  I2C_MasterIO_t* M = (I2C_MasterIO_t*) u;
   M->ctWaitMethod = delay;
   if(M->fnWaitMethod) M->fnWaitMethod(u);
   return 0;
@@ -133,7 +133,7 @@ static u32 ErrorRecovery (u32 u)
 
 static u32 GenerateStart (u32 u, u8 SlaveAdr) 
 {
-  I2C_MasterIO* M = (I2C_MasterIO*) u;
+  I2C_MasterIO_t* M = (I2C_MasterIO_t*) u;
   M->SlaveAdr = SlaveAdr;
   IO_PinSetHigh(M->SDA);//dir_I2C_SDA_IN;	// to check if I2C is idle... or stuck
   WaitHere(u,1);
@@ -157,7 +157,7 @@ static u32 GenerateStart (u32 u, u8 SlaveAdr)
 
 static u32 Transmit(u32 u, u8 bValue) 
 {
-  I2C_MasterIO* M = (I2C_MasterIO*) u;
+  I2C_MasterIO_t* M = (I2C_MasterIO_t*) u;
   u8 loop;
 
   for (loop = 0; loop < 8; loop++) 
@@ -208,7 +208,7 @@ static u32 Transmit(u32 u, u8 bValue)
 
 static u32 Receive (u32 u, u32 DoAck) 
 { 
-  I2C_MasterIO* M = (I2C_MasterIO*) u;
+  I2C_MasterIO_t* M = (I2C_MasterIO_t*) u;
   u8 bValue, loop;
 
   bValue = 0;
@@ -251,7 +251,7 @@ static u32 Receive (u32 u, u32 DoAck)
 
 static u32 GenerateStop (u32 u) {
   
-  I2C_MasterIO* M = (I2C_MasterIO*) u;
+  I2C_MasterIO_t* M = (I2C_MasterIO_t*) u;
   IO_PinSetLow(M->SCL);//bit_I2C_SCL_LOW;
   WaitHere(u,1);
   IO_PinSetLow(M->SDA);//bit_I2C_SDA_LOW;
@@ -272,7 +272,7 @@ static u32 GenerateStop (u32 u) {
 
 static u32 I2C_MIO_Start(u32 u, u32 SlaveAdr) {
 
-  I2C_MasterIO* M = (I2C_MasterIO*) u;
+  I2C_MasterIO_t* M = (I2C_MasterIO_t*) u;
 
   M->AckFail = GenerateStart (u,SlaveAdr);				// Send the slave address
   return 0; // no interrupt setup
@@ -281,7 +281,7 @@ static u32 I2C_MIO_Start(u32 u, u32 SlaveAdr) {
 // This is NEVER NEEDED unless error recovery is asked
 static u32 I2C_MIO_Stop(u32 u, u32 BitMask) { // This is used only in transmit mode (Adr.b0=0)
 
-//  I2C_MasterIO* S = (I2C_MasterIO*) u;
+//  I2C_MasterIO_t* S = (I2C_MasterIO_t*) u;
   GenerateStop(u);
   WaitHere(u,1);
   return 0; // no call back, next job right away
@@ -290,7 +290,7 @@ static u32 I2C_MIO_Stop(u32 u, u32 BitMask) { // This is used only in transmit m
 
 static u32 I2C_MIO_Move(u32 u, u32 Param1, u32 Param2, u32 Param3) { // Param1: Block adr, Param2: Block size byte, Param3: Ack when read or not
   
-  I2C_MasterIO* S = (I2C_MasterIO*) u;
+  I2C_MasterIO_t* S = (I2C_MasterIO_t*) u;
   u8* pu8 = (u8*) Param1;
   u16 bCount = (u16) Param2;
   u8 MoreComing = Param3;
@@ -356,43 +356,41 @@ u32 sq_I2C_MIO_DMA_Interrupt(u32 u) {
 //===================================================================
 // translated example with sequencer scheme
 #ifdef ADD_EXAMPLES_TO_PROJECT
-static I2C_MasterIO gMIO;
-static IO_PinTypeDef MIO_SDA, MIO_SCL;
-static BasicTimer BT;
+static I2C_MasterIO_t gMIO;
+static IO_Pin_t MIO_SDA, MIO_SCL;
+static Timer_t Timer;
 // create the instructions
 static u32 SubAdr = 0x80;
 static u8 SensorRegs[64];
 
-OneJobType I2C_StartWrite_LPS25H = { sq_I2C_MIO_StartJob, (u32)&gMIO, 0xBA };
-OneJobType I2C_Write_LPS25H = { sq_I2C_MIO_MoveJob, (u32)&gMIO, (u32)&SubAdr, 1, 1 }; // more coming, don't stop bit
-OneJobType I2C_StartRead_LPS25H = { sq_I2C_MIO_StartJob, (u32)&gMIO, 0xBB };
-OneJobType I2C_Read_LPS25H = { sq_I2C_MIO_MoveJob, (u32)&gMIO,  (u32)&SensorRegs, 64, 0 };
+OneJob_t I2C_StartWrite_LPS25H = { sq_I2C_MIO_StartJob, (u32)&gMIO, 0xBA };
+OneJob_t I2C_Write_LPS25H = { sq_I2C_MIO_MoveJob, (u32)&gMIO, (u32)&SubAdr, 1, 1 }; // more coming, don't stop bit
+OneJob_t I2C_StartRead_LPS25H = { sq_I2C_MIO_StartJob, (u32)&gMIO, 0xBB };
+OneJob_t I2C_Read_LPS25H = { sq_I2C_MIO_MoveJob, (u32)&gMIO,  (u32)&SensorRegs, 64, 0 };
 
 static u32 List[100]; // list of pointers
-static StuffsArtery mySequence;
+static StuffsArtery_t mySequence;
 
 void I2C_MasterIO_Test(void) {
 
 //  u32 u = (u32)&gMIO;
   MCUInitClocks();
   
-  IO_PinInit(&MIO_SDA, PH7 ); // Initialize some quick pointers
-  IO_PinInit(&MIO_SCL, PH8 ); // Initialize some quick pointers
-  gMIO.SDA = &MIO_SDA; // global shared resource, to be generic later
-  gMIO.SCL = &MIO_SCL; // global shared resource, to be generic later
+  gMIO.SDA = IO_PinInit(&MIO_SDA, PH7 ); // Initialize some quick pointers
+  gMIO.SCL = IO_PinInit(&MIO_SCL, PH8 ); // Initialize some quick pointers
 
-  NewBasicTimer_us(&BT, TIM6, 1, GetMCUClockTree()); // usec countdown
-  gMIO.BT = &BT;
-  gMIO.BTn = 0; // use Countdown[0]
+  NewTimer_us(&Timer, TIM6, 1, GetMCUClockTree()); // usec countdown
+  gMIO.Timer = &Timer;
+  gMIO.Cn = 0; // use Countdown[0]
   
   NewI2C_MasterIO(&gMIO);
   SetI2C_MasterIO_Timings(&gMIO, 400*1000, GetMCUClockTree() );
   
   // all zero: no action
-  NVIC_BasicTimersEnable(ENABLE);
+  NVIC_TimersEnable(ENABLE);
 
   //===============
-  StuffsArtery* P = &mySequence; // program
+  StuffsArtery_t* P = &mySequence; // program
   NewSA(P, (u32)&List[0], countof(List));  
   gMIO.SA = P;
   

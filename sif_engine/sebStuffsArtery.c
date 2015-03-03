@@ -3,14 +3,14 @@
 
 
 
-u32 HookSA_NoLongerEmpty(StuffsArtery* SA, u32 (*fn)(u32), u32 ct) {
+u32 HookSA_NoLongerEmpty(StuffsArtery_t* SA, u32 (*fn)(u32), u32 ct) {
   
   SA->fnNoLongerEmpty = fn;
   SA->ctNoLongerEmpty = ct;
   return 0;
 }
 
-u32 HookSA_Emptied(StuffsArtery* SA, u32 (*fn)(u32), u32 ct) {
+u32 HookSA_Emptied(StuffsArtery_t* SA, u32 (*fn)(u32), u32 ct) {
   
   SA->fnEmptied = fn;
   SA->ctEmptied = ct;
@@ -19,7 +19,7 @@ u32 HookSA_Emptied(StuffsArtery* SA, u32 (*fn)(u32), u32 ct) {
 
 //==========================================================
 // StrandCreation
-u32 NewSA(StuffsArtery* SA, u32 begin, s32 size) { // size is the number of u32 in the buffer which starts in begin.
+u32 NewSA(StuffsArtery_t* SA, u32 begin, s32 size) { // size is the number of u32 in the buffer which starts in begin.
 
   if(size==0)
     while(1); // no memory for it?
@@ -40,12 +40,12 @@ u32 NewSA(StuffsArtery* SA, u32 begin, s32 size) { // size is the number of u32 
 
 
 //=========================================================
-u32 GetSA_Up(StuffsArtery* SA) {
+u32 GetSA_Up(StuffsArtery_t* SA) {
   SA->Out = SA->Table[SA->pbUp]; // we create one more bit space on the left (lower memory)
   return SA->Out;
 }
 
-u32 GetSA_Down(StuffsArtery* SA) {
+u32 GetSA_Down(StuffsArtery_t* SA) {
   SA->Out = SA->Table[SA->pbDown]; // we create one more bit space on the left (lower memory)
   return SA->Out;
 }
@@ -53,7 +53,7 @@ u32 GetSA_Down(StuffsArtery* SA) {
 
 //==========================================================
 // manage the left side
-u32 GlueSA_Down(StuffsArtery* SA) {
+u32 GlueSA_Down(StuffsArtery_t* SA) {
 
   if(SA->bCountLimit==0) while(1); // error
   
@@ -85,7 +85,7 @@ u32 GlueSA_Down(StuffsArtery* SA) {
   return 0;
 }
 
-u32 ClipSA_Down(StuffsArtery* SA) { // 0 or 1, returns the bit pointer
+u32 ClipSA_Down(StuffsArtery_t* SA) { // 0 or 1, returns the bit pointer
 
 //  if(bCountLimit==0) while(1); // error
   
@@ -114,7 +114,7 @@ u32 ClipSA_Down(StuffsArtery* SA) { // 0 or 1, returns the bit pointer
 //==========================================================
 // manage the right side
 
-u32 GlueSA_Up(StuffsArtery* SA) {
+u32 GlueSA_Up(StuffsArtery_t* SA) {
 
   if(SA->bCountLimit==0) while(1); // error
   
@@ -146,7 +146,7 @@ u32 GlueSA_Up(StuffsArtery* SA) {
   return 0;
 }
 
-u32 ClipSA_Up(StuffsArtery* SA) { // 0 or 1
+u32 ClipSA_Up(StuffsArtery_t* SA) { // 0 or 1
 
 //  if(SA->bCountLimit==0) while(1); // error
   
@@ -175,7 +175,7 @@ u32 ClipSA_Up(StuffsArtery* SA) { // 0 or 1
 //============================================
 // Direct FIFO management
 
-u32 AddToSA(StuffsArtery* SA, u32 In) {
+u32 AddToSA(StuffsArtery_t* SA, u32 In) {
   
   SA->In = In;
   return GlueSA_Up(SA);
@@ -185,7 +185,7 @@ u32 AddToSA(StuffsArtery* SA, u32 In) {
 #ifdef ADD_EXAMPLES_TO_PROJECT
 // reading the strand content: The strand does not kill the bits when cut!
 
-static StuffsArtery SA; // for test program
+static StuffsArtery_t SA; // for test program
 static u8 SAR[512]; // the assigned buffer for this byte strand
 
 

@@ -6,10 +6,10 @@
 
 typedef struct {
   u32 fnPutChar, ctPutChar;
-} PrintfTools;
+} PrintfHk_t;
 
 u32 u8_To_u32_BitFieldFormat(u8 byte);
 
-u32 SebPrintf(PrintfTools* T, const char *str,...);
+u32 SebPrintf(PrintfHk_t* T, const char *str,...);
 
 #endif

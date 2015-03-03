@@ -19,13 +19,14 @@ void Test_SPI_MasterHW(void);;
 void Test_ConcurrentSPI_MasterHW(void);
 void TestCode(void);
 
-vu8 choice=7; // default choice after reset
+
 void I2C_MasterIO_Test(void);
 void RFFE_Test(void);
 
-BasicTimer Timer6_us, Timer7_ms;
-
-
+Timer_t Timer6_us, Timer7_ms;
+//*************
+vu8 choice=11; // default choice after reset
+//*************
 void SebMainTest(void) {
   
   MCUInitClocks();
@@ -61,11 +62,41 @@ void SebMainTest(void) {
       TestCode();
       break;
     case 9:
+      ButtonsTest();
+      break;
+    case 10:
+      Timer_T1_T2_Test();
+      break;
+    case 11:
+      Timer_T3_T4_Test();
+      break;
+    case 12:
+      Timer_T5_T6_Test();
+      break;
+    case 13:
+      Timer_T7_T8_Test();
+      break;
+    case 14:
+      Timer_T9_T10_Test();
+      break;
+    case 15:
+      Timer_T11_T12_Test();
+      break;
+    case 16:
+      Timer_T13_T14_Test();
+      break;
+    case 17:
+      break;
+    case 18:
+      break;
+    case 19:
+      break;
+    case 20:
       break;
     default:while(1);
     };
   };
-    
+
 }
 
 // Example 1: Construct an I2C Spy and output the decoded string into RS232, also create an I2C slave which maps 256 bytes with 1 byte sub address
@@ -75,37 +106,35 @@ void SebMainTest(void) {
 
 // to make the slave not responding, we need to change to add a "slave busy" flag which latches when bus is idle.
 static I2C_SlaveIO mySlave; // can be multiple of them, as array (we pass by pointer)
-static IO_PinTypeDef mySDA; // for fast pin access using bitbanding area (we will use a fake HW registers which will check if all pins are not colliding)
-static IO_PinTypeDef mySCL; // for fast pin access using bitbanding area
+static IO_Pin_t mySDA; // for fast pin access using bitbanding area (we will use a fake HW registers which will check if all pins are not colliding)
+static IO_Pin_t mySCL; // for fast pin access using bitbanding area
 // we have to cleanup the Architect function for the fPin
 
 static u8 mySlaveAdresses[] = { 0x40, 0xB0, 0xC0, 0xD0 }; // ram is faster
 static u8 mySlaveMemory[256];
 static u8 myRxBuf[10];
 
-static ByteVein myBV_TX;
+static ByteVein_t myBV_TX;
 static u8 myBV_I2CSpyToTX1[1024];
 
-static ByteVein myBV_RX;
+static ByteVein_t myBV_RX;
 static u8 myBV_RX1ToTBD[1024];
 
-static SerialRs232 myRs232;
+static Rs232_t myRs232;
 
-static IO_PinTypeDef myRs232RX; // for fast pin access using bitbanding area (we will use a fake HW registers which will check if all pins are not colliding)
-static IO_PinTypeDef myRs232TX; // for fast pin access using bitbanding area
+static IO_Pin_t myRs232RX; // for fast pin access using bitbanding area (we will use a fake HW registers which will check if all pins are not colliding)
+static IO_Pin_t myRs232TX; // for fast pin access using bitbanding area
 
 void SebExample1(void) {
 
   // I2C Slave description, using IO_Pin and EXTI (could later on use Basic Timer to implement a timeout like SMBus is doing)
-  IO_PinInit(&mySDA, PH10 ); // Initialize some quick pointers
-  IO_PinInit(&mySCL, PH12 ); // Initialize some quick pointers
+  mySlave.SDA = IO_PinInit(&mySDA, PH10 ); // Initialize some quick pointers
+  mySlave.SCL = IO_PinInit(&mySCL, PH12 ); // Initialize some quick pointers
   
   // This is the data byte vein flowing from I2C Spy to UART TX, and acts as a FIFO
   NewBV(&myBV_TX, (u32)myBV_I2CSpyToTX1, sizeof(myBV_I2CSpyToTX1));
   mySlave.BV = &myBV_TX;
   
-  mySlave.SDA = &mySDA; // link the pin to the slave
-  mySlave.SCL = &mySCL; // link the pin to the slave
   NewI2C_SlaveIO(&mySlave, (u8*)mySlaveAdresses, countof(mySlaveAdresses), mySlaveMemory, countof(mySlaveMemory));
   SpyI2C_SlaveIO(&mySlave); // this is to go to spy code as well
 /*
@@ -118,11 +147,9 @@ void SebExample1(void) {
 */  
   // RS232 cell definition
   // Pin definition, RX1=PB7, TX1=PB6
-  IO_PinInit(&myRs232RX, PB7 ); // Initialize some quick pointers
-  IO_PinInit(&myRs232TX, PB6 ); // Initialize some quick pointers
+  myRs232.RX = IO_PinInit(&myRs232RX, PB7 ); // Initialize some quick pointers
+  myRs232.TX = IO_PinInit(&myRs232TX, PB6 ); // Initialize some quick pointers
   // Hook the pins to the RS232 USART (if pin not used, put null pointer)
-  myRs232.RX = &myRs232RX;
-  myRs232.TX = &myRs232TX;
   myRs232.RTS = 0;
   myRs232.CTS = 0;
   NewRs232HW( &myRs232, USART1); // The HW connectivity, handle, register base, RX pin, TX pin, CTS pin, RTS pin, if non null.
@@ -174,20 +201,18 @@ void SebExample1(void) {
 
 
 //====----> Extra level, here the Master is also using the same concept
-static BasicTimer BT;
+static Timer_t Timer;
 
 void SebExample2(void) {
 #if 0 // superseaded
   // I2C Slave description, using IO_Pin and EXTI (could later on use Basic Timer to implement a timeout like SMBus is doing)
-  IO_PinInit(&mySDA, PH10 ); // Initialize some quick pointers
-  IO_PinInit(&mySCL, PH12 ); // Initialize some quick pointers
+  mySlave.fSDA = IO_PinInit(&mySDA, PH10 ); // Initialize some quick pointers
+  mySlave.fSCL = IO_PinInit(&mySCL, PH12 ); // Initialize some quick pointers
   
   // This is the data byte vein flowing from I2C Spy to UART TX, and acts as a FIFO
   NewBV(&myBV_TX, (u32)myBV_I2CSpyToTX1, sizeof(myBV_I2CSpyToTX1));
   mySlave.BV = &myBV_TX;
   
-  mySlave.fSDA = &mySDA; // link the pin to the slave
-  mySlave.fSCL = &mySCL; // link the pin to the slave
   NewI2C_SlaveIO(&mySlave, (u8*)mySlaveAdresses, countof(mySlaveAdresses), mySlaveMemory, countof(mySlaveMemory));
   SpyI2C_SlaveIO(&mySlave); // this is to go to spy code as well
 /*
@@ -201,11 +226,9 @@ void SebExample2(void) {
   //====----> RS232 cell definition  
   // RS232 cell definition
   // Pin definition, RX1=PB7, TX1=PB6
-  IO_PinInit(&myRs232RX, PB7 ); // Initialize some quick pointers
-  IO_PinInit(&myRs232TX, PB6 ); // Initialize some quick pointers
+  myRs232.fRX = IO_PinInit(&myRs232RX, PB7 ); // Initialize some quick pointers
+  myRs232.fTX = IO_PinInit(&myRs232TX, PB6 ); // Initialize some quick pointers
   // Hook the pins to the RS232 USART (if pin not used, put null pointer)
-  myRs232.fRX = &myRs232RX;
-  myRs232.fTX = &myRs232TX;
   myRs232.fRTS = 0;
   myRs232.fCTS = 0;
   NewRs232HW( &myRs232, USART1); // The HW connectivity, handle, register base, RX pin, TX pin, CTS pin, RTS pin, if non null.
@@ -222,21 +245,19 @@ void SebExample2(void) {
   //====----> Now we setup the I2C master
   u32 u = (u32)&gMIO;
   
-  IO_PinInit(&MIO_SDA, PH7 ); // Initialize some quick pointers
-  IO_PinInit(&MIO_SCL, PH8 ); // Initialize some quick pointers
-  gMIO.SDA = &MIO_SDA; // global shared resource, to be generic later
-  gMIO.SCL = &MIO_SCL; // global shared resource, to be generic later
+  gMIO.SDA = IO_PinInit(&MIO_SDA, PH7 ); // Initialize some quick pointers
+  gMIO.SCL = IO_PinInit(&MIO_SCL, PH8 ); // Initialize some quick pointers
 
-  NewBasicTimer_us(&BT, TIM6, 1, GetMCUClockTree()); // usec countdown
+  NewTimer_us(&Timer, TIM6, 1, GetMCUClockTree()); // usec countdown
   gMIO.Job = &Job;
-  gMIO.BT = &BT;
-  gMIO.BTn = 0; // use Countdown[0]
+  gMIO.Timer = &Timer;
+  gMIO.Cn = 0; // use Countdown[0]
   
   NewI2C_MasterIO(&gMIO);
   SetI2C_MasterIO_Timings( &gMIO, 400*1000, GetMCUClockTree());
   
   // now we need to activate everything after all the architecture is done (the other end of the BV_TX, BV_RX)
-  NVIC_BasicTimersEnable(ENABLE);// used by I2C Master (#0/4)
+  NVIC_TimersEnable(ENABLE);// used by I2C Master (#0/4)
   NVIC_Rs232sEnable(ENABLE);// enable interrupts for RS232
   NVIC_EXTIsEnable(ENABLE); // enable interrupts for slave cell
   //===============
@@ -292,81 +313,76 @@ const u8 Shadow_WriteAll[2] = { 0x00 };
 const u8 Shadow_ReadAll[2] = { 0x80 };
 
 //========== The shared resources for SPI6
-IO_PinTypeDef MISO6, MOSI6, SCK6, NSS6, INT6;
-SPI_MasterHW mySPI6;
+IO_Pin_t MISO6, MOSI6, SCK6, NSS6, INT6;
+SPI_MasterHW_t mySPI6;
 u8 A_ShadowRegs[256];
-const OneJobType SPI6_Start = { sq_SPI_MHW_StartJob, {(u32)&mySPI6, 1} };
-const OneJobType SPI6_ShadowReadAt00 = { sq_SPI_MHW_MoveJob,  {(u32)&mySPI6, (u32)&Shadow_ReadAll[0], 0, 1} };
-const OneJobType SPI6_Dummy = { sq_SPI_MHW_MoveJob,  {(u32)&mySPI6, 0, 0, 1} };
-const OneJobType SPI6_ReadAllShadow = { sq_SPI_MHW_MoveJob,  {(u32)&mySPI6, 0, (u32)&A_ShadowRegs[0], sizeof(A_ShadowRegs)} };
-const OneJobType SPI6_Stop = { sq_SPI_MHW_StopJob, {(u32)&mySPI6, 1 }};
+const OneJob_t SPI6_Start = { sq_SPI_MHW_StartJob, {(u32)&mySPI6, 1} };
+const OneJob_t SPI6_ShadowReadAt00 = { sq_SPI_MHW_MoveJob,  {(u32)&mySPI6, (u32)&Shadow_ReadAll[0], 0, 1} };
+const OneJob_t SPI6_Dummy = { sq_SPI_MHW_MoveJob,  {(u32)&mySPI6, 0, 0, 1} };
+const OneJob_t SPI6_ReadAllShadow = { sq_SPI_MHW_MoveJob,  {(u32)&mySPI6, 0, (u32)&A_ShadowRegs[0], sizeof(A_ShadowRegs)} };
+const OneJob_t SPI6_Stop = { sq_SPI_MHW_StopJob, {(u32)&mySPI6, 1 }};
 
-const OneJobType SPI6_Disarm = {sq_SPI_MHW_DMA_Interrupt, {(u32)&mySPI6, DISABLE }};
-const OneJobType SPI6_Arm = {sq_SPI_MHW_DMA_Interrupt, {(u32)&mySPI6, ENABLE }};
+const OneJob_t SPI6_Disarm = {sq_SPI_MHW_DMA_Interrupt, {(u32)&mySPI6, DISABLE }};
+const OneJob_t SPI6_Arm = {sq_SPI_MHW_DMA_Interrupt, {(u32)&mySPI6, ENABLE }};
 
-//const OneJobType SPI6_Disarm = { sq_SPI_MHW_StopJob, {(u32)&mySPI6, 0 }}; // disturb SPI pins AF
-//const OneJobType SPI6_Arm = { sq_SPI_MHW_StartJob, {(u32)&mySPI6, 1} }; // disturb SPI pins AF
+//const OneJob_t SPI6_Disarm = { sq_SPI_MHW_StopJob, {(u32)&mySPI6, 0 }}; // disturb SPI pins AF
+//const OneJob_t SPI6_Arm = { sq_SPI_MHW_StartJob, {(u32)&mySPI6, 1} }; // disturb SPI pins AF
 
-const OneJobType SPI6_Wait_50us = { sq_ArmBasicTimerCountdown, {(u32)&Timer6_us, 3, 5 } };
-const OneJobType SPI6_Wait_5ms =  { sq_ArmBasicTimerCountdown, {(u32)&Timer7_ms, 3, 5 } };
+const OneJob_t SPI6_Wait_50us = { sq_ArmTimerCountdown, {(u32)&Timer6_us, 3, 5 } };
+const OneJob_t SPI6_Wait_5ms =  { sq_ArmTimerCountdown, {(u32)&Timer7_ms, 3, 5 } };
 
-const OneJobType INT6_Arm = { sq_EXTI_Interrupt, {(u32) &INT6, ENABLE }};
-const OneJobType INT6_Disarm = { sq_EXTI_Interrupt, {(u32) &INT6, DISABLE }};
+const OneJob_t INT6_Arm = { sq_EXTI_Interrupt, {(u32) &INT6, ENABLE }};
+const OneJob_t INT6_Disarm = { sq_EXTI_Interrupt, {(u32) &INT6, DISABLE }};
 
 //========== The shared resources for SPI5
-IO_PinTypeDef MISO5, MOSI5, SCK5, NSS5, INT5;
-SPI_MasterHW mySPI5;
+IO_Pin_t MISO5, MOSI5, SCK5, NSS5, INT5;
+SPI_MasterHW_t mySPI5;
 u8 B_ShadowRegs[256];
-const OneJobType SPI5_Start = { sq_SPI_MHW_StartJob, {(u32)&mySPI5, 1} };
-const OneJobType SPI5_ShadowReadAt00 = { sq_SPI_MHW_MoveJob,  {(u32)&mySPI5, (u32)&Shadow_ReadAll[0], 0, 1} };
-const OneJobType SPI5_Dummy = { sq_SPI_MHW_MoveJob,  {(u32)&mySPI5, 0, 0, 1} };
-const OneJobType SPI5_ReadAllShadow = { sq_SPI_MHW_MoveJob,  {(u32)&mySPI5, 0, (u32)&B_ShadowRegs[0], sizeof(B_ShadowRegs)} };
-const OneJobType SPI5_Stop = { sq_SPI_MHW_StopJob, {(u32)&mySPI5, 1 }};
+const OneJob_t SPI5_Start = { sq_SPI_MHW_StartJob, {(u32)&mySPI5, 1} };
+const OneJob_t SPI5_ShadowReadAt00 = { sq_SPI_MHW_MoveJob,  {(u32)&mySPI5, (u32)&Shadow_ReadAll[0], 0, 1} };
+const OneJob_t SPI5_Dummy = { sq_SPI_MHW_MoveJob,  {(u32)&mySPI5, 0, 0, 1} };
+const OneJob_t SPI5_ReadAllShadow = { sq_SPI_MHW_MoveJob,  {(u32)&mySPI5, 0, (u32)&B_ShadowRegs[0], sizeof(B_ShadowRegs)} };
+const OneJob_t SPI5_Stop = { sq_SPI_MHW_StopJob, {(u32)&mySPI5, 1 }};
 
-const OneJobType SPI5_Wait_50us = { sq_ArmBasicTimerCountdown, {(u32)&Timer6_us, 2, 5 } };
-const OneJobType SPI5_Wait_5ms =  { sq_ArmBasicTimerCountdown, {(u32)&Timer7_ms, 2, 5 } };
+const OneJob_t SPI5_Wait_50us = { sq_ArmTimerCountdown, {(u32)&Timer6_us, 2, 5 } };
+const OneJob_t SPI5_Wait_5ms =  { sq_ArmTimerCountdown, {(u32)&Timer7_ms, 2, 5 } };
 
-const OneJobType INT5_Arm = { sq_EXTI_Interrupt, {(u32) &INT5, ENABLE }};
-const OneJobType INT5_Disarm = { sq_EXTI_Interrupt, {(u32) &INT5, DISABLE }};
+const OneJob_t INT5_Arm = { sq_EXTI_Interrupt, {(u32) &INT5, ENABLE }};
+const OneJob_t INT5_Disarm = { sq_EXTI_Interrupt, {(u32) &INT5, DISABLE }};
 
 
 //========== The shared resources for SPI5
-IO_PinTypeDef MISO4, MOSI4, SCK4, NSS4, INT4;
-SPI_MasterHW mySPI4;
+IO_Pin_t MISO4, MOSI4, SCK4, NSS4, INT4;
+SPI_MasterHW_t mySPI4;
 u8 C_ShadowRegs[256];
-const OneJobType SPI4_Start = { sq_SPI_MHW_StartJob, {(u32)&mySPI4, 1} };
-const OneJobType SPI4_ShadowReadAt00 = { sq_SPI_MHW_MoveJob,  {(u32)&mySPI4, (u32)&Shadow_ReadAll[0], 0, 1} };
-const OneJobType SPI4_Dummy = { sq_SPI_MHW_MoveJob,  {(u32)&mySPI4, 0, 0, 1} };
-const OneJobType SPI4_ReadAllShadow = { sq_SPI_MHW_MoveJob,  {(u32)&mySPI4, 0, (u32)&C_ShadowRegs[0], sizeof(C_ShadowRegs)} };
-const OneJobType SPI4_Stop = { sq_SPI_MHW_StopJob, {(u32)&mySPI4, 1 }};
+const OneJob_t SPI4_Start = { sq_SPI_MHW_StartJob, {(u32)&mySPI4, 1} };
+const OneJob_t SPI4_ShadowReadAt00 = { sq_SPI_MHW_MoveJob,  {(u32)&mySPI4, (u32)&Shadow_ReadAll[0], 0, 1} };
+const OneJob_t SPI4_Dummy = { sq_SPI_MHW_MoveJob,  {(u32)&mySPI4, 0, 0, 1} };
+const OneJob_t SPI4_ReadAllShadow = { sq_SPI_MHW_MoveJob,  {(u32)&mySPI4, 0, (u32)&C_ShadowRegs[0], sizeof(C_ShadowRegs)} };
+const OneJob_t SPI4_Stop = { sq_SPI_MHW_StopJob, {(u32)&mySPI4, 1 }};
 
-const OneJobType SPI4_Wait_50us = { sq_ArmBasicTimerCountdown, {(u32)&Timer6_us, 1, 5 } };
-const OneJobType SPI4_Wait_5ms =  { sq_ArmBasicTimerCountdown, {(u32)&Timer7_ms, 1, 5 } };
+const OneJob_t SPI4_Wait_50us = { sq_ArmTimerCountdown, {(u32)&Timer6_us, 1, 5 } };
+const OneJob_t SPI4_Wait_5ms =  { sq_ArmTimerCountdown, {(u32)&Timer7_ms, 1, 5 } };
 
-const OneJobType INT4_Arm = { sq_EXTI_Interrupt, {(u32) &INT4, ENABLE } };
-const OneJobType INT4_Disarm = { sq_EXTI_Interrupt, {(u32) &INT4, DISABLE }};
+const OneJob_t INT4_Arm = { sq_EXTI_Interrupt, {(u32) &INT4, ENABLE } };
+const OneJob_t INT4_Disarm = { sq_EXTI_Interrupt, {(u32) &INT4, DISABLE }};
 
 //========== The sequence of 100 pointed jobs
 static u32 List[100]; // list of pointers
-static StuffsArtery mySequence;
+static StuffsArtery_t mySequence;
 
 
 void Test_SPI_MasterHW(void) {
 
 // Create the sequencer entity
-  StuffsArtery* P = &mySequence; // program
+  StuffsArtery_t* P = &mySequence; // program
   NewSA(P, (u32)&List[0], countof(List));
 //================== Pinout assignment
 // ====---> SPI6
-  IO_PinInit(&MISO6, PG12);  
-  IO_PinInit(&MOSI6, PG14);  
-  IO_PinInit(&SCK6,  PG13);
-  IO_PinInit(&NSS6,  PG8);  
-// Attach these pins to SPI_MasterHW
-  mySPI6.MISO = &MISO6;
-  mySPI6.MOSI = &MOSI6;
-  mySPI6.SCK = &SCK6;
-  mySPI6.NSSs[0] = &NSS6;
+  mySPI6.MISO = IO_PinInit(&MISO6, PG12);  
+  mySPI6.MOSI = IO_PinInit(&MOSI6, PG14);  
+  mySPI6.SCK = IO_PinInit(&SCK6,  PG13);
+  mySPI6.NSSs[0] = IO_PinInit(&NSS6,  PG8);  
 // Attach a HW SPI to the entity
   mySPI6.SPI = SPI6;
   mySPI6.SA = &mySequence;
@@ -385,15 +401,10 @@ void Test_SPI_MasterHW(void) {
 // SPI5 RX is DMA2 Stream3 channel 2
 // SPI5 TX is DMA2 Stream4 channel 2
 */  
-  IO_PinInit(&MISO5,PF8);  
-  IO_PinInit(&MOSI5,PF9);  
-  IO_PinInit(&SCK5,PF7);
-  IO_PinInit(&NSS5,PF6);  
-// Attach these pins to SPI_MasterHW
-  mySPI5.MISO = &MISO5;
-  mySPI5.MOSI = &MOSI5;
-  mySPI5.SCK = &SCK5;
-  mySPI5.NSSs[0] = &NSS5;
+  mySPI5.MISO = IO_PinInit(&MISO5,PF8);  
+  mySPI5.MOSI = IO_PinInit(&MOSI5,PF9);  
+  mySPI5.SCK = IO_PinInit(&SCK5,PF7);
+  mySPI5.NSSs[0] = IO_PinInit(&NSS5,PF6);  
 // Attach a HW SPI to the entity
   mySPI5.SPI = SPI5;
   mySPI5.SA = &mySequence;
@@ -413,15 +424,10 @@ void Test_SPI_MasterHW(void) {
 // SPI1 TX is DMA2 Stream1 channel 4
 */  
   
-  IO_PinInit(&MISO4, PE13);  
-  IO_PinInit(&MOSI4, PE14);  
-  IO_PinInit(&SCK4, PE12);
-  IO_PinInit(&NSS4, PE11);  
-// Attach these pins to SPI_MasterHW
-  mySPI4.MISO = &MISO4;
-  mySPI4.MOSI = &MOSI4;
-  mySPI4.SCK = &SCK4;
-  mySPI4.NSSs[0] = &NSS4;
+  mySPI4.MISO = IO_PinInit(&MISO4, PE13);  
+  mySPI4.MOSI = IO_PinInit(&MOSI4, PE14);  
+  mySPI4.SCK = IO_PinInit(&SCK4, PE12);
+  mySPI4.NSSs[0] = IO_PinInit(&NSS4, PE11);  
 // Attach a HW SPI to the entity
   mySPI4.SPI = SPI4;
   mySPI4.SA = &mySequence;
@@ -463,26 +469,22 @@ void Test_SPI_MasterHW(void) {
 static u32 ListA[100]; // list of pointers
 static u32 ListB[100];
 static u32 ListC[100];
-static StuffsArtery mySequenceA,mySequenceB,mySequenceC;
+static StuffsArtery_t mySequenceA,mySequenceB,mySequenceC;
 
 
   
 void Test_ConcurrentSPI_MasterHW(void) {
 
 // Create the sequencer entity
-  StuffsArtery* C = &mySequenceC; // program
+  StuffsArtery_t* C = &mySequenceC; // program
   NewSA(C, (u32)&ListC[0], countof(ListC));
 //================== Pinout assignment
 // ====---> SPI6
-  IO_PinInit(&MISO6, PG12);  
-  IO_PinInit(&MOSI6, PG14);  
-  IO_PinInit(&SCK6,  PG13);
-  IO_PinInit(&NSS6,  PG8);  
-// Attach these pins to SPI_MasterHW
-  mySPI6.MISO = &MISO6;
-  mySPI6.MOSI = &MOSI6;
-  mySPI6.SCK = &SCK6;
-  mySPI6.NSSs[0] = &NSS6;
+  mySPI6.MISO = IO_PinInit(&MISO6, PG12);  
+  mySPI6.MOSI = IO_PinInit(&MOSI6, PG14);  
+  mySPI6.SCK = IO_PinInit(&SCK6,  PG13);
+  mySPI6.NSSs[0] = IO_PinInit(&NSS6,  PG8);  
+
 // Attach a HW SPI to the entity
   mySPI6.SPI = SPI6;
   mySPI6.SA = &mySequenceC;
@@ -510,17 +512,13 @@ void Test_ConcurrentSPI_MasterHW(void) {
 // SPI5 RX is DMA2 Stream3 channel 2
 // SPI5 TX is DMA2 Stream4 channel 2
 */  
-  StuffsArtery* B = &mySequenceB; // program
+  StuffsArtery_t* B = &mySequenceB; // program
   NewSA(B, (u32)&ListB[0], countof(ListB));  
-  IO_PinInit(&MISO5,PF8);  
-  IO_PinInit(&MOSI5,PF9);  
-  IO_PinInit(&SCK5,PF7);
-  IO_PinInit(&NSS5,PF6);  
-// Attach these pins to SPI_MasterHW
-  mySPI5.MISO = &MISO5;
-  mySPI5.MOSI = &MOSI5;
-  mySPI5.SCK = &SCK5;
-  mySPI5.NSSs[0] = &NSS5;
+  mySPI5.MISO = IO_PinInit(&MISO5,PF8);  
+  mySPI5.MOSI = IO_PinInit(&MOSI5,PF9);  
+  mySPI5.SCK = IO_PinInit(&SCK5,PF7);
+  mySPI5.NSSs[0] = IO_PinInit(&NSS5,PF6);  
+
 // Attach a HW SPI to the entity
   mySPI5.SPI = SPI5;
   mySPI5.SA = &mySequenceB;
@@ -547,17 +545,13 @@ void Test_ConcurrentSPI_MasterHW(void) {
 // SPI4 RX is DMA2 Stream0 channel 4
 // SPI1 TX is DMA2 Stream1 channel 4
 */  
-  StuffsArtery* A = &mySequenceA; // program
+  StuffsArtery_t* A = &mySequenceA; // program
   NewSA(A, (u32)&ListA[0], countof(ListA));  
-  IO_PinInit(&MISO4, PE13);  
-  IO_PinInit(&MOSI4, PE14);  
-  IO_PinInit(&SCK4, PE12);
-  IO_PinInit(&NSS4, PE11);  
-// Attach these pins to SPI_MasterHW
-  mySPI4.MISO = &MISO4;
-  mySPI4.MOSI = &MOSI4;
-  mySPI4.SCK = &SCK4;
-  mySPI4.NSSs[0] = &NSS4;
+  mySPI4.MISO = IO_PinInit(&MISO4, PE13);  
+  mySPI4.MOSI = IO_PinInit(&MOSI4, PE14);  
+  mySPI4.SCK = IO_PinInit(&SCK4, PE12);
+  mySPI4.NSSs[0] = IO_PinInit(&NSS4, PE11);  
+
 // Attach a HW SPI to the entity
   mySPI4.SPI = SPI4;
   mySPI4.SA = &mySequenceA;
@@ -583,19 +577,19 @@ void Test_ConcurrentSPI_MasterHW(void) {
   
 //===========
   // here we test the Basic Timer delays
-  NewBasicTimer_us(&Timer6_us, TIM6, 10, GetMCUClockTree());// 1us tick period
-  NewBasicTimer_us(&Timer7_ms, TIM7, 1000, GetMCUClockTree());// 1ms period
-  NVIC_BasicTimersEnable(ENABLE);
+  NewTimer_us(&Timer6_us, TIM6, 10, GetMCUClockTree());// 1us tick period
+  NewTimer_us(&Timer7_ms, TIM7, 1000, GetMCUClockTree());// 1ms period
+  NVIC_TimersEnable(ENABLE);
   
   // 0 is free
-  HookBasicTimerCountdown(&Timer6_us, 1, (u32)JobToDo, (u32)&mySequenceA );
-  HookBasicTimerCountdown(&Timer6_us, 2, (u32)JobToDo, (u32)&mySequenceB );
-  HookBasicTimerCountdown(&Timer6_us, 3, (u32)JobToDo, (u32)&mySequenceC );
+  HookTimerCountdown(&Timer6_us, 1, (u32)JobToDo, (u32)&mySequenceA );
+  HookTimerCountdown(&Timer6_us, 2, (u32)JobToDo, (u32)&mySequenceB );
+  HookTimerCountdown(&Timer6_us, 3, (u32)JobToDo, (u32)&mySequenceC );
 
   // 0 is free
-  HookBasicTimerCountdown(&Timer7_ms, 1, (u32)JobToDo, (u32)&mySequenceA );
-  HookBasicTimerCountdown(&Timer7_ms, 2, (u32)JobToDo, (u32)&mySequenceB );
-  HookBasicTimerCountdown(&Timer7_ms, 3, (u32)JobToDo, (u32)&mySequenceC );
+  HookTimerCountdown(&Timer7_ms, 1, (u32)JobToDo, (u32)&mySequenceA );
+  HookTimerCountdown(&Timer7_ms, 2, (u32)JobToDo, (u32)&mySequenceB );
+  HookTimerCountdown(&Timer7_ms, 3, (u32)JobToDo, (u32)&mySequenceC );
 //==========
   
 //===========

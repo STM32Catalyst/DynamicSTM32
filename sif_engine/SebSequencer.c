@@ -9,11 +9,11 @@
 u32 JobToDo(u32 u) { // this can be called by others OR by the DMA interrupt of this SPI
   
   u32 CallbackArmed = 0;
-  StuffsArtery* SA = (StuffsArtery*) u;
+  StuffsArtery_t* SA = (StuffsArtery_t*) u;
   
   do {
     ClipSA_Down(SA); // this will trigger empty fifo?
-    OneJobType* Job = (OneJobType*)SA->Out;
+    OneJob_t* Job = (OneJob_t*)SA->Out;
     if(Job->fnJob) {
       CallbackArmed = Job->fnJob((u32)Job->ctJobs);//, Job->Param1, Job->Param2, Job->Param3);
     }else{
@@ -30,7 +30,7 @@ u32 JobToDo(u32 u) { // this can be called by others OR by the DMA interrupt of 
 // For sequences not using interrups (bitbanging I2C/SPI), call directly JobToDo (no return)  
 u32 StartJobToDoInBackground(u32 u) { // this can be called by others OR by the DMA interrupt of this SPI
 
-  StuffsArtery* SA = (StuffsArtery*) u;
+  StuffsArtery_t* SA = (StuffsArtery_t*) u;
   
   if(u==0) while(1);
   if(SA->bCount==0) while(1);
@@ -48,7 +48,7 @@ u32 StartJobToDoInBackground(u32 u) { // this can be called by others OR by the 
 // For sequences not using interrups (bitbanging I2C/SPI), call directly JobToDo (no return)  
 u32 StartJobToDoInForeground(u32 u) { // this can be called by others OR by the DMA interrupt of this SPI
 
-  StuffsArtery* SA = (StuffsArtery*) u;
+  StuffsArtery_t* SA = (StuffsArtery_t*) u;
 
   if(u==0) while(1);
   if(SA->bCount==0) while(1);

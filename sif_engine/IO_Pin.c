@@ -12,7 +12,7 @@ GPIO_TypeDef* GPIOs[] = {
 };
 
 
-void IO_PinInit(IO_PinTypeDef* Pin, PinNameDef Name ) {
+IO_Pin_t* IO_PinInit(IO_Pin_t* Pin, PinNameDef Name ) {
 
   GPIO_TypeDef* GPIOx = GPIOs[Name>>4];
   u8 PinPos = Name & 0xF;
@@ -23,16 +23,18 @@ void IO_PinInit(IO_PinTypeDef* Pin, PinNameDef Name ) {
   Pin->Name = Name;
   Pin->GPIOx = GPIOs[Name>>4];
   Pin->BitMask = 1L<<(Name&0xF);
+  
+  return Pin;
 }
 
-u32 IO_PinGetPR(IO_PinTypeDef* Pin) {
+u32 IO_PinGetPR(IO_Pin_t* Pin) {
   
   if((EXTI->PR)&(Pin->BitMask))
     return 1;
   
   return 0;
 }
-void IO_PinClearPR(IO_PinTypeDef* Pin) {
+void IO_PinClearPR(IO_Pin_t* Pin) {
   
   EXTI->PR = Pin->BitMask; // setting the bit will clear it
 }
@@ -40,7 +42,7 @@ void IO_PinClearPR(IO_PinTypeDef* Pin) {
 
 
 
-void IO_PinClockEnable(IO_PinTypeDef* Pin) {
+void IO_PinClockEnable(IO_Pin_t* Pin) {
   
   BookPin(Pin->Name);
   // we activate the clock of the corresponding GPIO port
@@ -48,16 +50,16 @@ void IO_PinClockEnable(IO_PinTypeDef* Pin) {
   RCC->AHB1ENR |= 1<<(Pin->Name>>4);
 }
 
-void IO_PinSetHigh(IO_PinTypeDef* Pin) { // set the output register high
+void IO_PinSetHigh(IO_Pin_t* Pin) { // set the output register high
   Pin->GPIOx->BSRRL = Pin->BitMask; // set
 }
 
-void IO_PinSetLow(IO_PinTypeDef* Pin) { // set a pin low
+void IO_PinSetLow(IO_Pin_t* Pin) { // set a pin low
   Pin->GPIOx->BSRRH = Pin->BitMask; // reset
 }  
 
 // higher level
-void IO_PinSet(IO_PinTypeDef* Pin, u32 value) {
+void IO_PinSet(IO_Pin_t* Pin, u32 value) {
   if(value) {
     IO_PinSetHigh(Pin); // set
   }else{
@@ -65,7 +67,7 @@ void IO_PinSet(IO_PinTypeDef* Pin, u32 value) {
   };
 }
   
-s32 IO_PinGet(IO_PinTypeDef* Pin) { // returns the value
+s32 IO_PinGet(IO_Pin_t* Pin) { // returns the value
   u8 Bit = 0;
   if((Pin->GPIOx->IDR)&(Pin->BitMask))
     Bit = 1;
@@ -73,13 +75,13 @@ s32 IO_PinGet(IO_PinTypeDef* Pin) { // returns the value
 }
 
 // higher level
-void IO_PinToggle(IO_PinTypeDef* Pin) { // if pin name def is negative, can decide to do something?
+void IO_PinToggle(IO_Pin_t* Pin) { // if pin name def is negative, can decide to do something?
   IO_PinSet(Pin, IO_PinGet(Pin)^1);
 }
 
 // how about the input shmiddt trigger?
 
-void IO_PinSetSpeedMHz(IO_PinTypeDef* Pin, u32 MHz) {
+void IO_PinSetSpeedMHz(IO_Pin_t* Pin, u32 MHz) {
   // we can also take care of the output speed compensation
   u32 set = 0;
 
@@ -90,29 +92,29 @@ void IO_PinSetSpeedMHz(IO_PinTypeDef* Pin, u32 MHz) {
   ClearAndSetShiftedBits(GPIOs[Pin->Name>>4]->OSPEEDR, 3, set, ((Pin->Name&0xF)*2));
 }
 
-void IO_PinEnablePullUp(IO_PinTypeDef* Pin, FunctionalState Enable) {
+void IO_PinEnablePullUp(IO_Pin_t* Pin, FunctionalState Enable) {
 
   ClearAndSetShiftedBits(GPIOs[Pin->Name>>4]->PUPDR, 1, (Enable==DISABLE)?0:1, (Pin->Name&0xF)*2);  
 }
 
-void IO_PinEnablePullDown(IO_PinTypeDef* Pin, FunctionalState Enable) {
+void IO_PinEnablePullDown(IO_Pin_t* Pin, FunctionalState Enable) {
   
   ClearAndSetShiftedBits(GPIOs[Pin->Name>>4]->PUPDR, 2, (Enable==DISABLE)?0:2, (Pin->Name&0xF)*2);  
 } 
 
-void IO_PinEnablePullUpDown(IO_PinTypeDef* Pin, FunctionalState UpEnable, FunctionalState DownEnable) {
+void IO_PinEnablePullUpDown(IO_Pin_t* Pin, FunctionalState UpEnable, FunctionalState DownEnable) {
   IO_PinEnablePullUp(Pin, UpEnable);
   IO_PinEnablePullDown(Pin, DownEnable);
 }
 
-void IO_PinEnableHighDrive(IO_PinTypeDef* Pin, FunctionalState Enable) {
+void IO_PinEnableHighDrive(IO_Pin_t* Pin, FunctionalState Enable) {
   
   ClearAndSetShiftedBits(GPIOs[Pin->Name>>4]->OTYPER, 1, (Enable==DISABLE)?1:0, Pin->Name&0xF);  // 0 push pull, 1 open drain
 }
 
 
 // we should also catch if an alternate is already assigned to this pin, but all 16 values are valid...
-void IO_PinConfiguredAs(IO_PinTypeDef* Pin, u32 signal) {
+void IO_PinConfiguredAs(IO_Pin_t* Pin, u32 signal) {
  
   if(signal & 0xF0) // special mode
   {
@@ -1182,7 +1184,7 @@ void FreeAF(u32 PinName) {
 u32 sq_PinSetLowJob(u32 u) {
   
   u32* p = (u32*) u;
-  IO_PinTypeDef* Pin = (IO_PinTypeDef*)p[0];
+  IO_Pin_t* Pin = (IO_Pin_t*)p[0];
   
   IO_PinSetLow(Pin);
   return 0; // done, immediate
@@ -1191,7 +1193,7 @@ u32 sq_PinSetLowJob(u32 u) {
 u32 sq_PinSetHighJob(u32 u) {
 
   u32* p = (u32*) u;
-  IO_PinTypeDef* Pin = (IO_PinTypeDef*)p[0];
+  IO_Pin_t* Pin = (IO_Pin_t*)p[0];
 
   IO_PinSetHigh(Pin);
   return 0; // done, immediate

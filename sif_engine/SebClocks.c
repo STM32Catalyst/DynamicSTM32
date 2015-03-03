@@ -1,7 +1,7 @@
 
 #include "SebEngine.h"
 
-MCUClockTree MCUClocks;
+MCUClocks_t MCUClocks;
 
 void MCUInitClocks(void) {
   
@@ -14,8 +14,8 @@ void MCUInitClocks(void) {
 
   MCUClocks.SysClk_Hz = 96000000;
   MCUClocks.CoreClk_Hz = 96000000;
-  MCUClocks.APB1Clk_Hz = 48000000;
-  MCUClocks.APB2Clk_Hz = 24000000;
+  MCUClocks.APB1Clk_Hz = 24000000;
+  MCUClocks.APB2Clk_Hz = 48000000;
   MCUClocks.SAIClk_Hz = 0;
   MCUClocks.I2SClk_Hz = 0;
 
@@ -23,7 +23,7 @@ void MCUInitClocks(void) {
   MCUClocks.OTG_Clk_Hz = 0;
 }
 
-MCUClockTree* GetMCUClockTree(void) {
+MCUClocks_t* GetMCUClockTree(void) {
   
   return &MCUClocks;
 }

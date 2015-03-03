@@ -33,20 +33,20 @@ typedef struct {
 //  u8 FlagFull : 1; // unused
 //  u8 FlagNoLongerFull : 1; // unused
   
-} StuffsArtery;
+} StuffsArtery_t;
 
 
-u32 NewSA(StuffsArtery* SA, u32 begin, s32 size);
+u32 NewSA(StuffsArtery_t* SA, u32 begin, s32 size);
 
-u32 GetSA_Down(StuffsArtery* SA);
-u32 GetSA_Up(StuffsArtery* SA);
+u32 GetSA_Down(StuffsArtery_t* SA);
+u32 GetSA_Up(StuffsArtery_t* SA);
 
-u32 GlueSA_Down(StuffsArtery* SA);
-u32 ClipSA_Down(StuffsArtery* SA);
-u32 GlueSA_Up(StuffsArtery* SA);
-u32 ClipSA_Up(StuffsArtery* SA);
+u32 GlueSA_Down(StuffsArtery_t* SA);
+u32 ClipSA_Down(StuffsArtery_t* SA);
+u32 GlueSA_Up(StuffsArtery_t* SA);
+u32 ClipSA_Up(StuffsArtery_t* SA);
 
-u32 AddToSA(StuffsArtery* SA, u32 In);
+u32 AddToSA(StuffsArtery_t* SA, u32 In);
 // the big question is should we create an array of pointer+size, pointer hooks, etc...
 // can we run a sequence with this?
 

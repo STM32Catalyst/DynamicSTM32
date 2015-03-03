@@ -15,7 +15,7 @@ typedef struct {
   
 } MCU_SignalDepedencyType; // this points to a const data // this is one entry
 */
-extern const MCU_NodeDependencyType Signal2Info[] = {
+const MCU_NodeDependency_t Signal2Info[] = {
 
 { ucNoSignal, 0, 0, 0, 0, 0},
 
@@ -77,14 +77,25 @@ extern const MCU_NodeDependencyType Signal2Info[] = {
 { ucUSART1, (u32)USART1, RCC_APB2PeriphClockCmd, RCC_APB2Periph_USART1, USART1_IRQn, (u32)&fnUSART1, (u32)&ctUSART1 },
 { ucUSART2, (u32)USART2, RCC_APB1PeriphClockCmd, RCC_APB1Periph_USART2, USART2_IRQn, (u32)&fnUSART2, (u32)&ctUSART2 },
 { ucUSART3, (u32)USART3, RCC_APB1PeriphClockCmd, RCC_APB1Periph_USART3, USART3_IRQn, (u32)&fnUSART3, (u32)&ctUSART3 },
-{ ucUART4, (u32)UART4, RCC_APB1PeriphClockCmd, RCC_APB1Periph_UART4, UART4_IRQn, (u32)&fnUART4, (u32)&ctUART4 },
-{ ucUART5, (u32)UART5, RCC_APB1PeriphClockCmd, RCC_APB1Periph_UART5, UART5_IRQn, (u32)&fnUART5, (u32)&ctUART5 },
+{ ucUART4,  (u32)UART4,  RCC_APB1PeriphClockCmd, RCC_APB1Periph_UART4,  UART4_IRQn,  (u32)&fnUART4,  (u32)&ctUART4 },
+{ ucUART5,  (u32)UART5,  RCC_APB1PeriphClockCmd, RCC_APB1Periph_UART5,  UART5_IRQn,  (u32)&fnUART5,  (u32)&ctUART5 },
 { ucUSART6, (u32)USART6, RCC_APB2PeriphClockCmd, RCC_APB2Periph_USART6, USART6_IRQn, (u32)&fnUSART6, (u32)&ctUSART6 },
 //{ ucUSART7, (u32)USART7, RCC_APB1PeriphClockCmd, , , (u32)&fn, (u32)&ct },
 //{ ucUSART8, (u32)USART8, RCC_APB1PeriphClockCmd, , , (u32)&fn, (u32)&ct },
-
-{ ucTIM6, (u32)TIM6, RCC_APB1PeriphClockCmd, RCC_APB1Periph_TIM6, TIM6_DAC_IRQn, (u32)&fnTIM6_DAC, (u32)&ctTIM6_DAC },
-{ ucTIM7, (u32)TIM7, RCC_APB1PeriphClockCmd, RCC_APB1Periph_TIM7, TIM7_IRQn, (u32)&fnTIM7, (u32)&ctTIM7 },
+{ ucTIM1,  (u32)TIM1,  RCC_APB2PeriphClockCmd, RCC_APB2Periph_TIM1, TIM1_UP_TIM10_IRQn, (u32)&fnTIM1_UP, (u32)&ctTIM1_UP },
+{ ucTIM2,  (u32)TIM2,  RCC_APB1PeriphClockCmd, RCC_APB1Periph_TIM2, TIM2_IRQn, (u32)&fnTIM2, (u32)&ctTIM2 },
+{ ucTIM3,  (u32)TIM3,  RCC_APB1PeriphClockCmd, RCC_APB1Periph_TIM3, TIM3_IRQn, (u32)&fnTIM3, (u32)&ctTIM3 },
+{ ucTIM4,  (u32)TIM4,  RCC_APB1PeriphClockCmd, RCC_APB1Periph_TIM4, TIM4_IRQn, (u32)&fnTIM4, (u32)&ctTIM4 },
+{ ucTIM5,  (u32)TIM5,  RCC_APB1PeriphClockCmd, RCC_APB1Periph_TIM5, TIM5_IRQn, (u32)&fnTIM5, (u32)&ctTIM5 },
+{ ucTIM6,  (u32)TIM6,  RCC_APB1PeriphClockCmd, RCC_APB1Periph_TIM6, TIM6_DAC_IRQn, (u32)&fnTIM6_DAC, (u32)&ctTIM6_DAC },
+{ ucTIM7,  (u32)TIM7,  RCC_APB1PeriphClockCmd, RCC_APB1Periph_TIM7, TIM7_IRQn, (u32)&fnTIM7, (u32)&ctTIM7 },
+{ ucTIM8,  (u32)TIM8,  RCC_APB2PeriphClockCmd, RCC_APB2Periph_TIM8, TIM8_UP_TIM13_IRQn, (u32)&fnTIM8_UP, (u32)&ctTIM8_UP },
+{ ucTIM9,  (u32)TIM9,  RCC_APB2PeriphClockCmd, RCC_APB2Periph_TIM9, TIM1_BRK_TIM9_IRQn, (u32)&fnTIM9, (u32)&ctTIM9 },
+{ ucTIM10, (u32)TIM10, RCC_APB2PeriphClockCmd, RCC_APB2Periph_TIM10, TIM1_UP_TIM10_IRQn, (u32)&fnTIM10, (u32)&ctTIM10 },
+{ ucTIM11, (u32)TIM11, RCC_APB2PeriphClockCmd, RCC_APB2Periph_TIM11, TIM1_TRG_COM_TIM11_IRQn, (u32)&fnTIM11, (u32)&ctTIM11 },
+{ ucTIM12, (u32)TIM12, RCC_APB1PeriphClockCmd, RCC_APB1Periph_TIM12, TIM8_BRK_TIM12_IRQn, (u32)&fnTIM12, (u32)&ctTIM12 },
+{ ucTIM13, (u32)TIM13, RCC_APB1PeriphClockCmd, RCC_APB1Periph_TIM13, TIM8_UP_TIM13_IRQn, (u32)&fnTIM13, (u32)&ctTIM13 },
+{ ucTIM14, (u32)TIM14, RCC_APB1PeriphClockCmd, RCC_APB1Periph_TIM14, TIM8_TRG_COM_TIM14_IRQn, (u32)&fnTIM14, (u32)&ctTIM14 },
 
 };
 
@@ -103,6 +114,19 @@ u32 ClockGateEnable_PPP(u32 PPP_Adr, FunctionalState Enable) {
   while(1);
 }
 
+MCU_NodeDependency_t* GetSignal2InfoBy_PPP(u32 PPP_Adr) {
+
+  u32 n;
+  for(n=0;n<countof(Signal2Info);n++) {
+    if(Signal2Info[n].PPP_Adr == PPP_Adr) {
+      return (MCU_NodeDependency_t*) &Signal2Info[n];
+    }
+  }
+  
+  while(1);
+}
+  
+  
 //======================================================================
 // Second step is to hookup the corresponding IRQs
 u32 HookIRQ_PPP(u32 PPP_Adr, u32 fn, u32 ct) {
@@ -125,25 +149,28 @@ u32 HookIRQ_PPP(u32 PPP_Adr, u32 fn, u32 ct) {
 }
 
 
+//==================================
+
+
 //======================================================================
 // Here this will be called by Main Loop
 // Any process which needs servicing at non critical time can be called back from main loop
 // Using a FIFO of Jobs to run. This FIFO will have to be replenished regularly
 
 static u32 MainLoopList[100]; // list of pointers
-StuffsArtery myMainLoopSequence; // this can be accessed by anyone, through a global function callback...
+StuffsArtery_t myMainLoopSequence; // this can be accessed by anyone, through a global function callback...
 
 u32 MainLoopServicingSA(u32 u) {
   
   u32 CallbackArmed = 0;
   // one task will be called everytime this function being polled by main loop.
-  StuffsArtery* SA = (StuffsArtery*) u;
+  StuffsArtery_t* SA = (StuffsArtery_t*) u;
 
   if(SA->bCount==0) return 0; // nothing to do
   
   // one job to handle now
   ClipSA_Down(SA);
-  OneJobType* Job = (OneJobType*)SA->Out;
+  OneJob_t* Job = (OneJob_t*)SA->Out;
   if(Job->fnJob) {
     CallbackArmed = Job->fnJob((u32)Job->ctJobs);//, Job->Param1, Job->Param2, Job->Param3);
   }else{
@@ -157,6 +184,60 @@ u32 MainLoopServicingSA(u32 u) {
 
 void NewMainLoopServicing(void) {
   
-  StuffsArtery* P = &myMainLoopSequence; // program
+  StuffsArtery_t* P = &myMainLoopSequence; // program
   NewSA(P, (u32)&MainLoopList[0], countof(MainLoopList));  
 }
+
+u8* Get_myMCU_SerialID(void) { return (u8*) 0x1FFF7A10;	} // the end of the 96 serial ID is changing chip by chip (LSB of the unique number)
+
+//=============================================
+// Timer capabilities
+
+static const MCU_TimerCapabilities_t MCU_TimerCapabilities[] = {
+
+{ ucNoSignal, 0, 0, 0, 0, 0},
+// signal, PPP, Max, SR Valid Flags, N/A, N/A, N/A
+{ ucTIM1, (u32)TIM1,   0x0000FFFF, TIM_FLAG_Update || TIM_FLAG_CC1, 0, 0, 0 },
+{ ucTIM2, (u32)TIM2,   0xFFFFFFFF, TIM_FLAG_Update || TIM_FLAG_CC1 || TIM_FLAG_CC2 || TIM_FLAG_CC3 || TIM_FLAG_CC4, 0, 0, 0 },
+{ ucTIM3, (u32)TIM3,   0x0000FFFF, TIM_FLAG_Update || TIM_FLAG_CC1 || TIM_FLAG_CC2 || TIM_FLAG_CC3 || TIM_FLAG_CC4, 0, 0, 0 },
+{ ucTIM4, (u32)TIM4,   0x0000FFFF, TIM_FLAG_Update || TIM_FLAG_CC1 || TIM_FLAG_CC2 || TIM_FLAG_CC3 || TIM_FLAG_CC4, 0, 0, 0 },
+{ ucTIM5, (u32)TIM5,   0xFFFFFFFF, TIM_FLAG_Update || TIM_FLAG_CC1 || TIM_FLAG_CC2 || TIM_FLAG_CC3 || TIM_FLAG_CC4, 0, 0, 0 },
+{ ucTIM6, (u32)TIM6,   0x0000FFFF, TIM_FLAG_Update, 0, 0, 0 },
+{ ucTIM7, (u32)TIM7,   0x0000FFFF, TIM_FLAG_Update, 0, 0, 0 },
+{ ucTIM8, (u32)TIM8,   0x0000FFFF, TIM_FLAG_Update || TIM_FLAG_CC1, 0, 0, 0 },
+{ ucTIM9, (u32)TIM9,   0x0000FFFF, TIM_FLAG_Update || TIM_FLAG_CC1 || TIM_FLAG_CC2, 0, 0, 0 },
+{ ucTIM10, (u32)TIM10, 0x0000FFFF, TIM_FLAG_Update || TIM_FLAG_CC1, 0, 0, 0 },
+{ ucTIM11, (u32)TIM11, 0x0000FFFF, TIM_FLAG_Update || TIM_FLAG_CC1, 0, 0, 0 },
+{ ucTIM12, (u32)TIM12, 0x0000FFFF, TIM_FLAG_Update || TIM_FLAG_CC1 || TIM_FLAG_CC2, 0, 0, 0 },
+{ ucTIM13, (u32)TIM13, 0x0000FFFF, TIM_FLAG_Update || TIM_FLAG_CC1, 0, 0, 0 },
+{ ucTIM14, (u32)TIM14, 0x0000FFFF, TIM_FLAG_Update || TIM_FLAG_CC1, 0, 0, 0 },
+
+};
+
+//======================================================================
+// First step, clock enable/disable per peripheral type
+u32 MCU_Timer_GetMax_by_PPP(u32 PPP_Adr) {
+
+  u32 n;
+  for(n=0;n<countof(MCU_TimerCapabilities);n++) {
+    if(MCU_TimerCapabilities[n].PPP_Adr == PPP_Adr) {
+      return MCU_TimerCapabilities[n].Max;
+    }
+  }
+  
+  while(1);
+}
+
+u32 MCU_Timer_GetSR_ValidFlags_by_PPP(u32 PPP_Adr) {
+
+  u32 n;
+  for(n=0;n<countof(MCU_TimerCapabilities);n++) {
+    if(MCU_TimerCapabilities[n].PPP_Adr == PPP_Adr) {
+      return MCU_TimerCapabilities[n].SR_ValidFlags;
+    }
+  }
+  
+  while(1);
+}
+
+

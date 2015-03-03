@@ -17,11 +17,11 @@
 
 typedef struct {
   
-  IO_PinTypeDef* SDA; // we need the pointer to the pin
-  IO_PinTypeDef* SCL; // we need the pointer to the pin
+  IO_Pin_t* SDA; // we need the pointer to the pin
+  IO_Pin_t* SCL; // we need the pointer to the pin
   
-  BasicTimer* BT; // this will be to control time ticks
-  u8 BTn; //  a number between 0 and 3
+  Timer_t* Timer; // this will be to control time ticks
+  u8 Cn; //  a number between 0 and 3
 
   u32 (*fnWaitMethod)(u32);
   u32 ctWaitMethod;
@@ -29,17 +29,17 @@ typedef struct {
   
   u32 MaxBps; // input
   
-  StuffsArtery* SA; // this points to Job feeding  
+  StuffsArtery_t* SA; // this points to Job feeding  
   
   u8 SlaveAdr; // the 8 bit slave address which we are using from the start command. (tells if read or write operation on going)
   u8 AckFail : 1;
   u8 JobDone : 1;
   
-} I2C_MasterIO;
+} I2C_MasterIO_t;
 
 
-u32 NewI2C_MasterIO(I2C_MasterIO* MIO);
-u32 SetI2C_MasterIO_Timings( I2C_MasterIO* M, u32 MaxBps, MCUClockTree* T);
+u32 NewI2C_MasterIO(I2C_MasterIO_t* MIO);
+u32 SetI2C_MasterIO_Timings( I2C_MasterIO_t* M, u32 MaxBps, MCUClocks_t* T);
 
 u32 sq_I2C_MIO_StartJob(u32 u);
 u32 sq_I2C_MIO_StopJob(u32 u);

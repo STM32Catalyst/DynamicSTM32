@@ -17,9 +17,18 @@ extern u32 fnCAN1_TX,ctCAN1_RX;
 extern u32 fnCAN1_RX0,ctCAN1_RX0;
 extern u32 fnCAN1_RX1,ctCAN1_RX1;
 extern u32 fnCAN1_SCE,ctCAN1_SCE;
-extern u32 fnTIM1_BRK_TIM9,ctTIM1_BRK_TIM9; // this should be split in 2 different hooks
-extern u32 fnTIM1_UP_TIM10,ctTIM1_UP_TIM10; // this should be split in 2 different hooks
-extern u32 fnTIM1_TRG_COM_TIM11,ctTIM1_TRG_COM_TIM11; // this should be split in 2 different hooks
+//extern u32 fnTIM1_BRK_TIM9,ctTIM1_BRK_TIM9; // this should be split in 2 different hooks
+extern u32 fnTIM1_BRK,ctTIM1_BRK;
+extern u32 fnTIM9,ctTIM9;
+
+//extern u32 fnTIM1_UP_TIM10,ctTIM1_UP_TIM10; // this should be split in 2 different hooks
+extern u32 fnTIM1_UP,ctTIM1_UP;
+extern u32 fnTIM10,ctTIM10;
+
+//extern u32 fnTIM1_TRG_COM_TIM11,ctTIM1_TRG_COM_TIM11; // this should be split in 2 different hooks
+extern u32 fnTIM1_TRG_COM,ctTIM1_TRG_COM;
+extern u32 fnTIM11,ctTIM11;
+
 extern u32 fnTIM1_CC,ctTIM1_CC;
 extern u32 fnTIM2,ctTIM2;
 extern u32 fnTIM3,ctTIM3;
@@ -35,9 +44,18 @@ extern u32 fnUSART2,ctUSART2;
 extern u32 fnUSART3,ctUSART3;
 extern u32 fnRTC_Alarm,ctRTC_Alarm;
 extern u32 fnOTG_FS_WKUP,ctOTG_FS_WKUP;
-extern u32 fnTIM8_BRK_TIM12,ctTIM8_BRK_TIM12; // this should be flipped to 2 different hooks
-extern u32 fnTIM8_UP_TIM13,ctTIM8_UP_TIM13; // this should be flipped to 2 different hooks
-extern u32 fnTIM8_TRG_COM_TIM14,ctTIM8_TRG_COM_TIM14; // this should be flipped to 2 different hooks
+//extern u32 fnTIM8_BRK_TIM12,ctTIM8_BRK_TIM12; // this should be flipped to 2 different hooks
+extern u32 fnTIM8_BRK,ctTIM8_BRK;
+extern u32 fnTIM12,ctTIM12;
+
+//extern u32 fnTIM8_UP_TIM13,ctTIM8_UP_TIM13; // this should be flipped to 2 different hooks
+extern u32 fnTIM8_UP,ctTIM8_UP;
+extern u32 fnTIM13,ctTIM13;
+
+//extern u32 fnTIM8_TRG_COM_TIM14,ctTIM8_TRG_COM_TIM14; // this should be flipped to 2 different hooks
+extern u32 fnTIM8_TRG_COM,ctTIM8_TRG_COM;
+extern u32 fnTIM14,ctTIM14;
+
 extern u32 fnTIM8_CC,ctTIM8_CC;
 extern u32 fnFSMC,ctFSMC;
 extern u32 fnSDIO,ctSDIO;

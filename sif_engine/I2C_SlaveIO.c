@@ -134,7 +134,7 @@ static u32 I2C_SlaveIO_EXTI_IRQHandler(u32 u) {
 
 u32 I2C_SlaveIO_STMA_Run(u32 u) {
 
-  STateMAchine* STMA = (STateMAchine*) u;// type it
+  STateMAchine_t* STMA = (STateMAchine_t*) u;// type it
   u32 result;
 
     if(STMA->fnStates[STMA->State]) result = ((u32(*)(u32))STMA->fnStates[STMA->State])(STMA->ct); // call either an empty function or a hooked one with desired context predefined (if context missing... error)
@@ -583,18 +583,16 @@ static u8 RxBuf[10];
 
 // to make the slave not responding, we need to change to add a "slave busy" flag which latches when bus is idle.
 static I2C_SlaveIO gI2C_Slave; // can be multiple of them, as array (we pass by pointer)
-static IO_PinTypeDef I2C_SlaveIO_SDA; // for fast pin access using bitbanding area (we will use a fake HW registers which will check if all pins are not colliding)
-static IO_PinTypeDef I2C_SlaveIO_SCL; // for fast pin access using bitbanding area
+static IO_Pin_t I2C_SlaveIO_SDA; // for fast pin access using bitbanding area (we will use a fake HW registers which will check if all pins are not colliding)
+static IO_Pin_t I2C_SlaveIO_SCL; // for fast pin access using bitbanding area
 // we have to cleanup the Architect function for the fPin
 
 
 
 void TestI2C_SlaveIO(void) {
 
-  IO_PinInit(&I2C_SlaveIO_SDA, PH10 ); // Initialize some quick pointers
-  IO_PinInit(&I2C_SlaveIO_SCL, PH12 ); // Initialize some quick pointers
-  gI2C_Slave.SDA = &I2C_SlaveIO_SDA; // global shared resource, to be generic later
-  gI2C_Slave.SCL = &I2C_SlaveIO_SCL; // global shared resource, to be generic later
+  gI2C_Slave.SDA = IO_PinInit(&I2C_SlaveIO_SDA, PH10 ); // Initialize some quick pointers
+  gI2C_Slave.SCL = IO_PinInit(&I2C_SlaveIO_SCL, PH12 ); // Initialize some quick pointers
   
   NewI2C_SlaveIO(&gI2C_Slave, (u8*)I2C_SlaveAdresses, countof(I2C_SlaveAdresses), I2C_SlaveMemory, countof(I2C_SlaveMemory));
   SpyI2C_SlaveIO(&gI2C_Slave); // this is to go to spy code as well

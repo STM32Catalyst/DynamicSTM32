@@ -13,7 +13,7 @@
 
 static u8 Dummy[1024];
 
-void NewSPI_MasterHW_RX_TX(SPI_MasterHW* S, DMA_Stream_TypeDef* RX_Stream, u32 DMA_RX_Channel, DMA_Stream_TypeDef* TX_Stream, u32 DMA_TX_Channel) {
+void NewSPI_MasterHW_RX_TX(SPI_MasterHW_t* S, DMA_Stream_TypeDef* RX_Stream, u32 DMA_RX_Channel, DMA_Stream_TypeDef* TX_Stream, u32 DMA_TX_Channel) {
 
   NVIC_InitTypeDef NVIC_InitStructure;  
 //  SPI_InitTypeDef  SPI_InitStructure;
@@ -81,12 +81,12 @@ void NewSPI_MasterHW_RX_TX(SPI_MasterHW* S, DMA_Stream_TypeDef* RX_Stream, u32 D
 
 // Define the DMA Stream manually for now
   // DMA TX
-  S->DMA_TX = (DMA_StreamInfoType*) Get_pDMA_Info(TX_Stream);
+  S->DMA_TX = (DMA_StreamInfo_t*) Get_pDMA_Info(TX_Stream);
   if(S->DMA_TX==0) while(1); // error, no DMA Stream for it
 
 
   // DMA RX  
-  S->DMA_RX = (DMA_StreamInfoType*) Get_pDMA_Info(RX_Stream);
+  S->DMA_RX = (DMA_StreamInfo_t*) Get_pDMA_Info(RX_Stream);
   if(S->DMA_RX==0) while(1); // error, no DMA Stream for it
 
 // DMA matters
@@ -180,7 +180,7 @@ static const u32 SPI_MasterHW_Psc[] = {
 
   
 
-u32 SetSPI_MasterHW_Timings(SPI_MasterHW* S, u32 MaxBps, u32 CPol, u32 CPha, u32 FirstBit ) { // 1200000, SPI_CPOL_Low, SPI_CPHA_1Edge, SPI_FirstBit_MSB
+u32 SetSPI_MasterHW_Timings(SPI_MasterHW_t* S, u32 MaxBps, u32 CPol, u32 CPha, u32 FirstBit ) { // 1200000, SPI_CPOL_Low, SPI_CPHA_1Edge, SPI_FirstBit_MSB
 
   // members of the structure related to timings should be initialized
   u32 bps;
@@ -228,14 +228,14 @@ u32 SetSPI_MasterHW_Timings(SPI_MasterHW* S, u32 MaxBps, u32 CPol, u32 CPha, u32
 
 
 static void DMA_Interrupt(u32 u, FunctionalState Enable) {
-  SPI_MasterHW* S = (SPI_MasterHW*) u;
+  SPI_MasterHW_t* S = (SPI_MasterHW_t*) u;
   DMA_ClearFlag(S->DMA_RX->Stream, S->DMA_RX->Flags); // clear all flags
   DMA_ITConfig(S->DMA_RX->Stream, DMA_IT_TC, Enable); // enable transfer complete interrupt  
 }
 
 static void SPI_Disable_MOSI(u32 u) {
 
-  SPI_MasterHW* S = (SPI_MasterHW*) u;
+  SPI_MasterHW_t* S = (SPI_MasterHW_t*) u;
   u32 Name = S->MOSI->Name;
   GPIO_TypeDef* GPIOx = GPIOs[Name>>4];
   
@@ -249,7 +249,7 @@ static void SPI_Disable_MOSI(u32 u) {
 
 static void SPI_Enable_MOSI(u32 u) {
   
-  SPI_MasterHW* S = (SPI_MasterHW*) u;
+  SPI_MasterHW_t* S = (SPI_MasterHW_t*) u;
   u32 Name = S->MOSI->Name;
   GPIO_TypeDef* GPIOx = GPIOs[Name>>4];
   
@@ -273,7 +273,7 @@ static void SPI_Enable_MOSI(u32 u) {
 static u32 SPI_Start(u32 u, u32 BitMask) {
 
   u8 n;
-  SPI_MasterHW* S = (SPI_MasterHW*) u;
+  SPI_MasterHW_t* S = (SPI_MasterHW_t*) u;
   
   S->SPI->CR1 |= SPI_CR1_SPE;//#SPI_Cmd(S->SPI, ENABLE); // this should trigger the interrupt for sending the first byte... enable the spi adter the interrupt enable
   
@@ -292,7 +292,7 @@ static u32 SPI_Start(u32 u, u32 BitMask) {
 static u32 SPI_Stop(u32 u, u32 BitMask) {
 
   u8 n;
-  SPI_MasterHW* S = (SPI_MasterHW*) u;
+  SPI_MasterHW_t* S = (SPI_MasterHW_t*) u;
   for(n=0;n<16;n++) { // put low all the selected pins
     if(S->NSSs[n]==0) break;
     
@@ -311,7 +311,7 @@ static u32 SPI_Stop(u32 u, u32 BitMask) {
 #define RESERVED_MASK           (uint32_t)0x0F7D0F7D  
 static void DMA_TX_Set(u32 u, u32 blockstart, u16 nbofbytes) {
 
-  SPI_MasterHW* S = (SPI_MasterHW*) u; 
+  SPI_MasterHW_t* S = (SPI_MasterHW_t*) u; 
   DMA_Stream_TypeDef* TX_Stream = S->DMA_TX->Stream;
 // first we have to clear all flags
 //  if(DMA_GetFlagStatus(DMA_TX_Stream, DMA_RX_Flags)!=DMA_TX_TC_Flag)
@@ -344,7 +344,7 @@ static void DMA_TX_Set(u32 u, u32 blockstart, u16 nbofbytes) {
 
 static void DMA_RX_Set(u32 u, u32 blockstart, u16 nbofbytes) {
   
-  SPI_MasterHW* S = (SPI_MasterHW*) u; 
+  SPI_MasterHW_t* S = (SPI_MasterHW_t*) u; 
   DMA_Stream_TypeDef* RX_Stream = S->DMA_RX->Stream;
 // first we have to clear all flags
 //  if(DMA_GetFlagStatus(DMA_TX_Stream, DMA_RX_Flags)!=DMA_TX_TC_Flag)
@@ -384,7 +384,7 @@ static void DMA_RX_Set(u32 u, u32 blockstart, u16 nbofbytes) {
 
 static u32 SPI_Move(u32 u, u32 Param1, u32 Param2, u32 Param3) {
   
-//  SPI_MasterHW* S = (SPI_MasterHW*) u;
+//  SPI_MasterHW_t* S = (SPI_MasterHW_t*) u;
   
   // if the TX adr is null, no bytes to transmit, disable MOSI, and transmit dummy things instead
   if(Param1==0) {

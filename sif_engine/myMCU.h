@@ -72,8 +72,20 @@ typedef enum { // all the manipulating signal names which can cause an interrupt
   ucUSART7,
   ucUSART8,
   
+  ucTIM1,
+  ucTIM2,
+  ucTIM3,
+  ucTIM4,
+  ucTIM5,
   ucTIM6,
   ucTIM7,
+  ucTIM8,
+  ucTIM9,
+  ucTIM10,
+  ucTIM11,
+  ucTIM12,
+  ucTIM13,
+  ucTIM14,
 //===---->  
 } MCU_NodeList;
 
@@ -90,7 +102,23 @@ typedef struct {
   u32                  fnIRQ;
   u32                  ctIRQ;
   
-} MCU_NodeDependencyType; // this points to a const data // this is one entry
+} MCU_NodeDependency_t; // this points to a const data // this is one entry
+
+extern const MCU_NodeDependency_t Signal2Info[];
+MCU_NodeDependency_t* GetSignal2InfoBy_PPP(u32 PPP_Adr);  
+  
+typedef struct {
+
+  MCU_NodeList       Node;
+  u32                PPP_Adr;
+  u32                Max;
+  u32                SR_ValidFlags;
+  u32                reserved1;
+  u32                reserved2;
+  u32                reserved3;
+  
+} MCU_TimerCapabilities_t; // this points to a const data // this is one entry
+
 
 //extern const MCU_SignalDependencyType Signal2PPPnIRQ[];
 
@@ -100,5 +128,10 @@ u32 HookIRQ_PPP(u32 PPP_Adr, u32 fn, u32 ct);
 
 void NewMainLoopServicing(void);
 u32 MainLoopServicingSA(u32 u);
+
+u8* Get_myMCU_SerialID(void);
+
+u32 MCU_Timer_GetMax_by_PPP(u32 PPP_Adr);
+u32 MCU_Timer_GetSR_ValidFlags_by_PPP(u32 PPP_Adr);
 
 #endif

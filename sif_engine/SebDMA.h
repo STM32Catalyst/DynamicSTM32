@@ -11,7 +11,7 @@ typedef struct {
   u32 Flags;
   u32 TC_Flag;
   
-} DMA_StreamInfoType; // this points to a const data
+} DMA_StreamInfo_t; // this points to a const data
 
 u32 Get_pDMA_Info(DMA_Stream_TypeDef* DMA_Stream);
 
@@ -32,7 +32,7 @@ typedef struct {
   SignalList Signal;
   u32 Direction;
   
-} DMA_StreamChannelInfoType; // this points to a const data
+} DMA_StreamChannelInfo_t; // this points to a const data
 
 
 #endif

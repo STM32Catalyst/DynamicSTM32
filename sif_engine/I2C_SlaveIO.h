@@ -35,7 +35,7 @@ typedef struct {
 //  u32 pMe; // points to this structure (the context)
 //  u32 mySizeInByte; // to know the size of this structure
 //  u32   (*fnIRQHandler)(u32); // debug only
-} STateMAchine;
+} STateMAchine_t;
 
 //============================================
 // Let's think of I2C Slave function
@@ -57,10 +57,10 @@ typedef enum {
 
 typedef struct {
   // first, the slave state machine standard format
-  STateMAchine STMA; // the state machine to handle events (unless linker is special, both I2C_Slave and STMA should have the same start address...
+  STateMAchine_t STMA; // the state machine to handle events (unless linker is special, both I2C_Slave and STMA should have the same start address...
 
-  IO_PinTypeDef* SDA; // we need the pointer to the pin
-  IO_PinTypeDef* SCL; // we need the pointer to the pin
+  IO_Pin_t* SDA; // we need the pointer to the pin
+  IO_Pin_t* SCL; // we need the pointer to the pin
 
 //===--- These are enablers for slave function to work or not, for I2C spy to work or not.
   u32 (*fnSlaveScheme)(u32); // within the interrupt handler, what slave scheme to do (if enabled) [1.5us @ 96MHz], non zero enabled.
@@ -83,7 +83,7 @@ typedef struct {
   u8 EventMask; // debug
   
 //===--- spy members: (can be indirect later)
-  ByteVein* BV; // this is where we will output the strings decoded by the spy.
+  ByteVein_t* BV; // this is where we will output the strings decoded by the spy.
   u8 I2C_Nibble;
   u8 I2C_BitCounter; 
 

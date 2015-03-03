@@ -7,7 +7,7 @@ u32 RS232_USARTs_BV_TX_ITE_Update(u32 u);
 // The code should be in RAM to change easily the behaviour, but the linker will be lost...
 static u32 RS232_UARTs_IRQHandler(u32 u) {
 
-  SerialRs232* RS = (SerialRs232*) u;
+  Rs232_t* RS = (Rs232_t*) u;
 // receive first, because we need to read the DR  
   if((RS->USART->CR1 & USART_FLAG_RXNE)&&(RS->USART->SR & USART_FLAG_RXNE)) {  // dummy read of the data to clear the pending interrupt, this will clear PE, RXNE and FE bits
     // WHAT IF BV IS NOT ASSIGNED?
@@ -36,7 +36,7 @@ static u32 RS232_UARTs_IRQHandler(u32 u) {
 // In the RX Interrupt, if we have to provide a data byte to TX and the FIFO is empty, no choice: We have to disable the TX interrupt.
 // We will tell the FIFO to reenable the interrupt as soon as the FIFO is no longer empty.
 
-void NewRs232HW(SerialRs232* RS, USART_TypeDef* USART) {
+void NewRs232HW(Rs232_t* RS, USART_TypeDef* USART) {
 
   // first, we have to enable the GPIO and Clock of the peripheral (for now done already for all)
   RCC_APB2PeriphClockCmd(RCC_APB2Periph_USART1, ENABLE);// enable the peripheral clock
@@ -69,10 +69,13 @@ void NewRs232HW(SerialRs232* RS, USART_TypeDef* USART) {
     IO_PinConfiguredAs(RS->TX,GPIO_AF_USART1); // to change later! based on pin name
   }
  
+  RS->Print.fnPutChar = (u32) RS232_putchar;
+  RS->Print.ctPutChar = (u32) RS;
+  
 }
 
 
-void SetRs232Timings(SerialRs232* RS, u32 BaudRate, u32 Parity2, u32 StopBits){ // Things depending on time and internal clocks
+void SetRs232Timings(Rs232_t* RS, u32 BaudRate, u32 Parity2, u32 StopBits){ // Things depending on time and internal clocks
 // we don't do CTS and RTS for now
 // hardcoded for first heartbeat test  
   /* USARTy and USARTz configured as follow:
@@ -127,18 +130,18 @@ void NVIC_Rs232sEnable(FunctionalState Enable) {
 }
 
 static u32 RS232_USARTs_BV_TX_EnableInterrupt(u32 u) {
-  SerialRs232* RS = (SerialRs232*) u;
+  Rs232_t* RS = (Rs232_t*) u;
   RS->USART->CR1 |= USART_FLAG_TXE; // (re)activate interrupts  
   return 0;
 }
 
 static u32 RS232_USARTs_BV_TX_DisableInterrupt(u32 u) {
-  SerialRs232* RS = (SerialRs232*) u;
+  Rs232_t* RS = (Rs232_t*) u;
   RS->USART->CR1 &= ~USART_FLAG_TXE; // deactivate interrupts
   return 0;
 }
 
-void SetRs232BVs(SerialRs232* RS, ByteVein* BV_TX, ByteVein*BV_RX) {
+void SetRs232BVs(Rs232_t* RS, ByteVein_t* BV_TX, ByteVein_t*BV_RX) {
   
   RS->BV_TX = BV_TX;
   RS->BV_RX = BV_RX;
@@ -152,13 +155,28 @@ void SetRs232BVs(SerialRs232* RS, ByteVein* BV_TX, ByteVein*BV_RX) {
   HookBV_Emptied(BV_TX, RS232_USARTs_BV_TX_DisableInterrupt, (u32) RS);
 }
 
+
+
+
+// SEND A DATA BYTE TO THE LCD
+u32 RS232_putchar(Rs232_t* RS, u32 c) {
+
+  AddToBV(RS->BV_TX, c); // add the character to the Transmit FIFO
+  return 0;
+}
+
+
+
+
+
+
 // Here is an example of using RS232 cell
 #ifdef ADD_EXAMPLES_TO_PROJECT // enable the example
 static u8 Rs232TXBuf[512]; // should be declared by the other party (if any)
 static u8 Rs232RXBuf[512]; // the one who receive should declare its buffer, not the transmitting one, which flow control must be done by receiver.
-static ByteVein BV_TX,BV_RX;
-static SerialRs232 Rs232;
-static IO_PinTypeDef Rs232TX, Rs232RX;
+static ByteVein_t BV_TX,BV_RX;
+static Rs232_t Rs232;
+static IO_Pin_t Rs232TX, Rs232RX;
 
 const char* Hello1 = "Test from Main Loop with Interrupt Enabled.\n";
 const char* Hello2 = "Test from Main Loop with Interrupt Disabled.\n";

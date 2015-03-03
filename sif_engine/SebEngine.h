@@ -2,9 +2,11 @@
 #ifndef _SEB_ENGINE_H_
 #define _SEB_ENGINE_H_
 
-#include "upgrade.h"
+// This file is the only one to include to use the code from this repo.
 
-#define ADD_EXAMPLES_TO_PROJECT // Comment this line if no example is needed in the project
+#include "upgrade.h" // This will include all the things your main project include files has. Can be anything outside this repo
+
+#define ADD_EXAMPLES_TO_PROJECT // Comment this line to remove all examples from the project
 
 // this tells which NVIC Interrupt handlers to activate
 #define SebEXTI1
@@ -22,6 +24,20 @@
 #define SebDMA2_Stream5
 #define SebDMA2_Stream6
 #define SebDMA2_Stream7
+
+#define SebTIM2
+#define SebTIM3
+#define SebTIM4
+#define SebTIM5
+#define SebTIM6
+#define SebTIM7
+
+#define SebTIM1_BRK_TIM9
+#define SebTIM1_UP_TIM10
+#define SebTIM1_TRG_COM_TIM11
+#define SebTIM8_BRK_TIM12
+#define SebTIM8_UP_TIM13
+#define SebTIM8_TRG_COM_TIM14
 
 // These are types we use and might not be available for other compilers or libraries
 /*!< STM32F10x Standard Peripheral Library old types (maintained for legacy purpose) */
@@ -71,24 +87,28 @@ typedef __IO uint8_t  vu8;
 #include "myMCU.h"
 #include "SebClocks.h"
 #include "alternates.h"
-#include "sebNVIC.h"
-#include "sebDMA.h"
-#include "sebEXTI.h"
+#include "SebNVIC.h"
+#include "SebDMA.h"
+#include "SebEXTI.h"
 #include "IO_Pin.h"
-#include "sebBasicTimer.h"
-#include "sebByteVein.h"
-#include "sebStuffsArtery.h"
+//#include "sebBasicTimer.h"
+#include "SebTimer.h"
+#include "SebByteVein.h"
+#include "SebStuffsArtery.h"
 #include "SebPrintf.h"
 
 
 #include "I2C_SlaveIO.h"
 #include "I2C_MasterIO.h"
-#include "RS232_HW.h"
+
 #include "SPI_MasterHW.h"
 #include "SPI_MasterIO.h"
-#include "sebSequencer.h"
+#include "SebSequencer.h"
 #include "RFFE_MasterIO.h"    
 
-#include "NHD_C0216CZ_LCD16x2.h" // needs SPI, BT
+#include "NHD_C0216CZ_LCD16x2.h" // needs SPI, Timer
+#include "RS232_HW.h"
+
+#include "SebButtons.h"
 
 #endif

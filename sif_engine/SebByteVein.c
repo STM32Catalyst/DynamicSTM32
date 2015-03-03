@@ -2,14 +2,14 @@
 #include "sebEngine.h"
 
 
-u32 HookBV_NoLongerEmpty(ByteVein* BV, u32 (*fn)(u32), u32 ct) {
+u32 HookBV_NoLongerEmpty(ByteVein_t* BV, u32 (*fn)(u32), u32 ct) {
   
   BV->fnNoLongerEmpty = fn;
   BV->ctNoLongerEmpty = ct;
   return 0;
 }
 
-u32 HookBV_Emptied(ByteVein* BV, u32 (*fn)(u32), u32 ct) {
+u32 HookBV_Emptied(ByteVein_t* BV, u32 (*fn)(u32), u32 ct) {
   
   BV->fnEmptied = fn;
   BV->ctEmptied = ct;  
@@ -18,7 +18,7 @@ u32 HookBV_Emptied(ByteVein* BV, u32 (*fn)(u32), u32 ct) {
 
 //==========================================================
 // StrandCreation
-u32 NewBV(ByteVein* BV, u32 begin, s32 size) {
+u32 NewBV(ByteVein_t* BV, u32 begin, s32 size) {
 
   if(size==0)
     while(1); // no memory for it?
@@ -41,7 +41,7 @@ u32 NewBV(ByteVein* BV, u32 begin, s32 size) {
 
 //==========================================================
 // manage the left side
-u32 GlueBV_Down(ByteVein* BV) {
+u32 GlueBV_Down(ByteVein_t* BV) {
 
   if(BV->bCountLimit==0) while(1); // error
   
@@ -76,7 +76,7 @@ u32 GlueBV_Down(ByteVein* BV) {
   return BV->pbDown;
 }
 
-u32 ClipBV_Down(ByteVein* BV) { // 0 or 1, returns the bit pointer
+u32 ClipBV_Down(ByteVein_t* BV) { // 0 or 1, returns the bit pointer
 
 //  if(bCountLimit==0) while(1); // error
   
@@ -106,7 +106,7 @@ u32 ClipBV_Down(ByteVein* BV) { // 0 or 1, returns the bit pointer
 
 //==========================================================
 // manage the right side
-u32 GlueBV_Up(ByteVein* BV) {
+u32 GlueBV_Up(ByteVein_t* BV) {
 
   if(BV->bCountLimit==0) while(1); // error
   
@@ -141,7 +141,7 @@ u32 GlueBV_Up(ByteVein* BV) {
   return BV->pbUp;
 }
 
-u32 ClipBV_Up(ByteVein* BV) { // 0 or 1
+u32 ClipBV_Up(ByteVein_t* BV) { // 0 or 1
 
 //  if(BV->bCountLimit==0) while(1); // error
   
@@ -191,7 +191,7 @@ u32 GetBV_Up(ByteVein* BV) {
 }
 */
 
-u32 AddToBV(ByteVein* BV, u32 In) {
+u32 AddToBV(ByteVein_t* BV, u32 In) {
   
   BV->In = In;
   return GlueBV_Up(BV);
@@ -200,7 +200,7 @@ u32 AddToBV(ByteVein* BV, u32 In) {
 
 // reading the strand content: The strand does not kill the bits when cut!
 #ifdef ADD_EXAMPLES_TO_PROJECT
-static ByteVein BV; // for test program
+static ByteVein_t BV; // for test program
 static u8 BVR[512]; // the assigned buffer for this byte strand
 
 

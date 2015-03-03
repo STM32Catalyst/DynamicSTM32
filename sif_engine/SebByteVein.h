@@ -44,25 +44,25 @@ typedef struct {
 //  u8 FlagFull : 1; // unused
 //  u8 FlagNoLongerFull : 1; // unused
   
-} ByteVein;
+} ByteVein_t;
 
 
-u32 NewBV(ByteVein* BV, u32 begin, s32 size);
-u32 HookBV_NoLongerEmpty(ByteVein* BV, u32 (*fn)(u32), u32 ct);
-u32 HookBV_Emptied(ByteVein* BV, u32 (*fn)(u32), u32 ct);
-u32 GlueBV_Down(ByteVein* BV);
-u32 ClipBV_Down(ByteVein* BV);
-u32 GlueBV_Up(ByteVein* BV);
-u32 ClipBV_Up(ByteVein* BV);
+u32 NewBV(ByteVein_t* BV, u32 begin, s32 size);
+u32 HookBV_NoLongerEmpty(ByteVein_t* BV, u32 (*fn)(u32), u32 ct);
+u32 HookBV_Emptied(ByteVein_t* BV, u32 (*fn)(u32), u32 ct);
+u32 GlueBV_Down(ByteVein_t* BV);
+u32 ClipBV_Down(ByteVein_t* BV);
+u32 GlueBV_Up(ByteVein_t* BV);
+u32 ClipBV_Up(ByteVein_t* BV);
 //---------- to access the head and tail
 /*
-u32 SetBV_Down(ByteVein* BV);
-u32 SetBV_Up(ByteVein* BV);
-u32 GetBV_Down(ByteVein* BV);
-u32 GetBV_Up(ByteVein* BV);
+u32 SetBV_Down(ByteVein_t* BV);
+u32 SetBV_Up(ByteVein_t* BV);
+u32 GetBV_Down(ByteVein_t* BV);
+u32 GetBV_Up(ByteVein_t* BV);
 */
 
-u32 AddToBV(ByteVein* BV, u32 In);
+u32 AddToBV(ByteVein_t* BV, u32 In);
 
 
 #endif

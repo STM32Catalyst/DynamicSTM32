@@ -24,10 +24,10 @@ u8 SPIIO_GetDelay(void);
 
 typedef struct {
 
-  IO_PinTypeDef* MISO; // we need the pointer to the pin
-  IO_PinTypeDef* MOSI; // we need the pointer to the pin
-  IO_PinTypeDef* SCK; // we need the pointer to the pin
-  IO_PinTypeDef* NSSs[16]; // list of NSS pins, can be more than one (max 16 pins)  
+  IO_Pin_t* MISO; // we need the pointer to the pin
+  IO_Pin_t* MOSI; // we need the pointer to the pin
+  IO_Pin_t* SCK; // we need the pointer to the pin
+  IO_Pin_t* NSSs[16]; // list of NSS pins, can be more than one (max 16 pins)  
 
   // simplified DMA, both TX and RX? (does not support both directions, supposed to be bidirectional, with other direction point to 0000 or fail.
   u32 TX;
@@ -39,21 +39,21 @@ typedef struct {
 //  u32 AverageBps; // Averate bit rate per job
   u32 FeedClockMHz; // SPI Clock feed. Internally only plays with PSC = 2^(n+1)
   
-  StuffsArtery* SA; // this points to Job feeding
+  StuffsArtery_t* SA; // this points to Job feeding
   
-  BasicTimer* BT; // this will be to control time ticks
-  u8 BTn; //  a number between 0 and 3
+  Timer_t* Timer; // this will be to control time ticks
+  u8 Cn; //  a number between 0 and 3
 
   u32 (*fnWaitMethod)(u32);
   u32 ctWaitMethod;
   u32 WaitParam;
 
-} SPI_MasterIO;
+} SPI_MasterIO_t;
 
 
 
-void NewSPI_MasterIO_RX_TX(SPI_MasterIO* M);
-u32 SetSPI_MasterIO_Timings(SPI_MasterIO* M, u32 MaxBps, u32 CPol, u32 CPha, u32 FirstBit, MCUClockTree* T ); // 1200000, SPI_CPOL_Low, SPI_CPHA_1Edge, SPI_FirstBit_MSB
+void NewSPI_MasterIO_RX_TX(SPI_MasterIO_t* M);
+u32 SetSPI_MasterIO_Timings(SPI_MasterIO_t* M, u32 MaxBps, u32 CPol, u32 CPha, u32 FirstBit, MCUClocks_t* T ); // 1200000, SPI_CPOL_Low, SPI_CPHA_1Edge, SPI_FirstBit_MSB
 
 void SPI_MasterIO_Test(void);
 
