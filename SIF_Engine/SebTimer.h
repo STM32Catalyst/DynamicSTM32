@@ -3,6 +3,7 @@
 #define _TIMER_H_
 
 #define TIMER_MAX_COUNTDOWN 4
+#define TIMER_MAX_CC 5 // 0 is unused, we count CC from 1 to 4 unfortunately
 
 typedef struct {
 
@@ -23,6 +24,15 @@ typedef struct {
   u32 Ticks; // autoincremented every event
   
   u8 CountDownDone[TIMER_MAX_COUNTDOWN]; // This can be used if main loop polling scheme is used. Set by Interrupt, cleared by main loop or OS.
+
+//======== Now we need to take care of the CC (capture compare) which can be 0 to 4 of them in each timer.
+  IO_Pin_t* PinCC[TIMER_MAX_CC];
+  u32* CCR[TIMER_MAX_CC]; // pointer to each valid CCR register. 0 means not available (only with pointers!)
+  u32 ModeCC[TIMER_MAX_CC]; // The CC mode 00=not used
+  u32 RegCC[TIMER_MAX_CC];  // The CC registers, backed-up from HW timers (being output compare or input capture)
+  u32 fnCC[TIMER_MAX_CC]; // optional hook for each CC
+  u32 ctCC[TIMER_MAX_CC]; // optional hook for each CC
+  u8 FlagCC[TIMER_MAX_CC]; // set when CC occurs
   
 } Timer_t;
 
@@ -33,6 +43,8 @@ void Timer_T7_T8_Test(void);
 void Timer_T9_T10_Test(void);
 void Timer_T11_T12_Test(void);
 void Timer_T13_T14_Test(void);
+
+void Timer_IC_OC_PWM_Test(void);
 
 void ArmTimerCountdown(Timer_t* Timer, u32 n, u32 ticks);
 void HookTimerCountdown(Timer_t* Timer, u32 n, u32 fn, u32 ct);

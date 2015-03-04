@@ -255,7 +255,6 @@ __irq void WWDG_IRQHandler(void) { //  WWDG_IRQn                   = 0,      /*!
   if(fnPreNVICs[WWDG_IRQn]) ((u32(*)(u32))fnPreNVICs[WWDG_IRQn])((u32)&NVIC_Stats[WWDG_IRQn]); // call either an empty function or a hooked one with desired context predefined (if context missing... error)
     if(fnWWDG) ((u32(*)(u32))fnWWDG)(ctWWDG); // call either an empty function or a hooked one with desired context predefined (if context missing... error)
     else while(1);//TODO clear the pending flag EXTI->PR |= (1<<10);  // clear the pending flag
-//-    NVIC_ReleasePendingIRQ(WWDG_IRQn);
   if(fnPostNVICs[WWDG_IRQn]) ((u32(*)(u32))fnPostNVICs[WWDG_IRQn])((u32)&NVIC_Stats[WWDG_IRQn]); // call either an empty function or a hooked one with desired context predefined (if context missing... error)
 }
 #endif
@@ -265,7 +264,6 @@ __irq void PVD_IRQHandler(void) {//  PVD_IRQn                    = 1,      /*!< 
   if(fnPreNVICs[PVD_IRQn]) ((u32(*)(u32))fnPreNVICs[PVD_IRQn])((u32)&NVIC_Stats[PVD_IRQn]); // call either an empty function or a hooked one with desired context predefined (if context missing... error)
     if(fnPVD) ((u32(*)(u32))fnPVD)(ctPVD); // call either an empty function or a hooked one with desired context predefined (if context missing... error)
     else while(1);//TODO clear the pending flag EXTI->PR |= (1<<10);  // clear the pending flag
-//-    NVIC_ReleasePendingIRQ(PVD_IRQn);
   if(fnPostNVICs[PVD_IRQn]) ((u32(*)(u32))fnPostNVICs[PVD_IRQn])((u32)&NVIC_Stats[PVD_IRQn]); // call either an empty function or a hooked one with desired context predefined (if context missing... error)
 }
 #endif
@@ -275,7 +273,6 @@ __irq void TAMP_STAMP_IRQHandler(void) {//  TAMP_STAMP_IRQn             = 2,    
   if(fnPreNVICs[TAMP_STAMP_IRQn]) ((u32(*)(u32))fnPreNVICs[TAMP_STAMP_IRQn])((u32)&NVIC_Stats[TAMP_STAMP_IRQn]); // call either an empty function or a hooked one with desired context predefined (if context missing... error)
     if(fnTAMP_STAMP) ((u32(*)(u32))fnTAMP_STAMP)(ctTAMP_STAMP); // call either an empty function or a hooked one with desired context predefined (if context missing... error)
     else while(1);//TODO clear the pending flag EXTI->PR |= (1<<10);  // clear the pending flag
-//-    NVIC_ReleasePendingIRQ(TAMP_STAMP_IRQn);
   if(fnPostNVICs[TAMP_STAMP_IRQn]) ((u32(*)(u32))fnPostNVICs[TAMP_STAMP_IRQn])((u32)&NVIC_Stats[TAMP_STAMP_IRQn]); // call either an empty function or a hooked one with desired context predefined (if context missing... error)
 }
 #endif
@@ -285,7 +282,6 @@ __irq void RTC_WKUP_IRQHandler(void) {//  RTC_WKUP_IRQn               = 3,      
   if(fnPreNVICs[RTC_WKUP_IRQn]) ((u32(*)(u32))fnPreNVICs[RTC_WKUP_IRQn])((u32)&NVIC_Stats[RTC_WKUP_IRQn]); // call either an empty function or a hooked one with desired context predefined (if context missing... error)
     if(fnRTC_WKUP) ((u32(*)(u32))fnRTC_WKUP)(ctRTC_WKUP); // call either an empty function or a hooked one with desired context predefined (if context missing... error)
     else while(1);//TODO clear the pending flag EXTI->PR |= (1<<10);  // clear the pending flag
-//-    NVIC_ReleasePendingIRQ(RTC_WKUP_IRQn);
   if(fnPostNVICs[RTC_WKUP_IRQn]) ((u32(*)(u32))fnPostNVICs[RTC_WKUP_IRQn])((u32)&NVIC_Stats[RTC_WKUP_IRQn]); // call either an empty function or a hooked one with desired context predefined (if context missing... error)
 }
 #endif
@@ -295,7 +291,6 @@ __irq void FLASH_IRQHandler(void) {//  FLASH_IRQn                  = 4,      /*!
   if(fnPreNVICs[FLASH_IRQn]) ((u32(*)(u32))fnPreNVICs[FLASH_IRQn])((u32)&NVIC_Stats[FLASH_IRQn]); // call either an empty function or a hooked one with desired context predefined (if context missing... error)
     if(fnFLASH) ((u32(*)(u32))fnFLASH)(ctFLASH); // call either an empty function or a hooked one with desired context predefined (if context missing... error)
     else while(1);//TODO clear the pending flag EXTI->PR |= (1<<10);  // clear the pending flag
-//-    NVIC_ReleasePendingIRQ(FLASH_IRQn);
   if(fnPostNVICs[FLASH_IRQn]) ((u32(*)(u32))fnPostNVICs[FLASH_IRQn])((u32)&NVIC_Stats[FLASH_IRQn]); // call either an empty function or a hooked one with desired context predefined (if context missing... error)
 }
 #endif
@@ -305,7 +300,6 @@ __irq void RCC_IRQHandler(void) {//  RCC_IRQn                    = 5,      /*!< 
   if(fnPreNVICs[RCC_IRQn]) ((u32(*)(u32))fnPreNVICs[RCC_IRQn])((u32)&NVIC_Stats[RCC_IRQn]); // call either an empty function or a hooked one with desired context predefined (if context missing... error)
     if(fnRCC) ((u32(*)(u32))fnRCC)(ctRCC); // call either an empty function or a hooked one with desired context predefined (if context missing... error)
     else while(1);//TODO clear the pending flag EXTI->PR |= (1<<10);  // clear the pending flag
-//-    NVIC_ReleasePendingIRQ(RCC_IRQn);
   if(fnPostNVICs[RCC_IRQn]) ((u32(*)(u32))fnPostNVICs[RCC_IRQn])((u32)&NVIC_Stats[RCC_IRQn]); // call either an empty function or a hooked one with desired context predefined (if context missing... error)
 }
 #endif
@@ -361,7 +355,6 @@ __irq void DMA1_Stream0_IRQHandler(void) {//  DMA1_Stream0_IRQn           = 11, 
   if(fnPreNVICs[DMA1_Stream0_IRQn]) ((u32(*)(u32))fnPreNVICs[DMA1_Stream0_IRQn])((u32)&NVIC_Stats[DMA1_Stream0_IRQn]); // call either an empty function or a hooked one with desired context predefined (if context missing... error)
     if(fnDMA1s[0]) ((u32(*)(u32))fnDMA1s[0])(ctDMA1s[0]); // call either an empty function or a hooked one with desired context predefined (if context missing... error)
     else while(1);//TODO clear the pending flag EXTI->PR |= (1<<10);  // clear the pending flag
-//-    NVIC_ReleasePendingIRQ(DMA1_Stream0_IRQn);
   if(fnPostNVICs[DMA1_Stream0_IRQn]) ((u32(*)(u32))fnPostNVICs[DMA1_Stream0_IRQn])((u32)&NVIC_Stats[DMA1_Stream0_IRQn]); // call either an empty function or a hooked one with desired context predefined (if context missing... error)
 }
 #endif
@@ -370,7 +363,6 @@ __irq void DMA1_Stream1_IRQHandler(void) {//  DMA1_Stream1_IRQn           = 12, 
   if(fnPreNVICs[DMA1_Stream1_IRQn]) ((u32(*)(u32))fnPreNVICs[DMA1_Stream1_IRQn])((u32)&NVIC_Stats[DMA1_Stream1_IRQn]); // call either an empty function or a hooked one with desired context predefined (if context missing... error)
     if(fnDMA1s[1]) ((u32(*)(u32))fnDMA1s[1])(ctDMA1s[1]); // call either an empty function or a hooked one with desired context predefined (if context missing... error)
     else while(1);//TODO clear the pending flag EXTI->PR |= (1<<10);  // clear the pending flag
-//-    NVIC_ReleasePendingIRQ(DMA1_Stream0_IRQn);
   if(fnPostNVICs[DMA1_Stream1_IRQn]) ((u32(*)(u32))fnPostNVICs[DMA1_Stream1_IRQn])((u32)&NVIC_Stats[DMA1_Stream1_IRQn]); // call either an empty function or a hooked one with desired context predefined (if context missing... error)
 }
 #endif
@@ -379,7 +371,6 @@ __irq void DMA1_Stream2_IRQHandler(void) {//  DMA1_Stream2_IRQn           = 13, 
   if(fnPreNVICs[DMA1_Stream2_IRQn]) ((u32(*)(u32))fnPreNVICs[DMA1_Stream2_IRQn])((u32)&NVIC_Stats[DMA1_Stream2_IRQn]); // call either an empty function or a hooked one with desired context predefined (if context missing... error)
     if(fnDMA1s[2]) ((u32(*)(u32))fnDMA1s[2])(ctDMA1s[2]); // call either an empty function or a hooked one with desired context predefined (if context missing... error)
     else while(1);//TODO clear the pending flag EXTI->PR |= (1<<10);  // clear the pending flag
-//-    NVIC_ReleasePendingIRQ(DMA1_Stream2_IRQn);
   if(fnPostNVICs[DMA1_Stream2_IRQn]) ((u32(*)(u32))fnPostNVICs[DMA1_Stream2_IRQn])((u32)&NVIC_Stats[DMA1_Stream2_IRQn]); // call either an empty function or a hooked one with desired context predefined (if context missing... error)
 }
 #endif
@@ -388,7 +379,6 @@ __irq void DMA1_Stream3_IRQHandler(void) {//  DMA1_Stream3_IRQn           = 14, 
   if(fnPreNVICs[DMA1_Stream3_IRQn]) ((u32(*)(u32))fnPreNVICs[DMA1_Stream3_IRQn])((u32)&NVIC_Stats[DMA1_Stream3_IRQn]); // call either an empty function or a hooked one with desired context predefined (if context missing... error)
     if(fnDMA1s[3]) ((u32(*)(u32))fnDMA1s[3])(ctDMA1s[3]); // call either an empty function or a hooked one with desired context predefined (if context missing... error)
     else while(1);//TODO clear the pending flag EXTI->PR |= (1<<10);  // clear the pending flag
-//-    NVIC_ReleasePendingIRQ(DMA1_Stream3_IRQn);
   if(fnPostNVICs[DMA1_Stream3_IRQn]) ((u32(*)(u32))fnPostNVICs[DMA1_Stream3_IRQn])((u32)&NVIC_Stats[DMA1_Stream3_IRQn]); // call either an empty function or a hooked one with desired context predefined (if context missing... error)
 }
 #endif
@@ -397,7 +387,6 @@ __irq void DMA1_Stream4_IRQHandler(void) {//  DMA1_Stream4_IRQn           = 15, 
   if(fnPreNVICs[DMA1_Stream4_IRQn]) ((u32(*)(u32))fnPreNVICs[DMA1_Stream4_IRQn])((u32)&NVIC_Stats[DMA1_Stream4_IRQn]); // call either an empty function or a hooked one with desired context predefined (if context missing... error)
     if(fnDMA1s[4]) ((u32(*)(u32))fnDMA1s[4])(ctDMA1s[4]); // call either an empty function or a hooked one with desired context predefined (if context missing... error)
     else while(1);//TODO clear the pending flag EXTI->PR |= (1<<10);  // clear the pending flag
-//-    NVIC_ReleasePendingIRQ(DMA1_Stream4_IRQn);
   if(fnPostNVICs[DMA1_Stream4_IRQn]) ((u32(*)(u32))fnPostNVICs[DMA1_Stream4_IRQn])((u32)&NVIC_Stats[DMA1_Stream4_IRQn]); // call either an empty function or a hooked one with desired context predefined (if context missing... error)
 }
 #endif
@@ -406,7 +395,6 @@ __irq void DMA1_Stream5_IRQHandler(void) {//  DMA1_Stream5_IRQn           = 16, 
   if(fnPreNVICs[DMA1_Stream5_IRQn]) ((u32(*)(u32))fnPreNVICs[DMA1_Stream5_IRQn])((u32)&NVIC_Stats[DMA1_Stream5_IRQn]); // call either an empty function or a hooked one with desired context predefined (if context missing... error)
     if(fnDMA1s[5]) ((u32(*)(u32))fnDMA1s[5])(ctDMA1s[5]); // call either an empty function or a hooked one with desired context predefined (if context missing... error)
     else while(1);//TODO clear the pending flag EXTI->PR |= (1<<10);  // clear the pending flag
-//-    NVIC_ReleasePendingIRQ(DMA1_Stream5_IRQn);
   if(fnPostNVICs[DMA1_Stream5_IRQn]) ((u32(*)(u32))fnPostNVICs[DMA1_Stream5_IRQn])((u32)&NVIC_Stats[DMA1_Stream5_IRQn]); // call either an empty function or a hooked one with desired context predefined (if context missing... error)
 }
 #endif
@@ -415,7 +403,6 @@ __irq void DMA1_Stream6_IRQHandler(void) {//  DMA1_Stream6_IRQn           = 17, 
   if(fnPreNVICs[DMA1_Stream6_IRQn]) ((u32(*)(u32))fnPreNVICs[DMA1_Stream6_IRQn])((u32)&NVIC_Stats[DMA1_Stream6_IRQn]); // call either an empty function or a hooked one with desired context predefined (if context missing... error)
     if(fnDMA1s[6]) ((u32(*)(u32))fnDMA1s[6])(ctDMA1s[6]); // call either an empty function or a hooked one with desired context predefined (if context missing... error)
     else while(1);//TODO clear the pending flag EXTI->PR |= (1<<10);  // clear the pending flag
-//-    NVIC_ReleasePendingIRQ(DMA1_Stream6_IRQn);
   if(fnPostNVICs[DMA1_Stream6_IRQn]) ((u32(*)(u32))fnPostNVICs[DMA1_Stream6_IRQn])((u32)&NVIC_Stats[DMA1_Stream6_IRQn]); // call either an empty function or a hooked one with desired context predefined (if context missing... error)
 }
 #endif
@@ -435,7 +422,6 @@ __irq void CAN1_TX_IRQHandler(void) {//  CAN1_TX_IRQn                = 19,     /
   if(fnPreNVICs[CAN1_TX_IRQn]) ((u32(*)(u32))fnPreNVICs[CAN1_TX_IRQn])((u32)&NVIC_Stats[CAN1_TX_IRQn]); // call either an empty function or a hooked one with desired context predefined (if context missing... error)
     if(fnCAN1_TX) ((u32(*)(u32))fnCAN1_TX)(ctCAN1_TX); // call either an empty function or a hooked one with desired context predefined (if context missing... error)
     else while(1);//TODO clear the pending flag EXTI->PR |= (1<<10);  // clear the pending flag
-//-    NVIC_ReleasePendingIRQ(CAN1_TX_IRQn);
   if(fnPostNVICs[CAN1_TX_IRQn]) ((u32(*)(u32))fnPostNVICs[CAN1_TX_IRQn])((u32)&NVIC_Stats[CAN1_TX_IRQn]); // call either an empty function or a hooked one with desired context predefined (if context missing... error)
 }
 #endif
@@ -444,7 +430,6 @@ __irq void CAN1_RX0_IRQHandler(void) {//  CAN1_RX0_IRQn               = 20,     
   if(fnPreNVICs[CAN1_RX0_IRQn]) ((u32(*)(u32))fnPreNVICs[CAN1_RX0_IRQn])((u32)&NVIC_Stats[CAN1_RX0_IRQn]); // call either an empty function or a hooked one with desired context predefined (if context missing... error)
     if(fnCAN1_RX0) ((u32(*)(u32))fnCAN1_RX0)(ctCAN1_RX0); // call either an empty function or a hooked one with desired context predefined (if context missing... error)
     else while(1);//TODO clear the pending flag EXTI->PR |= (1<<10);  // clear the pending flag
-//-    NVIC_ReleasePendingIRQ(CAN1_RX0_IRQn);
   if(fnPostNVICs[CAN1_RX0_IRQn]) ((u32(*)(u32))fnPostNVICs[CAN1_RX0_IRQn])((u32)&NVIC_Stats[CAN1_RX0_IRQn]); // call either an empty function or a hooked one with desired context predefined (if context missing... error)
 }
 #endif
@@ -453,7 +438,6 @@ __irq void CAN1_RX1_IRQHandler(void) {//  CAN1_RX1_IRQn               = 21,     
   if(fnPreNVICs[CAN1_RX1_IRQn]) ((u32(*)(u32))fnPreNVICs[CAN1_RX1_IRQn])((u32)&NVIC_Stats[CAN1_RX1_IRQn]); // call either an empty function or a hooked one with desired context predefined (if context missing... error)
     if(fnCAN1_RX1) ((u32(*)(u32))fnCAN1_RX1)(ctCAN1_RX1); // call either an empty function or a hooked one with desired context predefined (if context missing... error)
     else while(1);//TODO clear the pending flag EXTI->PR |= (1<<10);  // clear the pending flag
-//-    NVIC_ReleasePendingIRQ(CAN1_RX1_IRQn);
   if(fnPostNVICs[CAN1_RX1_IRQn]) ((u32(*)(u32))fnPostNVICs[CAN1_RX1_IRQn])((u32)&NVIC_Stats[CAN1_RX1_IRQn]); // call either an empty function or a hooked one with desired context predefined (if context missing... error)
 }
 #endif
@@ -462,7 +446,6 @@ __irq void CAN1_SCE_IRQHandler(void) {//  CAN1_SCE_IRQn               = 22,     
   if(fnPreNVICs[CAN1_SCE_IRQn]) ((u32(*)(u32))fnPreNVICs[CAN1_SCE_IRQn])((u32)&NVIC_Stats[CAN1_SCE_IRQn]); // call either an empty function or a hooked one with desired context predefined (if context missing... error)
     if(fnCAN1_SCE) ((u32(*)(u32))fnCAN1_SCE)(ctCAN1_SCE); // call either an empty function or a hooked one with desired context predefined (if context missing... error)
     else while(1);//TODO clear the pending flag EXTI->PR |= (1<<10);  // clear the pending flag
-//-    NVIC_ReleasePendingIRQ(CAN1_SCE_IRQn);
   if(fnPostNVICs[CAN1_SCE_IRQn]) ((u32(*)(u32))fnPostNVICs[CAN1_SCE_IRQn])((u32)&NVIC_Stats[CAN1_SCE_IRQn]); // call either an empty function or a hooked one with desired context predefined (if context missing... error)
 }
 #endif
@@ -497,7 +480,6 @@ __irq void TIM1_BRK_TIM9_IRQHandler(void) {//  TIM1_BRK_TIM9_IRQn          = 24,
       else while(1);//TODO clear the pending flag EXTI->PR |= (1<<10);  // clear the pending flag
     };
   
-//-    NVIC_ReleasePendingIRQ(TIM1_BRK_TIM9_IRQn);
   if(fnPostNVICs[TIM1_BRK_TIM9_IRQn]) ((u32(*)(u32))fnPostNVICs[TIM1_BRK_TIM9_IRQn])((u32)&NVIC_Stats[TIM1_BRK_TIM9_IRQn]); // call either an empty function or a hooked one with desired context predefined (if context missing... error)
 }
 #endif
@@ -515,7 +497,6 @@ __irq void TIM1_UP_TIM10_IRQHandler(void) {//  TIM1_UP_TIM10_IRQn          = 25,
       else while(1);//TODO clear the pending flag EXTI->PR |= (1<<10);  // clear the pending flag
     };
     
-//-    NVIC_ReleasePendingIRQ(TIM1_UP_TIM10_IRQn);
   if(fnPostNVICs[TIM1_UP_TIM10_IRQn]) ((u32(*)(u32))fnPostNVICs[TIM1_UP_TIM10_IRQn])((u32)&NVIC_Stats[TIM1_UP_TIM10_IRQn]); // call either an empty function or a hooked one with desired context predefined (if context missing... error)
 }
 #endif
@@ -532,7 +513,6 @@ __irq void TIM1_TRG_COM_TIM11_IRQHandler(void) {//  TIM1_TRG_COM_TIM11_IRQn     
       else while(1);//TODO clear the pending flag EXTI->PR |= (1<<10);  // clear the pending flag
     };
   
-//    NVIC_ReleasePendingIRQ(TIM1_TRG_COM_TIM11_IRQn);
   if(fnPostNVICs[TIM1_TRG_COM_TIM11_IRQn]) ((u32(*)(u32))fnPostNVICs[TIM1_TRG_COM_TIM11_IRQn])((u32)&NVIC_Stats[TIM1_TRG_COM_TIM11_IRQn]); // call either an empty function or a hooked one with desired context predefined (if context missing... error)
 }
 #endif
@@ -542,7 +522,6 @@ __irq void TIM1_CC_IRQHandler(void) {//  TIM1_CC_IRQn                = 27,     /
   if(fnPreNVICs[TIM1_CC_IRQn]) ((u32(*)(u32))fnPreNVICs[TIM1_CC_IRQn])((u32)&NVIC_Stats[TIM1_CC_IRQn]); // call either an empty function or a hooked one with desired context predefined (if context missing... error)
     if(fnTIM1_CC) ((u32(*)(u32))fnTIM1_CC)(ctTIM1_CC); // call either an empty function or a hooked one with desired context predefined (if context missing... error)
     else while(1);//TODO clear the pending flag EXTI->PR |= (1<<10);  // clear the pending flag
-//-    NVIC_ReleasePendingIRQ(TIM1_CC_IRQn);
   if(fnPostNVICs[TIM1_CC_IRQn]) ((u32(*)(u32))fnPostNVICs[TIM1_CC_IRQn])((u32)&NVIC_Stats[TIM1_CC_IRQn]); // call either an empty function or a hooked one with desired context predefined (if context missing... error)
 }
 #endif
@@ -552,7 +531,6 @@ __irq void TIM2_IRQHandler(void) {//  TIM2_IRQn                   = 28,     /*!<
   if(fnPreNVICs[TIM2_IRQn]) ((u32(*)(u32))fnPreNVICs[TIM2_IRQn])((u32)&NVIC_Stats[TIM2_IRQn]); // call either an empty function or a hooked one with desired context predefined (if context missing... error)
     if(fnTIM2) ((u32(*)(u32))fnTIM2)(ctTIM2); // call either an empty function or a hooked one with desired context predefined (if context missing... error)
     else while(1);//TODO clear the pending flag EXTI->PR |= (1<<10);  // clear the pending flag
-//-    NVIC_ReleasePendingIRQ(TIM2_IRQn);
   if(fnPostNVICs[TIM2_IRQn]) ((u32(*)(u32))fnPostNVICs[TIM2_IRQn])((u32)&NVIC_Stats[TIM2_IRQn]); // call either an empty function or a hooked one with desired context predefined (if context missing... error)
 }
 #endif
@@ -561,7 +539,6 @@ __irq void TIM3_IRQHandler(void) {//  TIM3_IRQn                   = 29,     /*!<
   if(fnPreNVICs[TIM3_IRQn]) ((u32(*)(u32))fnPreNVICs[TIM3_IRQn])((u32)&NVIC_Stats[TIM3_IRQn]); // call either an empty function or a hooked one with desired context predefined (if context missing... error)
     if(fnTIM3) ((u32(*)(u32))fnTIM3)(ctTIM3); // call either an empty function or a hooked one with desired context predefined (if context missing... error)
     else while(1);//TODO clear the pending flag EXTI->PR |= (1<<10);  // clear the pending flag
-//-    NVIC_ReleasePendingIRQ(TIM3_IRQn);
   if(fnPostNVICs[TIM3_IRQn]) ((u32(*)(u32))fnPostNVICs[TIM3_IRQn])((u32)&NVIC_Stats[TIM3_IRQn]); // call either an empty function or a hooked one with desired context predefined (if context missing... error)
 }
 #endif
@@ -570,7 +547,6 @@ __irq void TIM4_IRQHandler(void) {//  TIM4_IRQn                   = 30,     /*!<
   if(fnPreNVICs[TIM4_IRQn]) ((u32(*)(u32))fnPreNVICs[TIM4_IRQn])((u32)&NVIC_Stats[TIM4_IRQn]); // call either an empty function or a hooked one with desired context predefined (if context missing... error)
     if(fnTIM4) ((u32(*)(u32))fnTIM4)(ctTIM4); // call either an empty function or a hooked one with desired context predefined (if context missing... error)
     else while(1);//TODO clear the pending flag EXTI->PR |= (1<<10);  // clear the pending flag
-//-    NVIC_ReleasePendingIRQ(TIM4_IRQn);
   if(fnPostNVICs[TIM4_IRQn]) ((u32(*)(u32))fnPostNVICs[TIM4_IRQn])((u32)&NVIC_Stats[TIM4_IRQn]); // call either an empty function or a hooked one with desired context predefined (if context missing... error)
 }
 #endif
@@ -580,7 +556,6 @@ __irq void I2C1_EV_IRQHandler(void) {//  I2C1_EV_IRQn                = 31,     /
   if(fnPreNVICs[I2C1_EV_IRQn]) ((u32(*)(u32))fnPreNVICs[I2C1_EV_IRQn])((u32)&NVIC_Stats[I2C1_EV_IRQn]); // call either an empty function or a hooked one with desired context predefined (if context missing... error)
     if(fnI2C1_EV) ((u32(*)(u32))fnI2C1_EV)(ctI2C1_EV); // call either an empty function or a hooked one with desired context predefined (if context missing... error)
     else while(1);//TODO clear the pending flag EXTI->PR |= (1<<10);  // clear the pending flag
-//-    NVIC_ReleasePendingIRQ(I2C1_EV_IRQn);
   if(fnPostNVICs[I2C1_EV_IRQn]) ((u32(*)(u32))fnPostNVICs[I2C1_EV_IRQn])((u32)&NVIC_Stats[I2C1_EV_IRQn]); // call either an empty function or a hooked one with desired context predefined (if context missing... error)
 }
 #endif
@@ -590,7 +565,6 @@ __irq void I2C1_ER_IRQHandler(void) {//  I2C1_ER_IRQn                = 32,     /
   if(fnPreNVICs[I2C1_ER_IRQn]) ((u32(*)(u32))fnPreNVICs[I2C1_ER_IRQn])((u32)&NVIC_Stats[I2C1_ER_IRQn]); // call either an empty function or a hooked one with desired context predefined (if context missing... error)
     if(fnI2C1_ER) ((u32(*)(u32))fnI2C1_ER)(ctI2C1_ER); // call either an empty function or a hooked one with desired context predefined (if context missing... error)
     else while(1);//TODO clear the pending flag EXTI->PR |= (1<<10);  // clear the pending flag
-//-    NVIC_ReleasePendingIRQ(I2C1_ER_IRQn);
   if(fnPostNVICs[I2C1_ER_IRQn]) ((u32(*)(u32))fnPostNVICs[I2C1_ER_IRQn])((u32)&NVIC_Stats[I2C1_ER_IRQn]); // call either an empty function or a hooked one with desired context predefined (if context missing... error)
 }
 #endif
@@ -599,7 +573,6 @@ __irq void I2C2_EV_IRQHandler(void) {//  I2C2_EV_IRQn                = 33,     /
   if(fnPreNVICs[I2C2_EV_IRQn]) ((u32(*)(u32))fnPreNVICs[I2C2_EV_IRQn])((u32)&NVIC_Stats[I2C2_EV_IRQn]); // call either an empty function or a hooked one with desired context predefined (if context missing... error)
     if(fnI2C2_EV) ((u32(*)(u32))fnI2C2_EV)(ctI2C2_EV); // call either an empty function or a hooked one with desired context predefined (if context missing... error)
     else while(1);//TODO clear the pending flag EXTI->PR |= (1<<10);  // clear the pending flag
-//-    NVIC_ReleasePendingIRQ(I2C2_EV_IRQn);
   if(fnPostNVICs[I2C2_EV_IRQn]) ((u32(*)(u32))fnPostNVICs[I2C2_EV_IRQn])((u32)&NVIC_Stats[I2C2_EV_IRQn]); // call either an empty function or a hooked one with desired context predefined (if context missing... error)
 }
 #endif
@@ -608,7 +581,6 @@ __irq void I2C2_ER_IRQHandler(void) {//  I2C2_ER_IRQn                = 34,     /
   if(fnPreNVICs[I2C2_ER_IRQn]) ((u32(*)(u32))fnPreNVICs[I2C2_ER_IRQn])((u32)&NVIC_Stats[I2C2_ER_IRQn]); // call either an empty function or a hooked one with desired context predefined (if context missing... error)
     if(fnI2C2_ER) ((u32(*)(u32))fnI2C2_ER)(ctI2C2_ER); // call either an empty function or a hooked one with desired context predefined (if context missing... error)
     else while(1);//TODO clear the pending flag EXTI->PR |= (1<<10);  // clear the pending flag
-//-    NVIC_ReleasePendingIRQ(I2C2_ER_IRQn);
   if(fnPostNVICs[I2C2_ER_IRQn]) ((u32(*)(u32))fnPostNVICs[I2C2_ER_IRQn])((u32)&NVIC_Stats[I2C2_ER_IRQn]); // call either an empty function or a hooked one with desired context predefined (if context missing... error)
 }
 #endif
@@ -618,7 +590,6 @@ __irq void SPI1_IRQHandler(void) {//  SPI1_IRQn                   = 35,     /*!<
   if(fnPreNVICs[SPI1_IRQn]) ((u32(*)(u32))fnPreNVICs[SPI1_IRQn])((u32)&NVIC_Stats[SPI1_IRQn]); // call either an empty function or a hooked one with desired context predefined (if context missing... error)
     if(fnSPI1) ((u32(*)(u32))fnSPI1)(ctSPI1); // call either an empty function or a hooked one with desired context predefined (if context missing... error)
     else while(1);//TODO clear the pending flag EXTI->PR |= (1<<10);  // clear the pending flag
-//-    NVIC_ReleasePendingIRQ(SPI1_IRQn);
   if(fnPostNVICs[SPI1_IRQn]) ((u32(*)(u32))fnPostNVICs[SPI1_IRQn])((u32)&NVIC_Stats[SPI1_IRQn]); // call either an empty function or a hooked one with desired context predefined (if context missing... error)
 }
 #endif
@@ -627,7 +598,6 @@ __irq void SPI2_IRQHandler(void) {//  SPI2_IRQn                   = 36,     /*!<
   if(fnPreNVICs[SPI2_IRQn]) ((u32(*)(u32))fnPreNVICs[SPI2_IRQn])((u32)&NVIC_Stats[SPI2_IRQn]); // call either an empty function or a hooked one with desired context predefined (if context missing... error)
     if(fnSPI2) ((u32(*)(u32))fnSPI2)(ctSPI2); // call either an empty function or a hooked one with desired context predefined (if context missing... error)
     else while(1);//TODO clear the pending flag EXTI->PR |= (1<<10);  // clear the pending flag
-//-    NVIC_ReleasePendingIRQ(SPI2_IRQn);
   if(fnPostNVICs[SPI2_IRQn]) ((u32(*)(u32))fnPostNVICs[SPI2_IRQn])((u32)&NVIC_Stats[SPI2_IRQn]); // call either an empty function or a hooked one with desired context predefined (if context missing... error)
 }
 #endif
@@ -641,7 +611,6 @@ __irq void USART1_IRQHandler(void) {//  USART1_IRQn                 = 37,     /*
           USART1->DR = lpUSART1; // LF ASCII char, will clear the interrupt
       else lpUSART1 = USART1->DR;   // dummy read of the data to clear the pending interrupt, this will clear PE, RXNE and FE bits (this will route RX back to TX)
     }
-//-    NVIC_ReleasePendingIRQ(USART1_IRQn);
   if(fnPostNVICs[USART1_IRQn]) ((u32(*)(u32))fnPostNVICs[USART1_IRQn])((u32)&NVIC_Stats[USART1_IRQn]); // call either an empty function or a hooked one with desired context predefined (if context missing... error)
 }
 #endif
@@ -650,7 +619,6 @@ __irq void USART2_IRQHandler(void) {//  USART2_IRQn                 = 38,     /*
   if(fnPreNVICs[USART2_IRQn]) ((u32(*)(u32))fnPreNVICs[USART2_IRQn])((u32)&NVIC_Stats[USART2_IRQn]); // call either an empty function or a hooked one with desired context predefined (if context missing... error)
     if(fnUSART2) ((u32(*)(u32))fnUSART2)(ctUSART2); // call either an empty function or a hooked one with desired context predefined (if context missing... error)
     else while(1);//TODO clear the pending flag EXTI->PR |= (1<<10);  // clear the pending flag
-//-    NVIC_ReleasePendingIRQ(USART2_IRQn);
   if(fnPostNVICs[USART2_IRQn]) ((u32(*)(u32))fnPostNVICs[USART2_IRQn])((u32)&NVIC_Stats[USART2_IRQn]); // call either an empty function or a hooked one with desired context predefined (if context missing... error)
 }
 #endif
@@ -659,7 +627,6 @@ __irq void USART3_IRQHandler(void) {//  USART3_IRQn                 = 39,     /*
   if(fnPreNVICs[USART3_IRQn]) ((u32(*)(u32))fnPreNVICs[USART3_IRQn])((u32)&NVIC_Stats[USART3_IRQn]); // call either an empty function or a hooked one with desired context predefined (if context missing... error)
     if(fnUSART3) ((u32(*)(u32))fnUSART3)(ctUSART3); // call either an empty function or a hooked one with desired context predefined (if context missing... error)
     else while(1);//TODO clear the pending flag EXTI->PR |= (1<<10);  // clear the pending flag
-//    NVIC_ReleasePendingIRQ(USART3_IRQn);
   if(fnPostNVICs[USART3_IRQn]) ((u32(*)(u32))fnPostNVICs[USART3_IRQn])((u32)&NVIC_Stats[USART3_IRQn]); // call either an empty function or a hooked one with desired context predefined (if context missing... error)
 }
 #endif
@@ -691,7 +658,6 @@ __irq void RTC_Alarm_IRQHandler(void) {//  RTC_Alarm_IRQn              = 41,    
   if(fnPreNVICs[RTC_Alarm_IRQn]) ((u32(*)(u32))fnPreNVICs[RTC_Alarm_IRQn])((u32)&NVIC_Stats[RTC_Alarm_IRQn]); // call either an empty function or a hooked one with desired context predefined (if context missing... error)
     if(fnRTC_Alarm) ((u32(*)(u32))fnRTC_Alarm)(ctRTC_Alarm); // call either an empty function or a hooked one with desired context predefined (if context missing... error)
     else while(1);//TODO clear the pending flag EXTI->PR |= (1<<10);  // clear the pending flag
-//-    NVIC_ReleasePendingIRQ(RTC_Alarm_IRQn);
   if(fnPostNVICs[RTC_Alarm_IRQn]) ((u32(*)(u32))fnPostNVICs[RTC_Alarm_IRQn])((u32)&NVIC_Stats[RTC_Alarm_IRQn]); // call either an empty function or a hooked one with desired context predefined (if context missing... error)
 }
 #endif
@@ -701,7 +667,6 @@ __irq void OTG_FS_WKUP_IRQHandler(void) {//  OTG_FS_WKUP_IRQn            = 42,  
   if(fnPreNVICs[OTG_FS_WKUP_IRQn]) ((u32(*)(u32))fnPreNVICs[OTG_FS_WKUP_IRQn])((u32)&NVIC_Stats[OTG_FS_WKUP_IRQn]); // call either an empty function or a hooked one with desired context predefined (if context missing... error)
     if(fnOTG_FS_WKUP) ((u32(*)(u32))fnOTG_FS_WKUP)(ctOTG_FS_WKUP); // call either an empty function or a hooked one with desired context predefined (if context missing... error)
     else while(1);//TODO clear the pending flag EXTI->PR |= (1<<10);  // clear the pending flag
-//-    NVIC_ReleasePendingIRQ(OTG_FS_WKUP_IRQn);
   if(fnPostNVICs[OTG_FS_WKUP_IRQn]) ((u32(*)(u32))fnPostNVICs[OTG_FS_WKUP_IRQn])((u32)&NVIC_Stats[OTG_FS_WKUP_IRQn]); // call either an empty function or a hooked one with desired context predefined (if context missing... error)
 }
 #endif
@@ -718,7 +683,6 @@ __irq void TIM8_BRK_TIM12_IRQHandler(void) {//  TIM8_BRK_TIM12_IRQn         = 43
       else while(1);//TODO clear the pending flag EXTI->PR |= (1<<10);  // clear the pending flag
     };
   
-//    NVIC_ReleasePendingIRQ(TIM8_BRK_TIM12_IRQn);
   if(fnPostNVICs[TIM8_BRK_TIM12_IRQn]) ((u32(*)(u32))fnPostNVICs[TIM8_BRK_TIM12_IRQn])((u32)&NVIC_Stats[TIM8_BRK_TIM12_IRQn]); // call either an empty function or a hooked one with desired context predefined (if context missing... error)
 }
 #endif
@@ -734,7 +698,6 @@ __irq void TIM8_UP_TIM13_IRQHandler(void) {//  TIM8_UP_TIM13_IRQn          = 44,
       else while(1);//TODO clear the pending flag EXTI->PR |= (1<<10);  // clear the pending flag
     };
   
-//    NVIC_ReleasePendingIRQ(TIM8_UP_TIM13_IRQn);
   if(fnPostNVICs[TIM8_UP_TIM13_IRQn]) ((u32(*)(u32))fnPostNVICs[TIM8_UP_TIM13_IRQn])((u32)&NVIC_Stats[TIM8_UP_TIM13_IRQn]); // call either an empty function or a hooked one with desired context predefined (if context missing... error)
 }
 #endif
@@ -750,7 +713,6 @@ __irq void TIM8_TRG_COM_TIM14_IRQHandler(void) {//  TIM8_TRG_COM_TIM14_IRQn     
       else while(1);//TODO clear the pending flag EXTI->PR |= (1<<10);  // clear the pending flag
     };
   
-//-    NVIC_ReleasePendingIRQ(TIM8_TRG_COM_TIM14_IRQn);
   if(fnPostNVICs[TIM8_TRG_COM_TIM14_IRQn]) ((u32(*)(u32))fnPostNVICs[TIM8_TRG_COM_TIM14_IRQn])((u32)&NVIC_Stats[TIM8_TRG_COM_TIM14_IRQn]); // call either an empty function or a hooked one with desired context predefined (if context missing... error)
 }
 #endif
@@ -759,7 +721,6 @@ __irq void TIM8_CC_IRQHandler(void) {//  TIM8_CC_IRQn                = 46,     /
   if(fnPreNVICs[TIM8_CC_IRQn]) ((u32(*)(u32))fnPreNVICs[TIM8_CC_IRQn])((u32)&NVIC_Stats[TIM8_CC_IRQn]); // call either an empty function or a hooked one with desired context predefined (if context missing... error)
     if(fnTIM8_CC) ((u32(*)(u32))fnTIM8_CC)(ctTIM8_CC); // call either an empty function or a hooked one with desired context predefined (if context missing... error)
     else while(1);//TODO clear the pending flag EXTI->PR |= (1<<10);  // clear the pending flag
-//-    NVIC_ReleasePendingIRQ(TIM8_CC_IRQn);
   if(fnPostNVICs[TIM8_CC_IRQn]) ((u32(*)(u32))fnPostNVICs[TIM8_CC_IRQn])((u32)&NVIC_Stats[TIM8_CC_IRQn]); // call either an empty function or a hooked one with desired context predefined (if context missing... error)
 }
 #endif
@@ -769,7 +730,6 @@ __irq void DMA1_Stream7_IRQHandler(void) {//  DMA1_Stream7_IRQn           = 47, 
   if(fnPreNVICs[DMA1_Stream7_IRQn]) ((u32(*)(u32))fnPreNVICs[DMA1_Stream7_IRQn])((u32)&NVIC_Stats[DMA1_Stream7_IRQn]); // call either an empty function or a hooked one with desired context predefined (if context missing... error)
     if(fnDMA1s[7]) ((u32(*)(u32))fnDMA1s[7])(ctDMA1s[7]); // call either an empty function or a hooked one with desired context predefined (if context missing... error)
     else while(1);//TODO clear the pending flag EXTI->PR |= (1<<10);  // clear the pending flag
-//-    NVIC_ReleasePendingIRQ(DMA1_Stream7_IRQn);
   if(fnPostNVICs[DMA1_Stream7_IRQn]) ((u32(*)(u32))fnPostNVICs[DMA1_Stream7_IRQn])((u32)&NVIC_Stats[DMA1_Stream7_IRQn]); // call either an empty function or a hooked one with desired context predefined (if context missing... error)
 }
 #endif
@@ -779,7 +739,6 @@ __irq void FSMC_IRQHandler(void) {//  FSMC_IRQn                   = 48,     /*!<
   if(fnPreNVICs[FSMC_IRQn]) ((u32(*)(u32))fnPreNVICs[FSMC_IRQn])((u32)&NVIC_Stats[FSMC_IRQn]); // call either an empty function or a hooked one with desired context predefined (if context missing... error)
     if(fnFSMC) ((u32(*)(u32))fnFSMC)(ctFSMC); // call either an empty function or a hooked one with desired context predefined (if context missing... error)
     else while(1);//TODO clear the pending flag EXTI->PR |= (1<<10);  // clear the pending flag
-//-    NVIC_ReleasePendingIRQ(FSMC_IRQn);
   if(fnPostNVICs[FSMC_IRQn]) ((u32(*)(u32))fnPostNVICs[FSMC_IRQn])((u32)&NVIC_Stats[FSMC_IRQn]); // call either an empty function or a hooked one with desired context predefined (if context missing... error)
 }
 #endif
@@ -789,7 +748,6 @@ __irq void SDIO_IRQHandler(void) {//  SDIO_IRQn                   = 49,     /*!<
   if(fnPreNVICs[SDIO_IRQn]) ((u32(*)(u32))fnPreNVICs[SDIO_IRQn])((u32)&NVIC_Stats[SDIO_IRQn]); // call either an empty function or a hooked one with desired context predefined (if context missing... error)
     if(fnSDIO) ((u32(*)(u32))fnSDIO)(ctSDIO); // call either an empty function or a hooked one with desired context predefined (if context missing... error)
     else while(1);//TODO clear the pending flag EXTI->PR |= (1<<10);  // clear the pending flag
-//-    NVIC_ReleasePendingIRQ(SDIO_IRQn);
   if(fnPostNVICs[SDIO_IRQn]) ((u32(*)(u32))fnPostNVICs[SDIO_IRQn])((u32)&NVIC_Stats[SDIO_IRQn]); // call either an empty function or a hooked one with desired context predefined (if context missing... error)
 }
 #endif
@@ -799,7 +757,6 @@ __irq void TIM5_IRQHandler(void) {//  TIM5_IRQn                   = 50,     /*!<
   if(fnPreNVICs[TIM5_IRQn]) ((u32(*)(u32))fnPreNVICs[TIM5_IRQn])((u32)&NVIC_Stats[TIM5_IRQn]); // call either an empty function or a hooked one with desired context predefined (if context missing... error)
     if(fnTIM5) ((u32(*)(u32))fnTIM5)(ctTIM5); // call either an empty function or a hooked one with desired context predefined (if context missing... error)
     else while(1);//TODO clear the pending flag EXTI->PR |= (1<<10);  // clear the pending flag
-//-    NVIC_ReleasePendingIRQ(TIM5_IRQn);
   if(fnPostNVICs[TIM5_IRQn]) ((u32(*)(u32))fnPostNVICs[TIM5_IRQn])((u32)&NVIC_Stats[TIM5_IRQn]); // call either an empty function or a hooked one with desired context predefined (if context missing... error)
 }
 #endif
@@ -809,7 +766,6 @@ __irq void SPI3_IRQHandler(void) {//  SPI3_IRQn                   = 51,     /*!<
   if(fnPreNVICs[SPI3_IRQn]) ((u32(*)(u32))fnPreNVICs[SPI3_IRQn])((u32)&NVIC_Stats[SPI3_IRQn]); // call either an empty function or a hooked one with desired context predefined (if context missing... error)
     if(fnSPI3) ((u32(*)(u32))fnSPI3)(ctSPI3); // call either an empty function or a hooked one with desired context predefined (if context missing... error)
     else while(1);//TODO clear the pending flag EXTI->PR |= (1<<10);  // clear the pending flag
-//-    NVIC_ReleasePendingIRQ(SPI3_IRQn);
   if(fnPostNVICs[SPI3_IRQn]) ((u32(*)(u32))fnPostNVICs[SPI3_IRQn])((u32)&NVIC_Stats[SPI3_IRQn]); // call either an empty function or a hooked one with desired context predefined (if context missing... error)
 }
 #endif
@@ -819,7 +775,6 @@ __irq void UART4_IRQHandler(void) {//  UART4_IRQn                  = 52,     /*!
   if(fnPreNVICs[UART4_IRQn]) ((u32(*)(u32))fnPreNVICs[UART4_IRQn])((u32)&NVIC_Stats[UART4_IRQn]); // call either an empty function or a hooked one with desired context predefined (if context missing... error)
     if(fnUART4) ((u32(*)(u32))fnUART4)(ctUART4); // call either an empty function or a hooked one with desired context predefined (if context missing... error)
     else while(1);//TODO clear the pending flag EXTI->PR |= (1<<10);  // clear the pending flag
-//    NVIC_ReleasePendingIRQ(UART4_IRQn);
   if(fnPostNVICs[UART4_IRQn]) ((u32(*)(u32))fnPostNVICs[UART4_IRQn])((u32)&NVIC_Stats[UART4_IRQn]); // call either an empty function or a hooked one with desired context predefined (if context missing... error)
 }
 #endif
@@ -828,7 +783,6 @@ __irq void UART5_IRQHandler(void) {//  UART5_IRQn                  = 53,     /*!
   if(fnPreNVICs[UART5_IRQn]) ((u32(*)(u32))fnPreNVICs[UART5_IRQn])((u32)&NVIC_Stats[UART5_IRQn]); // call either an empty function or a hooked one with desired context predefined (if context missing... error)
     if(fnUART5) ((u32(*)(u32))fnUART5)(ctUART5); // call either an empty function or a hooked one with desired context predefined (if context missing... error)
     else while(1);//TODO clear the pending flag EXTI->PR |= (1<<10);  // clear the pending flag
-//-    NVIC_ReleasePendingIRQ(UART5_IRQn);
   if(fnPostNVICs[UART5_IRQn]) ((u32(*)(u32))fnPostNVICs[UART5_IRQn])((u32)&NVIC_Stats[UART5_IRQn]); // call either an empty function or a hooked one with desired context predefined (if context missing... error)
 }
 #endif
@@ -838,7 +792,6 @@ __irq void TIM6_DAC_IRQHandler(void) {//  TIM6_DAC_IRQn               = 54,     
   if(fnPreNVICs[TIM6_DAC_IRQn]) ((u32(*)(u32))fnPreNVICs[TIM6_DAC_IRQn])((u32)&NVIC_Stats[TIM6_DAC_IRQn]); // call either an empty function or a hooked one with desired context predefined (if context missing... error)
     if(fnTIM6_DAC) ((u32(*)(u32))fnTIM6_DAC)(ctTIM6_DAC); // call either an empty function or a hooked one with desired context predefined (if context missing... error)
     else TIM6->SR &= ~1;//TODO clear the pending flag EXTI->PR |= (1<<10);  // clear the pending flag
-//-    NVIC_ReleasePendingIRQ(TIM6_DAC_IRQn);
   if(fnPostNVICs[TIM6_DAC_IRQn]) ((u32(*)(u32))fnPostNVICs[TIM6_DAC_IRQn])((u32)&NVIC_Stats[TIM6_DAC_IRQn]); // call either an empty function or a hooked one with desired context predefined (if context missing... error)
 }
 #endif
@@ -847,7 +800,6 @@ __irq void TIM7_IRQHandler(void) {//  TIM7_IRQn                   = 55,     /*!<
   if(fnPreNVICs[TIM7_IRQn]) ((u32(*)(u32))fnPreNVICs[TIM7_IRQn])((u32)&NVIC_Stats[TIM7_IRQn]); // call either an empty function or a hooked one with desired context predefined (if context missing... error)
     if(fnTIM7) ((u32(*)(u32))fnTIM7)(ctTIM7); // call either an empty function or a hooked one with desired context predefined (if context missing... error)
     else TIM7->SR &= ~1;//TODO clear the pending flag EXTI->PR |= (1<<10);  // clear the pending flag
-//-    NVIC_ReleasePendingIRQ(TIM7_IRQn);
   if(fnPostNVICs[TIM7_IRQn]) ((u32(*)(u32))fnPostNVICs[TIM7_IRQn])((u32)&NVIC_Stats[TIM7_IRQn]); // call either an empty function or a hooked one with desired context predefined (if context missing... error)
 }
 #endif
@@ -857,7 +809,6 @@ __irq void DMA2_Stream0_IRQHandler(void) {//  DMA2_Stream0_IRQn           = 56, 
   if(fnPreNVICs[DMA2_Stream0_IRQn]) ((u32(*)(u32))fnPreNVICs[DMA2_Stream0_IRQn])((u32)&NVIC_Stats[DMA2_Stream0_IRQn]); // call either an empty function or a hooked one with desired context predefined (if context missing... error)
     if(fnDMA2s[0]) ((u32(*)(u32))fnDMA2s[0])(ctDMA2s[0]); // call either an empty function or a hooked one with desired context predefined (if context missing... error)
     else while(1);//TODO clear the pending flag EXTI->PR |= (1<<10);  // clear the pending flag
-//-    NVIC_ReleasePendingIRQ(DMA2_Stream0_IRQn);
   if(fnPostNVICs[DMA2_Stream0_IRQn]) ((u32(*)(u32))fnPostNVICs[DMA2_Stream0_IRQn])((u32)&NVIC_Stats[DMA2_Stream0_IRQn]); // call either an empty function or a hooked one with desired context predefined (if context missing... error)
 }
 #endif
@@ -866,7 +817,6 @@ __irq void DMA2_Stream1_IRQHandler(void) {//  DMA2_Stream1_IRQn           = 57, 
   if(fnPreNVICs[DMA2_Stream1_IRQn]) ((u32(*)(u32))fnPreNVICs[DMA2_Stream1_IRQn])((u32)&NVIC_Stats[DMA2_Stream1_IRQn]); // call either an empty function or a hooked one with desired context predefined (if context missing... error)
     if(fnDMA2s[1]) ((u32(*)(u32))fnDMA2s[1])(ctDMA2s[1]); // call either an empty function or a hooked one with desired context predefined (if context missing... error)
     else while(1);//TODO clear the pending flag EXTI->PR |= (1<<10);  // clear the pending flag
-//-    NVIC_ReleasePendingIRQ(DMA2_Stream0_IRQn);
   if(fnPostNVICs[DMA2_Stream1_IRQn]) ((u32(*)(u32))fnPostNVICs[DMA2_Stream1_IRQn])((u32)&NVIC_Stats[DMA2_Stream1_IRQn]); // call either an empty function or a hooked one with desired context predefined (if context missing... error)
 }
 #endif
@@ -875,7 +825,6 @@ __irq void DMA2_Stream2_IRQHandler(void) {//  DMA2_Stream2_IRQn           = 58, 
   if(fnPreNVICs[DMA2_Stream2_IRQn]) ((u32(*)(u32))fnPreNVICs[DMA2_Stream2_IRQn])((u32)&NVIC_Stats[DMA2_Stream2_IRQn]); // call either an empty function or a hooked one with desired context predefined (if context missing... error)
     if(fnDMA2s[2]) ((u32(*)(u32))fnDMA2s[2])(ctDMA2s[2]); // call either an empty function or a hooked one with desired context predefined (if context missing... error)
     else while(1);//TODO clear the pending flag EXTI->PR |= (1<<10);  // clear the pending flag
-//-    NVIC_ReleasePendingIRQ(DMA2_Stream2_IRQn);
   if(fnPostNVICs[DMA2_Stream2_IRQn]) ((u32(*)(u32))fnPostNVICs[DMA2_Stream2_IRQn])((u32)&NVIC_Stats[DMA2_Stream2_IRQn]); // call either an empty function or a hooked one with desired context predefined (if context missing... error)
 }
 #endif
@@ -884,7 +833,6 @@ __irq void DMA2_Stream3_IRQHandler(void) {//  DMA2_Stream3_IRQn           = 59, 
   if(fnPreNVICs[DMA2_Stream3_IRQn]) ((u32(*)(u32))fnPreNVICs[DMA2_Stream3_IRQn])((u32)&NVIC_Stats[DMA2_Stream3_IRQn]); // call either an empty function or a hooked one with desired context predefined (if context missing... error)
     if(fnDMA2s[3]) ((u32(*)(u32))fnDMA2s[3])(ctDMA2s[3]); // call either an empty function or a hooked one with desired context predefined (if context missing... error)
     else while(1);//TODO clear the pending flag EXTI->PR |= (1<<10);  // clear the pending flag
-//-    NVIC_ReleasePendingIRQ(DMA2_Stream3_IRQn);
   if(fnPostNVICs[DMA2_Stream3_IRQn]) ((u32(*)(u32))fnPostNVICs[DMA2_Stream3_IRQn])((u32)&NVIC_Stats[DMA2_Stream3_IRQn]); // call either an empty function or a hooked one with desired context predefined (if context missing... error)
 }
 #endif
@@ -893,7 +841,6 @@ __irq void DMA2_Stream4_IRQHandler(void) {//  DMA2_Stream4_IRQn           = 60, 
   if(fnPreNVICs[DMA2_Stream4_IRQn]) ((u32(*)(u32))fnPreNVICs[DMA2_Stream4_IRQn])((u32)&NVIC_Stats[DMA2_Stream4_IRQn]); // call either an empty function or a hooked one with desired context predefined (if context missing... error)
     if(fnDMA2s[4]) ((u32(*)(u32))fnDMA2s[4])(ctDMA2s[4]); // call either an empty function or a hooked one with desired context predefined (if context missing... error)
     else while(1);//TODO clear the pending flag EXTI->PR |= (1<<10);  // clear the pending flag
-//-    NVIC_ReleasePendingIRQ(DMA2_Stream4_IRQn);
   if(fnPostNVICs[DMA2_Stream4_IRQn]) ((u32(*)(u32))fnPostNVICs[DMA2_Stream4_IRQn])((u32)&NVIC_Stats[DMA2_Stream4_IRQn]); // call either an empty function or a hooked one with desired context predefined (if context missing... error)
 }
 #endif
@@ -911,8 +858,7 @@ __irq void ETH_IRQHandler(void) {//  ETH_IRQn                    = 61,     /*!< 
 __irq void ETH_WKUP_IRQHandler(void) {//  ETH_WKUP_IRQn               = 62,     /*!< Ethernet Wakeup through EXTI line Interrupt                       */
   if(fnPreNVICs[ETH_WKUP_IRQn]) ((u32(*)(u32))fnPreNVICs[ETH_WKUP_IRQn])((u32)&NVIC_Stats[ETH_WKUP_IRQn]); // call either an empty function or a hooked one with desired context predefined (if context missing... error)
     if(fnETH_WKUP) ((u32(*)(u32))fnETH_WKUP)(ctETH_WKUP); // call either an empty function or a hooked one with desired context predefined (if context missing... error)
-    else while(1);//TODO clear the pending flag EXTI->PR |= (1<<10);  // clear the pending flag
-//-    NVIC_ReleasePendingIRQ(ETH_WKUP_IRQn);
+    else while(1);//TODO clear the pending flag
   if(fnPostNVICs[ETH_WKUP_IRQn]) ((u32(*)(u32))fnPostNVICs[ETH_WKUP_IRQn])((u32)&NVIC_Stats[ETH_WKUP_IRQn]); // call either an empty function or a hooked one with desired context predefined (if context missing... error)
 }
 #endif
@@ -921,8 +867,7 @@ __irq void ETH_WKUP_IRQHandler(void) {//  ETH_WKUP_IRQn               = 62,     
 __irq void CAN2_TX_IRQHandler(void) {//  CAN2_TX_IRQn                = 63,     /*!< CAN2 TX Interrupt                                                 */
   if(fnPreNVICs[CAN2_TX_IRQn]) ((u32(*)(u32))fnPreNVICs[CAN2_TX_IRQn])((u32)&NVIC_Stats[CAN2_TX_IRQn]); // call either an empty function or a hooked one with desired context predefined (if context missing... error)
     if(fnCAN2_TX) ((u32(*)(u32))fnCAN2_TX)(ctCAN2_TX); // call either an empty function or a hooked one with desired context predefined (if context missing... error)
-    else while(1);//TODO clear the pending flag EXTI->PR |= (1<<10);  // clear the pending flag
-//-    NVIC_ReleasePendingIRQ(CAN2_TX_IRQn);
+    else while(1);//TODO clear the pending flag
   if(fnPostNVICs[CAN2_TX_IRQn]) ((u32(*)(u32))fnPostNVICs[CAN2_TX_IRQn])((u32)&NVIC_Stats[CAN2_TX_IRQn]); // call either an empty function or a hooked one with desired context predefined (if context missing... error)
 }
 #endif
@@ -930,8 +875,7 @@ __irq void CAN2_TX_IRQHandler(void) {//  CAN2_TX_IRQn                = 63,     /
 __irq void CAN2_RX0_IRQHandler(void) {//  CAN2_RX0_IRQn               = 64,     /*!< CAN2 RX0 Interrupt                                                */
   if(fnPreNVICs[CAN2_RX0_IRQn]) ((u32(*)(u32))fnPreNVICs[CAN2_RX0_IRQn])((u32)&NVIC_Stats[CAN2_RX0_IRQn]); // call either an empty function or a hooked one with desired context predefined (if context missing... error)
     if(fnCAN2_RX0) ((u32(*)(u32))fnCAN2_RX0)(ctCAN2_RX0); // call either an empty function or a hooked one with desired context predefined (if context missing... error)
-    else while(1);//TODO clear the pending flag EXTI->PR |= (1<<10);  // clear the pending flag
-//-    NVIC_ReleasePendingIRQ(CAN2_RX0_IRQn);
+    else while(1);//TODO clear the pending flag
   if(fnPostNVICs[CAN2_RX0_IRQn]) ((u32(*)(u32))fnPostNVICs[CAN2_RX0_IRQn])((u32)&NVIC_Stats[CAN2_RX0_IRQn]); // call either an empty function or a hooked one with desired context predefined (if context missing... error)
 }
 #endif
@@ -939,8 +883,7 @@ __irq void CAN2_RX0_IRQHandler(void) {//  CAN2_RX0_IRQn               = 64,     
 __irq void CAN2_RX1_IRQHandler(void) {//  CAN2_RX1_IRQn               = 65,     /*!< CAN2 RX1 Interrupt                                                */
   if(fnPreNVICs[CAN2_RX1_IRQn]) ((u32(*)(u32))fnPreNVICs[CAN2_RX1_IRQn])((u32)&NVIC_Stats[CAN2_RX1_IRQn]); // call either an empty function or a hooked one with desired context predefined (if context missing... error)
     if(fnCAN2_RX1) ((u32(*)(u32))fnCAN2_RX1)(ctCAN2_RX1); // call either an empty function or a hooked one with desired context predefined (if context missing... error)
-    else while(1);//TODO clear the pending flag EXTI->PR |= (1<<10);  // clear the pending flag
-//-    NVIC_ReleasePendingIRQ(CAN2_RX1_IRQn);
+    else while(1);//TODO clear the pending flag
   if(fnPostNVICs[CAN2_RX1_IRQn]) ((u32(*)(u32))fnPostNVICs[CAN2_RX1_IRQn])((u32)&NVIC_Stats[CAN2_RX1_IRQn]); // call either an empty function or a hooked one with desired context predefined (if context missing... error)
 }
 #endif
@@ -948,8 +891,7 @@ __irq void CAN2_RX1_IRQHandler(void) {//  CAN2_RX1_IRQn               = 65,     
 __irq void CAN2_SCE_IRQHandler(void) {//  CAN2_SCE_IRQn               = 66,     /*!< CAN2 SCE Interrupt                                                */
   if(fnPreNVICs[CAN2_SCE_IRQn]) ((u32(*)(u32))fnPreNVICs[CAN2_SCE_IRQn])((u32)&NVIC_Stats[CAN2_SCE_IRQn]); // call either an empty function or a hooked one with desired context predefined (if context missing... error)
     if(fnCAN2_SCE) ((u32(*)(u32))fnCAN2_SCE)(ctCAN2_SCE); // call either an empty function or a hooked one with desired context predefined (if context missing... error)
-    else while(1);//TODO clear the pending flag EXTI->PR |= (1<<10);  // clear the pending flag
-//-    NVIC_ReleasePendingIRQ(CAN2_SCE_IRQn);
+    else while(1);//TODO clear the pending flag
   if(fnPostNVICs[CAN2_SCE_IRQn]) ((u32(*)(u32))fnPostNVICs[CAN2_SCE_IRQn])((u32)&NVIC_Stats[CAN2_SCE_IRQn]); // call either an empty function or a hooked one with desired context predefined (if context missing... error)
 }
 #endif
@@ -958,8 +900,7 @@ __irq void CAN2_SCE_IRQHandler(void) {//  CAN2_SCE_IRQn               = 66,     
 __irq void OTG_FS_IRQHandler(void) {//  OTG_FS_IRQn                 = 67,     /*!< USB OTG FS global Interrupt                                       */
   if(fnPreNVICs[OTG_FS_IRQn]) ((u32(*)(u32))fnPreNVICs[OTG_FS_IRQn])((u32)&NVIC_Stats[OTG_FS_IRQn]); // call either an empty function or a hooked one with desired context predefined (if context missing... error)
     if(fnOTG_FS) ((u32(*)(u32))fnOTG_FS)(ctOTG_FS); // call either an empty function or a hooked one with desired context predefined (if context missing... error)
-    else while(1);//TODO clear the pending flag EXTI->PR |= (1<<10);  // clear the pending flag
-//-    NVIC_ReleasePendingIRQ(OTG_FS_IRQn);
+    else while(1);//TODO clear the pending flag
   if(fnPostNVICs[OTG_FS_IRQn]) ((u32(*)(u32))fnPostNVICs[OTG_FS_IRQn])((u32)&NVIC_Stats[OTG_FS_IRQn]); // call either an empty function or a hooked one with desired context predefined (if context missing... error)
 }
 #endif
@@ -968,8 +909,7 @@ __irq void OTG_FS_IRQHandler(void) {//  OTG_FS_IRQn                 = 67,     /*
 __irq void DMA2_Stream5_IRQHandler(void) {//  DMA2_Stream5_IRQn           = 68,     /*!< DMA2 Stream 5 global interrupt                                    */
   if(fnPreNVICs[DMA2_Stream5_IRQn]) ((u32(*)(u32))fnPreNVICs[DMA2_Stream5_IRQn])((u32)&NVIC_Stats[DMA2_Stream5_IRQn]); // call either an empty function or a hooked one with desired context predefined (if context missing... error)
     if(fnDMA2s[5]) ((u32(*)(u32))fnDMA2s[5])(ctDMA2s[5]); // call either an empty function or a hooked one with desired context predefined (if context missing... error)
-    else while(1);//TODO clear the pending flag EXTI->PR |= (1<<10);  // clear the pending flag
-//-    NVIC_ReleasePendingIRQ(DMA2_Stream5_IRQn);
+    else while(1);//TODO clear the pending flag
   if(fnPostNVICs[DMA2_Stream5_IRQn]) ((u32(*)(u32))fnPostNVICs[DMA2_Stream5_IRQn])((u32)&NVIC_Stats[DMA2_Stream5_IRQn]); // call either an empty function or a hooked one with desired context predefined (if context missing... error)
 }
 #endif
@@ -977,8 +917,7 @@ __irq void DMA2_Stream5_IRQHandler(void) {//  DMA2_Stream5_IRQn           = 68, 
 __irq void DMA2_Stream6_IRQHandler(void) {//  DMA2_Stream6_IRQn           = 69,     /*!< DMA2 Stream 6 global interrupt                                    */
   if(fnPreNVICs[DMA2_Stream6_IRQn]) ((u32(*)(u32))fnPreNVICs[DMA2_Stream6_IRQn])((u32)&NVIC_Stats[DMA2_Stream6_IRQn]); // call either an empty function or a hooked one with desired context predefined (if context missing... error)
     if(fnDMA2s[6]) ((u32(*)(u32))fnDMA2s[6])(ctDMA2s[6]); // call either an empty function or a hooked one with desired context predefined (if context missing... error)
-    else while(1);//TODO clear the pending flag EXTI->PR |= (1<<10);  // clear the pending flag
-//-    NVIC_ReleasePendingIRQ(DMA2_Stream6_IRQn);
+    else while(1);//TODO clear the pending flag
   if(fnPostNVICs[DMA2_Stream6_IRQn]) ((u32(*)(u32))fnPostNVICs[DMA2_Stream6_IRQn])((u32)&NVIC_Stats[DMA2_Stream6_IRQn]); // call either an empty function or a hooked one with desired context predefined (if context missing... error)
 }
 #endif
@@ -986,8 +925,7 @@ __irq void DMA2_Stream6_IRQHandler(void) {//  DMA2_Stream6_IRQn           = 69, 
 __irq void DMA2_Stream7_IRQHandler(void) {//  DMA2_Stream7_IRQn           = 70,     /*!< DMA2 Stream 7 global interrupt                                    */
   if(fnPreNVICs[DMA2_Stream7_IRQn]) ((u32(*)(u32))fnPreNVICs[DMA2_Stream7_IRQn])((u32)&NVIC_Stats[DMA2_Stream7_IRQn]); // call either an empty function or a hooked one with desired context predefined (if context missing... error)
     if(fnDMA2s[7]) ((u32(*)(u32))fnDMA2s[7])(ctDMA2s[7]); // call either an empty function or a hooked one with desired context predefined (if context missing... error)
-    else while(1);//TODO clear the pending flag EXTI->PR |= (1<<10);  // clear the pending flag
-//-    NVIC_ReleasePendingIRQ(DMA2_Stream7_IRQn);
+    else while(1);//TODO clear the pending flag
   if(fnPostNVICs[DMA2_Stream7_IRQn]) ((u32(*)(u32))fnPostNVICs[DMA2_Stream7_IRQn])((u32)&NVIC_Stats[DMA2_Stream7_IRQn]); // call either an empty function or a hooked one with desired context predefined (if context missing... error)
 }
 #endif
@@ -996,8 +934,7 @@ __irq void DMA2_Stream7_IRQHandler(void) {//  DMA2_Stream7_IRQn           = 70, 
 __irq void USART6_IRQHandler(void) {//  USART6_IRQn                 = 71,     /*!< USART6 global interrupt                                           */
   if(fnPreNVICs[USART6_IRQn]) ((u32(*)(u32))fnPreNVICs[USART6_IRQn])((u32)&NVIC_Stats[USART6_IRQn]); // call either an empty function or a hooked one with desired context predefined (if context missing... error)
     if(fnUSART6) ((u32(*)(u32))fnUSART6)(ctUSART6); // call either an empty function or a hooked one with desired context predefined (if context missing... error)
-    else while(1);//TODO clear the pending flag EXTI->PR |= (1<<10);  // clear the pending flag
-//-    NVIC_ReleasePendingIRQ(USART6_IRQn);
+    else while(1);//TODO clear the pending flag
   if(fnPostNVICs[USART6_IRQn]) ((u32(*)(u32))fnPostNVICs[USART6_IRQn])((u32)&NVIC_Stats[USART6_IRQn]); // call either an empty function or a hooked one with desired context predefined (if context missing... error)
 }
 #endif
@@ -1006,8 +943,7 @@ __irq void USART6_IRQHandler(void) {//  USART6_IRQn                 = 71,     /*
 __irq void I2C3_EV_IRQHandler(void) {//  I2C3_EV_IRQn                = 72,     /*!< I2C3 event interrupt                                              */
   if(fnPreNVICs[I2C3_EV_IRQn]) ((u32(*)(u32))fnPreNVICs[I2C3_EV_IRQn])((u32)&NVIC_Stats[I2C3_EV_IRQn]); // call either an empty function or a hooked one with desired context predefined (if context missing... error)
     if(fnI2C3_EV) ((u32(*)(u32))fnI2C3_EV)(ctI2C3_EV); // call either an empty function or a hooked one with desired context predefined (if context missing... error)
-    else while(1);//TODO clear the pending flag EXTI->PR |= (1<<10);  // clear the pending flag
-//-    NVIC_ReleasePendingIRQ(I2C3_EV_IRQn);
+    else while(1);//TODO clear the pending flag
   if(fnPostNVICs[I2C3_EV_IRQn]) ((u32(*)(u32))fnPostNVICs[I2C3_EV_IRQn])((u32)&NVIC_Stats[I2C3_EV_IRQn]); // call either an empty function or a hooked one with desired context predefined (if context missing... error)
 }
 #endif
@@ -1016,8 +952,7 @@ __irq void I2C3_EV_IRQHandler(void) {//  I2C3_EV_IRQn                = 72,     /
 __irq void I2C3_ER_IRQHandler(void) {//  I2C3_ER_IRQn                = 73,     /*!< I2C3 error interrupt                                              */
   if(fnPreNVICs[I2C3_ER_IRQn]) ((u32(*)(u32))fnPreNVICs[I2C3_ER_IRQn])((u32)&NVIC_Stats[I2C3_ER_IRQn]); // call either an empty function or a hooked one with desired context predefined (if context missing... error)
     if(fnI2C3_ER) ((u32(*)(u32))fnI2C3_ER)(ctI2C3_ER); // call either an empty function or a hooked one with desired context predefined (if context missing... error)
-    else while(1);//TODO clear the pending flag EXTI->PR |= (1<<10);  // clear the pending flag
-//-    NVIC_ReleasePendingIRQ(I2C3_ER_IRQn);
+    else while(1);//TODO clear the pending flag
   if(fnPostNVICs[I2C3_ER_IRQn]) ((u32(*)(u32))fnPostNVICs[I2C3_ER_IRQn])((u32)&NVIC_Stats[I2C3_ER_IRQn]); // call either an empty function or a hooked one with desired context predefined (if context missing... error)
 }
 #endif
@@ -1026,8 +961,7 @@ __irq void I2C3_ER_IRQHandler(void) {//  I2C3_ER_IRQn                = 73,     /
 __irq void OTG_HS_EP1_OUT_IRQHandler(void) {//  OTG_HS_EP1_OUT_IRQn         = 74,     /*!< USB OTG HS End Point 1 Out global interrupt                       */
   if(fnPreNVICs[OTG_HS_EP1_OUT_IRQn]) ((u32(*)(u32))fnPreNVICs[OTG_HS_EP1_OUT_IRQn])((u32)&NVIC_Stats[OTG_HS_EP1_OUT_IRQn]); // call either an empty function or a hooked one with desired context predefined (if context missing... error)
     if(fnOTG_HS_EP1_OUT) ((u32(*)(u32))fnOTG_HS_EP1_OUT)(ctOTG_HS_EP1_OUT); // call either an empty function or a hooked one with desired context predefined (if context missing... error)
-    else while(1);//TODO clear the pending flag EXTI->PR |= (1<<10);  // clear the pending flag
-//-    NVIC_ReleasePendingIRQ(OTG_HS_EP1_OUT_IRQn);
+    else while(1);//TODO clear the pending flag
   if(fnPostNVICs[OTG_HS_EP1_OUT_IRQn]) ((u32(*)(u32))fnPostNVICs[OTG_HS_EP1_OUT_IRQn])((u32)&NVIC_Stats[OTG_HS_EP1_OUT_IRQn]); // call either an empty function or a hooked one with desired context predefined (if context missing... error)
 }
 #endif
@@ -1035,8 +969,7 @@ __irq void OTG_HS_EP1_OUT_IRQHandler(void) {//  OTG_HS_EP1_OUT_IRQn         = 74
 __irq void OTG_HS_EP1_IN_IRQHandler(void) {//  OTG_HS_EP1_IN_IRQn          = 75,     /*!< USB OTG HS End Point 1 In global interrupt                        */
   if(fnPreNVICs[OTG_HS_EP1_IN_IRQn]) ((u32(*)(u32))fnPreNVICs[OTG_HS_EP1_IN_IRQn])((u32)&NVIC_Stats[OTG_HS_EP1_IN_IRQn]); // call either an empty function or a hooked one with desired context predefined (if context missing... error)
     if(fnOTG_HS_EP1_IN) ((u32(*)(u32))fnOTG_HS_EP1_IN)(ctOTG_HS_EP1_IN); // call either an empty function or a hooked one with desired context predefined (if context missing... error)
-    else while(1);//TODO clear the pending flag EXTI->PR |= (1<<10);  // clear the pending flag
-//-    NVIC_ReleasePendingIRQ(OTG_HS_EP1_IN_IRQn);
+    else while(1);//TODO clear the pending flag
   if(fnPostNVICs[OTG_HS_EP1_IN_IRQn]) ((u32(*)(u32))fnPostNVICs[OTG_HS_EP1_IN_IRQn])((u32)&NVIC_Stats[OTG_HS_EP1_IN_IRQn]); // call either an empty function or a hooked one with desired context predefined (if context missing... error)
 }
 #endif
@@ -1044,8 +977,7 @@ __irq void OTG_HS_EP1_IN_IRQHandler(void) {//  OTG_HS_EP1_IN_IRQn          = 75,
 __irq void OTG_HS_WKUP_IRQHandler(void) {//  OTG_HS_WKUP_IRQn            = 76,     /*!< USB OTG HS Wakeup through EXTI interrupt                          */
   if(fnPreNVICs[OTG_HS_WKUP_IRQn]) ((u32(*)(u32))fnPreNVICs[OTG_HS_WKUP_IRQn])((u32)&NVIC_Stats[OTG_HS_WKUP_IRQn]); // call either an empty function or a hooked one with desired context predefined (if context missing... error)
     if(fnOTG_HS_WKUP) ((u32(*)(u32))fnOTG_HS_WKUP)(ctOTG_HS_WKUP); // call either an empty function or a hooked one with desired context predefined (if context missing... error)
-    else while(1);//TODO clear the pending flag EXTI->PR |= (1<<10);  // clear the pending flag
-//-    NVIC_ReleasePendingIRQ(OTG_HS_WKUP_IRQn);
+    else while(1);//TODO clear the pending flag
   if(fnPostNVICs[OTG_HS_WKUP_IRQn]) ((u32(*)(u32))fnPostNVICs[OTG_HS_WKUP_IRQn])((u32)&NVIC_Stats[OTG_HS_WKUP_IRQn]); // call either an empty function or a hooked one with desired context predefined (if context missing... error)
 }
 #endif
@@ -1053,8 +985,7 @@ __irq void OTG_HS_WKUP_IRQHandler(void) {//  OTG_HS_WKUP_IRQn            = 76,  
 __irq void OTG_HS_IRQHandler(void) {//  OTG_HS_IRQn                 = 77,     /*!< USB OTG HS global interrupt                                       */
   if(fnPreNVICs[OTG_HS_IRQn]) ((u32(*)(u32))fnPreNVICs[OTG_HS_IRQn])((u32)&NVIC_Stats[OTG_HS_IRQn]); // call either an empty function or a hooked one with desired context predefined (if context missing... error)
     if(fnOTG_HS) ((u32(*)(u32))fnOTG_HS)(ctOTG_HS); // call either an empty function or a hooked one with desired context predefined (if context missing... error)
-    else while(1);//TODO clear the pending flag EXTI->PR |= (1<<10);  // clear the pending flag
-//-    NVIC_ReleasePendingIRQ(OTG_HS_IRQn);
+    else while(1);//TODO clear the pending flag
   if(fnPostNVICs[OTG_HS_IRQn]) ((u32(*)(u32))fnPostNVICs[OTG_HS_IRQn])((u32)&NVIC_Stats[OTG_HS_IRQn]); // call either an empty function or a hooked one with desired context predefined (if context missing... error)
 }
 #endif
@@ -1063,8 +994,7 @@ __irq void OTG_HS_IRQHandler(void) {//  OTG_HS_IRQn                 = 77,     /*
 __irq void DCMI_IRQHandler(void) {//  DCMI_IRQn                   = 78,     /*!< DCMI global interrupt                                             */
   if(fnPreNVICs[DCMI_IRQn]) ((u32(*)(u32))fnPreNVICs[DCMI_IRQn])((u32)&NVIC_Stats[DCMI_IRQn]); // call either an empty function or a hooked one with desired context predefined (if context missing... error)
     if(fnDCMI) ((u32(*)(u32))fnDCMI)(ctDCMI); // call either an empty function or a hooked one with desired context predefined (if context missing... error)
-    else while(1);//TODO clear the pending flag EXTI->PR |= (1<<10);  // clear the pending flag
-//-    NVIC_ReleasePendingIRQ(DCMI_IRQn);
+    else while(1);//TODO clear the pending flag
   if(fnPostNVICs[DCMI_IRQn]) ((u32(*)(u32))fnPostNVICs[DCMI_IRQn])((u32)&NVIC_Stats[DCMI_IRQn]); // call either an empty function or a hooked one with desired context predefined (if context missing... error)
 }
 #endif
@@ -1073,8 +1003,7 @@ __irq void DCMI_IRQHandler(void) {//  DCMI_IRQn                   = 78,     /*!<
 __irq void CRYP_IRQHandler(void) {//  CRYP_IRQn                   = 79,     /*!< CRYP crypto global interrupt                                      */
   if(fnPreNVICs[CRYP_IRQn]) ((u32(*)(u32))fnPreNVICs[CRYP_IRQn])((u32)&NVIC_Stats[CRYP_IRQn]); // call either an empty function or a hooked one with desired context predefined (if context missing... error)
     if(fnCRYP) ((u32(*)(u32))fnCRYP)(ctCRYP); // call either an empty function or a hooked one with desired context predefined (if context missing... error)
-    else while(1);//TODO clear the pending flag EXTI->PR |= (1<<10);  // clear the pending flag
-//-    NVIC_ReleasePendingIRQ(CRYP_IRQn);
+    else while(1);//TODO clear the pending flag
   if(fnPostNVICs[CRYP_IRQn]) ((u32(*)(u32))fnPostNVICs[CRYP_IRQn])((u32)&NVIC_Stats[CRYP_IRQn]); // call either an empty function or a hooked one with desired context predefined (if context missing... error)
 }
 #endif
@@ -1083,8 +1012,7 @@ __irq void CRYP_IRQHandler(void) {//  CRYP_IRQn                   = 79,     /*!<
 __irq void HASH_RNG_IRQHandler(void) {//  HASH_RNG_IRQn               = 80,      /*!< Hash and Rng global interrupt                                     */
   if(fnPreNVICs[HASH_RNG_IRQn]) ((u32(*)(u32))fnPreNVICs[HASH_RNG_IRQn])((u32)&NVIC_Stats[HASH_RNG_IRQn]); // call either an empty function or a hooked one with desired context predefined (if context missing... error)
     if(fnHASH_RNG) ((u32(*)(u32))fnHASH_RNG)(ctHASH_RNG); // call either an empty function or a hooked one with desired context predefined (if context missing... error)
-    else while(1);//TODO clear the pending flag EXTI->PR |= (1<<10);  // clear the pending flag
-//-    NVIC_ReleasePendingIRQ(HASH_RNG_IRQn);
+    else while(1);//TODO clear the pending flag
   if(fnPostNVICs[HASH_RNG_IRQn]) ((u32(*)(u32))fnPostNVICs[HASH_RNG_IRQn])((u32)&NVIC_Stats[HASH_RNG_IRQn]); // call either an empty function or a hooked one with desired context predefined (if context missing... error)
 }
 #endif
@@ -1093,8 +1021,7 @@ __irq void HASH_RNG_IRQHandler(void) {//  HASH_RNG_IRQn               = 80,     
 __irq void FPU_IRQHandler(void) {//  FPU_IRQn                    = 81,      /*!< FPU global interrupt                                              */
   if(fnPreNVICs[FPU_IRQn]) ((u32(*)(u32))fnPreNVICs[FPU_IRQn])((u32)&NVIC_Stats[FPU_IRQn]); // call either an empty function or a hooked one with desired context predefined (if context missing... error)
     if(fnFPU) ((u32(*)(u32))fnFPU)(ctFPU); // call either an empty function or a hooked one with desired context predefined (if context missing... error)
-    else while(1);//TODO clear the pending flag EXTI->PR |= (1<<10);  // clear the pending flag
-//-    NVIC_ReleasePendingIRQ(FPU_IRQn);
+    else while(1);//TODO clear the pending flag
   if(fnPostNVICs[FPU_IRQn]) ((u32(*)(u32))fnPostNVICs[FPU_IRQn])((u32)&NVIC_Stats[FPU_IRQn]); // call either an empty function or a hooked one with desired context predefined (if context missing... error)
 }
 #endif
@@ -1103,8 +1030,7 @@ __irq void FPU_IRQHandler(void) {//  FPU_IRQn                    = 81,      /*!<
 __irq void SPI4_IRQHandler(void) {//  SPI4_IRQn                   = 84,     /*!< SPI4 global Interrupt                                             */
   if(fnPreNVICs[SPI4_IRQn]) ((u32(*)(u32))fnPreNVICs[SPI4_IRQn])((u32)&NVIC_Stats[SPI4_IRQn]); // call either an empty function or a hooked one with desired context predefined (if context missing... error)
     if(fnSPI4) ((u32(*)(u32))fnSPI4)(ctSPI4); // call either an empty function or a hooked one with desired context predefined (if context missing... error)
-    else while(1);//TODO clear the pending flag EXTI->PR |= (1<<10);  // clear the pending flag
-//-    NVIC_ReleasePendingIRQ(SPI4_IRQn);
+    else while(1);//TODO clear the pending flag
   if(fnPostNVICs[SPI4_IRQn]) ((u32(*)(u32))fnPostNVICs[SPI4_IRQn])((u32)&NVIC_Stats[SPI4_IRQn]); // call either an empty function or a hooked one with desired context predefined (if context missing... error)
 }
 #endif
@@ -1112,8 +1038,7 @@ __irq void SPI4_IRQHandler(void) {//  SPI4_IRQn                   = 84,     /*!<
 __irq void SPI5_IRQHandler(void) {//  SPI5_IRQn                   = 85,     /*!< SPI5 global Interrupt                                             */
   if(fnPreNVICs[SPI5_IRQn]) ((u32(*)(u32))fnPreNVICs[SPI5_IRQn])((u32)&NVIC_Stats[SPI5_IRQn]); // call either an empty function or a hooked one with desired context predefined (if context missing... error)
     if(fnSPI5) ((u32(*)(u32))fnSPI5)(ctSPI5); // call either an empty function or a hooked one with desired context predefined (if context missing... error)
-    else while(1);//TODO clear the pending flag EXTI->PR |= (1<<10);  // clear the pending flag
-//-    NVIC_ReleasePendingIRQ(SPI5_IRQn);
+    else while(1);//TODO clear the pending flag
   if(fnPostNVICs[SPI5_IRQn]) ((u32(*)(u32))fnPostNVICs[SPI5_IRQn])((u32)&NVIC_Stats[SPI5_IRQn]); // call either an empty function or a hooked one with desired context predefined (if context missing... error)
 }
 #endif
@@ -1121,8 +1046,7 @@ __irq void SPI5_IRQHandler(void) {//  SPI5_IRQn                   = 85,     /*!<
 __irq void SPI6_IRQHandler(void) {//  SPI6_IRQn                   = 86,     /*!< SPI6 global Interrupt                                             */
   if(fnPreNVICs[SPI6_IRQn]) ((u32(*)(u32))fnPreNVICs[SPI6_IRQn])((u32)&NVIC_Stats[SPI6_IRQn]); // call either an empty function or a hooked one with desired context predefined (if context missing... error)
     if(fnSPI6) ((u32(*)(u32))fnSPI6)(ctSPI6); // call either an empty function or a hooked one with desired context predefined (if context missing... error)
-    else while(1);//TODO clear the pending flag EXTI->PR |= (1<<10);  // clear the pending flag
-//-    NVIC_ReleasePendingIRQ(SPI6_IRQn);
+    else while(1);//TODO clear the pending flag
   if(fnPostNVICs[SPI6_IRQn]) ((u32(*)(u32))fnPostNVICs[SPI6_IRQn])((u32)&NVIC_Stats[SPI6_IRQn]); // call either an empty function or a hooked one with desired context predefined (if context missing... error)
 }
 #endif

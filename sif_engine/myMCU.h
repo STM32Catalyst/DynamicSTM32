@@ -131,7 +131,6 @@ u32 MainLoopServicingSA(u32 u);
 
 u8* Get_myMCU_SerialID(void);
 
-u32 MCU_Timer_GetMax_by_PPP(u32 PPP_Adr);
-u32 MCU_Timer_GetSR_ValidFlags_by_PPP(u32 PPP_Adr);
+MCU_TimerCapabilities_t* MCU_GetMCU_TimerCapabilitiesByPPP(u32 PPP_Adr);
 
 #endif

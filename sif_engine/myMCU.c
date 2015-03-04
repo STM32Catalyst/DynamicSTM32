@@ -136,10 +136,11 @@ u32 HookIRQ_PPP(u32 PPP_Adr, u32 fn, u32 ct) {
   u32* c;
   for(n=0;n<countof(Signal2Info);n++) {
     if(Signal2Info[n].PPP_Adr == PPP_Adr) {
+      c = (u32*)Signal2Info[n].ctIRQ;  
       f = (u32*)Signal2Info[n].fnIRQ;
-      c = (u32*)Signal2Info[n].ctIRQ;
-      *f = fn;
+
       *c = ct;
+      *f = fn;
       return n;
     }
   }
@@ -197,47 +198,35 @@ static const MCU_TimerCapabilities_t MCU_TimerCapabilities[] = {
 
 { ucNoSignal, 0, 0, 0, 0, 0},
 // signal, PPP, Max, SR Valid Flags, N/A, N/A, N/A
-{ ucTIM1, (u32)TIM1,   0x0000FFFF, TIM_FLAG_Update || TIM_FLAG_CC1, 0, 0, 0 },
-{ ucTIM2, (u32)TIM2,   0xFFFFFFFF, TIM_FLAG_Update || TIM_FLAG_CC1 || TIM_FLAG_CC2 || TIM_FLAG_CC3 || TIM_FLAG_CC4, 0, 0, 0 },
-{ ucTIM3, (u32)TIM3,   0x0000FFFF, TIM_FLAG_Update || TIM_FLAG_CC1 || TIM_FLAG_CC2 || TIM_FLAG_CC3 || TIM_FLAG_CC4, 0, 0, 0 },
-{ ucTIM4, (u32)TIM4,   0x0000FFFF, TIM_FLAG_Update || TIM_FLAG_CC1 || TIM_FLAG_CC2 || TIM_FLAG_CC3 || TIM_FLAG_CC4, 0, 0, 0 },
-{ ucTIM5, (u32)TIM5,   0xFFFFFFFF, TIM_FLAG_Update || TIM_FLAG_CC1 || TIM_FLAG_CC2 || TIM_FLAG_CC3 || TIM_FLAG_CC4, 0, 0, 0 },
+{ ucTIM1, (u32)TIM1,   0x0000FFFF, TIM_FLAG_Update | TIM_FLAG_CC1, 0, 0, 0 },
+{ ucTIM2, (u32)TIM2,   0xFFFFFFFF, TIM_FLAG_Update | TIM_FLAG_CC1 | TIM_FLAG_CC2 | TIM_FLAG_CC3 | TIM_FLAG_CC4, 0, 0, 0 },
+{ ucTIM3, (u32)TIM3,   0x0000FFFF, TIM_FLAG_Update | TIM_FLAG_CC1 | TIM_FLAG_CC2 | TIM_FLAG_CC3 | TIM_FLAG_CC4, 0, 0, 0 },
+{ ucTIM4, (u32)TIM4,   0x0000FFFF, TIM_FLAG_Update | TIM_FLAG_CC1 | TIM_FLAG_CC2 | TIM_FLAG_CC3 | TIM_FLAG_CC4, 0, 0, 0 },
+{ ucTIM5, (u32)TIM5,   0xFFFFFFFF, TIM_FLAG_Update | TIM_FLAG_CC1 | TIM_FLAG_CC2 | TIM_FLAG_CC3 | TIM_FLAG_CC4, 0, 0, 0 },
 { ucTIM6, (u32)TIM6,   0x0000FFFF, TIM_FLAG_Update, 0, 0, 0 },
 { ucTIM7, (u32)TIM7,   0x0000FFFF, TIM_FLAG_Update, 0, 0, 0 },
-{ ucTIM8, (u32)TIM8,   0x0000FFFF, TIM_FLAG_Update || TIM_FLAG_CC1, 0, 0, 0 },
-{ ucTIM9, (u32)TIM9,   0x0000FFFF, TIM_FLAG_Update || TIM_FLAG_CC1 || TIM_FLAG_CC2, 0, 0, 0 },
-{ ucTIM10, (u32)TIM10, 0x0000FFFF, TIM_FLAG_Update || TIM_FLAG_CC1, 0, 0, 0 },
-{ ucTIM11, (u32)TIM11, 0x0000FFFF, TIM_FLAG_Update || TIM_FLAG_CC1, 0, 0, 0 },
-{ ucTIM12, (u32)TIM12, 0x0000FFFF, TIM_FLAG_Update || TIM_FLAG_CC1 || TIM_FLAG_CC2, 0, 0, 0 },
-{ ucTIM13, (u32)TIM13, 0x0000FFFF, TIM_FLAG_Update || TIM_FLAG_CC1, 0, 0, 0 },
-{ ucTIM14, (u32)TIM14, 0x0000FFFF, TIM_FLAG_Update || TIM_FLAG_CC1, 0, 0, 0 },
+{ ucTIM8, (u32)TIM8,   0x0000FFFF, TIM_FLAG_Update | TIM_FLAG_CC1, 0, 0, 0 },
+{ ucTIM9, (u32)TIM9,   0x0000FFFF, TIM_FLAG_Update | TIM_FLAG_CC1 | TIM_FLAG_CC2, 0, 0, 0 },
+{ ucTIM10, (u32)TIM10, 0x0000FFFF, TIM_FLAG_Update | TIM_FLAG_CC1, 0, 0, 0 },
+{ ucTIM11, (u32)TIM11, 0x0000FFFF, TIM_FLAG_Update | TIM_FLAG_CC1, 0, 0, 0 },
+{ ucTIM12, (u32)TIM12, 0x0000FFFF, TIM_FLAG_Update | TIM_FLAG_CC1 | TIM_FLAG_CC2, 0, 0, 0 },
+{ ucTIM13, (u32)TIM13, 0x0000FFFF, TIM_FLAG_Update | TIM_FLAG_CC1, 0, 0, 0 },
+{ ucTIM14, (u32)TIM14, 0x0000FFFF, TIM_FLAG_Update | TIM_FLAG_CC1, 0, 0, 0 },
 
 };
 
 //======================================================================
 // First step, clock enable/disable per peripheral type
-u32 MCU_Timer_GetMax_by_PPP(u32 PPP_Adr) {
 
+MCU_TimerCapabilities_t* MCU_GetMCU_TimerCapabilitiesByPPP(u32 PPP_Adr) {
+  
   u32 n;
   for(n=0;n<countof(MCU_TimerCapabilities);n++) {
     if(MCU_TimerCapabilities[n].PPP_Adr == PPP_Adr) {
-      return MCU_TimerCapabilities[n].Max;
+      return (MCU_TimerCapabilities_t*) &MCU_TimerCapabilities[n];
     }
   }
   
   while(1);
-}
-
-u32 MCU_Timer_GetSR_ValidFlags_by_PPP(u32 PPP_Adr) {
-
-  u32 n;
-  for(n=0;n<countof(MCU_TimerCapabilities);n++) {
-    if(MCU_TimerCapabilities[n].PPP_Adr == PPP_Adr) {
-      return MCU_TimerCapabilities[n].SR_ValidFlags;
-    }
-  }
   
-  while(1);
 }
-
-

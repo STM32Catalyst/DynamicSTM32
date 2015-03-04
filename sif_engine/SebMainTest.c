@@ -25,10 +25,13 @@ void RFFE_Test(void);
 
 Timer_t Timer6_us, Timer7_ms;
 //*************
-vu8 choice=11; // default choice after reset
+vu8 choice=17; // default choice after reset
 //*************
 void SebMainTest(void) {
   
+      u8 eep[256];
+      u16 adr;
+      
   MCUInitClocks();
   
   while(choice==0) ; // stop the emulator, change choice and let it run
@@ -85,7 +88,21 @@ void SebMainTest(void) {
     case 16:
       Timer_T13_T14_Test();
       break;
-    case 17:
+    case 17: // Gaurav test of EEPROM right in the other code
+      //while(1); // stop mcu
+      Timer_IC_OC_PWM_Test();
+/*      
+      while(1) {
+      EepromReadBlock	(0x0000, eep, 128);
+      NOPs(1);
+        for(adr=0;adr<128;adr++)
+          EepromReadBlock	(adr, &eep[adr], 1);
+      NOPs(1);        
+        for(adr=0;adr<128;adr++)
+          EepromWriteBlock	(adr, &eep[adr], 1);
+
+        NOPs(1);
+      };*/
       break;
     case 18:
       break;

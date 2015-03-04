@@ -5,30 +5,78 @@
 // This is the 16 bit 4 channels timer, TIM3 and TIM4 only timers are 16 bit 4 channels timers on STM32F437
 // This also support the 16 bit 2 channels timers TIM9&12 (2ch), TIM10&11&13&14 (1ch), basic timers 6&7
 
+u32 GetRatio(u32 In, u32 InMax, u32 OutMax) {
+  
+  u32 Out = (In*OutMax)/InMax; // it might saturate... to revisit later
+  return Out;
+}
+
+static const u32 TimerCCFlags[] = {
+  TIM_FLAG_Update, // 0
+  TIM_FLAG_CC1, // 1
+  TIM_FLAG_CC2, // 2
+  TIM_FLAG_CC3, // 3
+  TIM_FLAG_CC4, // 4
+};
+
+static const u32 TimerCC_Channels[] = {
+  0,
+  TIM_Channel_1, // 1
+  TIM_Channel_2, // 2
+  TIM_Channel_3, // 3
+  TIM_Channel_4, // 4
+};
+
 static u32 Timer_CountDownModeIRQHandler(u32 u) {
   
   u8 n;
   u32 AnyCountdown = 0;
+  u32 AnyFlag = 0;
   Timer_t* Timer = (Timer_t*) u;
 
-  Timer->TIM->SR &= ~1; // clear the pending bit
-  Timer->Ticks++;
-  // Countdown0
-  for(n=0;n<TIMER_MAX_COUNTDOWN;n++) { // unlooped by compiler when needed
-    if(Timer->CountDown[n])
-      if(--Timer->CountDown[n]==0) // times up!
-        if(Timer->fnCountDown[n]) {// call the hook
-          ((u32(*)(u32))Timer->fnCountDown[n])(Timer->ctCountDown[n]);
-        }else{ // if no hook, then set a flag for polling purpose
-          Timer->CountDownDone[n] = 1;
-        }
-    AnyCountdown |= Timer->CountDown[n];
-  };
-  // if all countdowns are zero... what do we do? Self disable all? Or it's inside each hook?
+  AnyFlag = Timer->TIM->SR;
+  AnyFlag &= Timer->TIM->DIER;
+  if( AnyFlag & TIM_FLAG_Update) { // Overflow event detected
   
-  if(AnyCountdown==0) { // we can stop the interrupt, easier to debug this way
-    Timer->TIM->DIER &= ~0x0001;// Disable INT
-  }
+    Timer->TIM->SR &= ~TIM_FLAG_Update; // clear the pending bit
+    Timer->Ticks++;
+    // Countdown0
+    for(n=0;n<TIMER_MAX_COUNTDOWN;n++) { // unlooped by compiler when needed
+      if(Timer->CountDown[n])
+        if(--Timer->CountDown[n]==0) // times up!
+          if(Timer->fnCountDown[n]) {// call the hook
+            ((u32(*)(u32))Timer->fnCountDown[n])(Timer->ctCountDown[n]);
+          }else{ // if no hook, then set a flag for polling purpose
+            Timer->CountDownDone[n] = 1;
+          }
+      AnyCountdown |= Timer->CountDown[n];
+    };
+    // if all countdowns are zero... what do we do? Self disable all? Or it's inside each hook?
+    
+    if(AnyCountdown==0) { // we can stop the interrupt, easier to debug this way
+      Timer->TIM->DIER &= ~TIM_FLAG_Update;// Disable INT
+    }
+    
+  };
+  
+  AnyFlag = Timer->TIM->SR;
+  AnyFlag &= Timer->TIM->DIER;
+  // For those timers who have CC support, we check here
+  if(AnyFlag & (TIM_FLAG_CC1 | TIM_FLAG_CC2 | TIM_FLAG_CC3 | TIM_FLAG_CC4)) {
+
+    for(n=1;n<TIMER_MAX_CC;n++) {
+      // check for CCn
+      if((Timer->CCR[n]!=0) && (AnyFlag & TimerCCFlags[n])) {
+        Timer->TIM->SR &= ~TimerCCFlags[n]; // clear the pending flag
+        Timer->RegCC[n] = *Timer->CCR[n]; // capture the HW CC register (useful when using Input capture)
+
+        if(Timer->fnCC[n])  ((u32(*)(u32)) Timer->fnCC[n])(Timer->ctCC[n]);
+        else
+          Timer->FlagCC[n] = 1;
+      }
+    };
+    
+  };
 
   return 0;
 }
@@ -53,8 +101,20 @@ void NewTimer_us(Timer_t* Timer, TIM_TypeDef* T, u32 Period_us, MCUClocks_t * Tr
   Timer->OverflowPeriod_us = Period_us;
 
   // Here we load the capability
-  Timer->Max = MCU_Timer_GetMax_by_PPP((u32)T);
-  Timer->SR_ValidFlags = MCU_Timer_GetSR_ValidFlags_by_PPP((u32)T);
+  MCU_TimerCapabilities_t* C = MCU_GetMCU_TimerCapabilitiesByPPP((u32)T);
+  Timer->Max = C->Max;
+  Timer->SR_ValidFlags = C->SR_ValidFlags;
+
+  // This tells how many CC is available for this timer with quick access to member variable
+  Timer->CCR[0] = Timer->CCR[1] = Timer->CCR[2] = Timer->CCR[3] = Timer->CCR[4] = 0;
+  if(C->SR_ValidFlags & TIM_FLAG_CC1)
+    Timer->CCR[1] = (u32*) &Timer->TIM->CCR1;
+  if(C->SR_ValidFlags & TIM_FLAG_CC2)
+    Timer->CCR[2] = (u32*) &Timer->TIM->CCR2;
+  if(C->SR_ValidFlags & TIM_FLAG_CC3)
+    Timer->CCR[3] = (u32*) &Timer->TIM->CCR3;
+  if(C->SR_ValidFlags & TIM_FLAG_CC4)
+    Timer->CCR[4] = (u32*) &Timer->TIM->CCR4;
   
   
   // we only need to guarantee the period in us with lowest timer clock for it
@@ -94,8 +154,8 @@ void NewTimer_us(Timer_t* Timer, TIM_TypeDef* T, u32 Period_us, MCUClocks_t * Tr
 
 void HookTimerCountdown(Timer_t* Timer, u32 n, u32 fn, u32 ct) {
   // hook first!
-  Timer->fnCountDown[n] = fn;
   Timer->ctCountDown[n] = ct;
+  Timer->fnCountDown[n] = fn;
 }
 
 void ArmTimerCountdown(Timer_t* Timer, u32 n, u32 ticks) {
@@ -204,6 +264,116 @@ u32 SetFreeTimerCountdownIndex(u32 u, u32 n) {
   
   Timer_t* Timer = (Timer_t*) u;
   Timer->InitialCountDown[n] = 0;
+  return 0;
+}
+
+//====================== Capture Compare Initialization functions ================================ 8><8 =======
+
+u32 EnableTimerCC_Interrupt(u32 u, u32 n, FunctionalState Enable) { // n = [1..4]
+  
+  Timer_t* Timer = (Timer_t*) u;
+  
+  if(n==0) while(1); // not allowed
+  if(n>=TIMER_MAX_CC) while(1); // not available CCn
+  if(Timer->CCR[n]==0) while(1); // not available
+
+  // Clear any pending flags first
+  Timer->TIM->SR &= TimerCCFlags[n];
+  
+  if(Enable) Timer->TIM->DIER |= TimerCCFlags[n];     
+  else       Timer->TIM->DIER &= ~TimerCCFlags[n];
+    
+  return 0;
+  
+}
+
+u32 SetTimerInputCC(u32 u, u32 n, IO_Pin_t* Pin, FunctionalState Enable) {
+  
+  Timer_t* Timer = (Timer_t*) u;
+  
+  if(n==0) while(1); // not allowed
+  if(n>=TIMER_MAX_CC) while(1); // not available CCn
+  if(Timer->CCR[n]==0) while(1); // not available
+  // Enable is not used yet....
+  TIM_ICInitTypeDef IC;
+  TIM_ICStructInit(&IC);
+  // For now... should be passed as parameter later on. Rising edge, no prescaler, no filtering
+  IC.TIM_Channel = TimerCC_Channels[n];
+  IC.TIM_ICPolarity = TIM_ICPolarity_Rising;
+  IC.TIM_ICSelection = TIM_ICSelection_DirectTI;
+  IC.TIM_ICPrescaler = TIM_ICPSC_DIV1;
+  IC.TIM_ICFilter = 0;  
+  TIM_ICInit(Timer->TIM, &IC);
+
+  if(Pin) {
+    Timer->PinCC[n] = Pin;
+    IO_PinClockEnable(Pin);
+    IO_PinSetHigh(Pin);  
+    IO_PinSetInput(Pin);  
+    IO_PinEnablePullUpDown(Pin, ENABLE, DISABLE);
+    IO_PinEnableHighDrive(Pin, ENABLE);
+    IO_PinConfiguredAs(Pin,  GetPinAF(Pin->Name,(u32)Timer->TIM));   
+  };
+  
+//  EnableTimerCC_Interrupt(u, n, Enable);
+  return 0;
+}
+
+u32 SetTimerOutputCC(u32 u, u32 n, IO_Pin_t* Pin, u32 InitValue, FunctionalState Enable) {
+  
+  Timer_t* Timer = (Timer_t*) u;
+  
+  if(n==0) while(1); // not allowed
+  if(n>=TIMER_MAX_CC) while(1); // not available CCn
+  if(Timer->CCR[n]==0) while(1); // not available
+  
+  *Timer->CCR[n] = Timer->RegCC[n] = InitValue;
+
+  // This should be passing parameter later
+  TIM_OCInitTypeDef OC;
+  TIM_OCStructInit(&OC);
+  if(Enable)
+    OC.TIM_OCMode = TIM_OCMode_PWM2;
+  else
+    OC.TIM_OCMode = TIM_OCMode_Inactive;
+  
+  OC.TIM_OutputState = TIM_OutputState_Enable;
+  OC.TIM_Pulse = InitValue;
+  OC.TIM_OCPolarity = TIM_OCPolarity_Low;//High; // Pulse generation positive pulse, negative polarity
+  
+  switch(n) {
+  case 1:    TIM_OC1Init(Timer->TIM, &OC);      break;
+  case 2:    TIM_OC2Init(Timer->TIM, &OC);      break;
+  case 3:    TIM_OC3Init(Timer->TIM, &OC);      break;
+  case 4:    TIM_OC4Init(Timer->TIM, &OC);      break;
+  default:while(1);
+  };
+
+  if(Pin) {  
+    Timer->PinCC[n] = Pin;
+    IO_PinClockEnable(Pin);
+    IO_PinSetHigh(Pin);  
+    IO_PinSetOutput(Pin);  
+    IO_PinEnablePullUpDown(Pin, DISABLE, DISABLE);
+    IO_PinEnableHighDrive(Pin, ENABLE);
+    IO_PinConfiguredAs(Pin,  GetPinAF(Pin->Name,(u32)Timer->TIM));  
+  };
+  
+//  EnableTimerCC_Interrupt(u, n, Enable);  
+  return 0;
+}
+
+u32 HookTimerCC(u32 u, u32 n, u32 fn, u32 ct) {
+
+  Timer_t* Timer = (Timer_t*) u;
+
+  if(n==0) while(1); // not allowed
+  if(n>=TIMER_MAX_CC) while(1); // not available CCn
+  if(Timer->CCR[n]==0) while(1); // not available
+  
+  Timer->ctCC[n] = ct;
+  Timer->fnCC[n] = fn;
+  
   return 0;
 }
 
@@ -362,5 +532,45 @@ void Timer_T13_T14_Test(void) { // T13.1 T14.1
   ArmTimerCountdown(&Timer14, 2, 1000);
   while(1);
 }
+
+//============== Testing Input Captures and Output Compares In Interrupt and PWM (no interrupt) modes ====================
+static IO_Pin_t T3c1_PC6, T3c2_PC7;
+static IO_Pin_t T5c1_PH10, T5c2_PH11, T5c3_PH12;
+static vu8 loop = 1;
+void Timer_IC_OC_PWM_Test(void) {
+  
+  // Configure the corresponding pins
+  NewTimer_us(&Timer3, TIM3, 1000000, GetMCUClockTree());// 1s overflow tick period
+  NewTimer_us(&Timer5, TIM5, 1000000, GetMCUClockTree());// 1s overflow tick period
+  
+  // We will later give simple function to configure the capture and the timer behavious
+  // For now all input capture are rising edge, no prescale, no filter, pin to channel, no special.
+//  SetTimerInputCC((u32)&Timer3, 1, IO_PinInit(&T3c1_PC6, PC6), ENABLE);
+  SetTimerOutputCC((u32) &Timer3, 1, IO_PinInit(&T3c1_PC6, PC6), GetRatio(30, 100, Timer3.TIM->ARR), ENABLE); // I want 30% duty cycle
+  
+  SetTimerInputCC((u32)&Timer3, 2, IO_PinInit(&T3c2_PC7, PC7), ENABLE);
+  
+  SetTimerInputCC((u32)&Timer5, 1, IO_PinInit(&T5c1_PH10, PH10), ENABLE);
+  
+  SetTimerInputCC((u32)&Timer5, 2, IO_PinInit(&T5c2_PH11, PH11), ENABLE);
+  
+  SetTimerInputCC((u32)&Timer5, 3, IO_PinInit(&T5c3_PH12, PH12), ENABLE);
+
+  // For now the output compare are in PWM mode with interrupt (optional)
+  // Later there will be some configurability of the output compare available
+  
+  EnableTimerCC_Interrupt((u32)&Timer3, 1, ENABLE);
+  EnableTimerCC_Interrupt((u32)&Timer3, 2, ENABLE);
+  
+  EnableTimerCC_Interrupt((u32)&Timer5, 1, ENABLE);
+  EnableTimerCC_Interrupt((u32)&Timer5, 2, ENABLE);
+  EnableTimerCC_Interrupt((u32)&Timer5, 3, ENABLE);
+  NVIC_TimersEnable(ENABLE);
+  while(loop); // it will continue by debugger (manually set statement to next line of code which will be compile and not removed by compiler)
+  
+  // output compare trial
+  
+}
+
 
 #endif

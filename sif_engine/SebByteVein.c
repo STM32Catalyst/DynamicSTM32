@@ -3,16 +3,16 @@
 
 
 u32 HookBV_NoLongerEmpty(ByteVein_t* BV, u32 (*fn)(u32), u32 ct) {
-  
+
+  BV->ctNoLongerEmpty = ct;  
   BV->fnNoLongerEmpty = fn;
-  BV->ctNoLongerEmpty = ct;
   return 0;
 }
 
 u32 HookBV_Emptied(ByteVein_t* BV, u32 (*fn)(u32), u32 ct) {
-  
+
+  BV->ctEmptied = ct;    
   BV->fnEmptied = fn;
-  BV->ctEmptied = ct;  
   return 0;
 }
 

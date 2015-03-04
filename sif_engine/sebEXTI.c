@@ -62,8 +62,8 @@ void HookEXTIn(u32 n, u32 fn, u32 ct) { // if adr = 0, unhook a function from th
   if(oldfn==fn)
     return; // no change
 
-  fnEXTIs[n] = fn;//0 here
   ctEXTIs[n] = ct;
+  fnEXTIs[n] = fn;//0 here
 
 }
 
