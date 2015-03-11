@@ -1,0 +1,9 @@
+
+#ifndef _NHD_C0216CZ_LCD16X2_DEMOS_H_
+#define _NHD_C0216CZ_LCD16X2_DEMOS_H_
+
+u32 NHD_LCD16x2Test(void);
+
+#endif
+
+
