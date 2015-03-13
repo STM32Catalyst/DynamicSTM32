@@ -50,7 +50,7 @@ void NewRs232HW(Rs232_t* RS, USART_TypeDef* USART) {
   // configure the GPIOs
   // configure RX pin
   if(RS->RX) {
-    IO_PinInit(RS->RX, RS->RX->Name ); // Initialize some quick pointers
+    NewIO_Pin(RS->RX, RS->RX->Name ); // Initialize some quick pointers
     IO_PinClockEnable(RS->RX);
     IO_PinSetInput(RS->RX);
     IO_PinSetLow(RS->RX);
@@ -60,7 +60,7 @@ void NewRs232HW(Rs232_t* RS, USART_TypeDef* USART) {
   }
 
   if(RS->TX) {
-    IO_PinInit(RS->TX, RS->TX->Name  ); // Initialize some quick pointers    
+    NewIO_Pin(RS->TX, RS->TX->Name  ); // Initialize some quick pointers    
     IO_PinClockEnable(RS->TX);
     IO_PinSetLow(RS->TX);
     IO_PinSetOutput(RS->TX);    

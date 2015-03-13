@@ -35,12 +35,12 @@ void DAC_Test(void) {
   DAC_WaveGeneratePredefined(DAC1_Wave, 11);// How many sine periods in the wave RAM
 //  DAC_WaveGeneratePredefined(DAC2_Wave, 13);// How many sine periods in the wave RAM
 
-  NewDAC_Pin_Buffer(Dac1, (u32)DAC, 1, IO_PinInit(&Dac1_PA4, PA4), ENABLE); // DAC1 on PA4, DAC2 on PA5
-//  NewDAC_Pin_Buffer(Dac2, (u32)DAC, 2, IO_PinInit(&Dac2_PA5, PA5), ENABLE); // DAC1 on PA4, DAC2 on PA5  
+  NewDAC_Pin_Buffer(Dac1, (u32)DAC, 1, NewIO_Pin(&Dac1_PA4, PA4), ENABLE); // DAC1 on PA4, DAC2 on PA5
+//  NewDAC_Pin_Buffer(Dac2, (u32)DAC, 2, NewIO_Pin(&Dac2_PA5, PA5), ENABLE); // DAC1 on PA4, DAC2 on PA5  
   
 #if 1
   
-  UseDAC_Trigger(Dac1, IO_PinInit(&DacTriggerPH9, PH9), 0); // other option
+  UseDAC_Trigger(Dac1, NewIO_Pin(&DacTriggerPH9, PH9), 0); // other option
   SetDAC_Waveform(Dac1, (u32)&DAC1_Wave[0], DAC_WAVE_SAMPLE_SIZE);
   EnableDAC(Dac1);
   

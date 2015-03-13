@@ -20,11 +20,11 @@ u32 NHD_LCD16x2Test(void) {
   MCUInitClocks();
   
   // Declare all pins first
-  LCD.NRST = IO_PinInit(&NRST, PE2);
-  LCD.RS = IO_PinInit(&RS, PE3);
-  LCD_SPI.NSSs[0] = IO_PinInit(&CS, PE4);
-  LCD_SPI.SCK = IO_PinInit(&SCL, PE5);
-  LCD_SPI.MOSI = LCD_SPI.MISO = IO_PinInit(&SI, PE6);
+  LCD.NRST = NewIO_Pin(&NRST, PE2);
+  LCD.RS = NewIO_Pin(&RS, PE3);
+  LCD_SPI.NSSs[0] = NewIO_Pin(&CS, PE4);
+  LCD_SPI.SCK = NewIO_Pin(&SCL, PE5);
+  LCD_SPI.MOSI = LCD_SPI.MISO = NewIO_Pin(&SI, PE6);
   
   // Use the SPI for the LCD
   LCD.MIO = &LCD_SPI;

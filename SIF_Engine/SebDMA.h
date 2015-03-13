@@ -13,7 +13,10 @@ typedef struct {
   
 } DMA_StreamInfo_t; // this points to a const data
 
-u32 Get_pDMA_Info(DMA_Stream_TypeDef* DMA_Stream);
+DMA_StreamInfo_t* Get_pDMA_Info(DMA_Stream_TypeDef* DMA_Stream);
+
+void BookDMA_Stream(DMA_Stream_TypeDef* DMA_Stream);
+u32 IsDMA_StreamBooked(DMA_Stream_TypeDef* DMA_Stream);
 
 //==================----------------->
 // Direction field, 32 bit

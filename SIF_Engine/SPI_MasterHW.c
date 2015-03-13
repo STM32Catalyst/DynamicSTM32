@@ -81,12 +81,12 @@ void NewSPI_MasterHW_RX_TX(SPI_MasterHW_t* S, DMA_Stream_TypeDef* RX_Stream, u32
 
 // Define the DMA Stream manually for now
   // DMA TX
-  S->DMA_TX = (DMA_StreamInfo_t*) Get_pDMA_Info(TX_Stream);
+  S->DMA_TX = Get_pDMA_Info(TX_Stream);
   if(S->DMA_TX==0) while(1); // error, no DMA Stream for it
 
 
   // DMA RX  
-  S->DMA_RX = (DMA_StreamInfo_t*) Get_pDMA_Info(RX_Stream);
+  S->DMA_RX = Get_pDMA_Info(RX_Stream);
   if(S->DMA_RX==0) while(1); // error, no DMA Stream for it
 
 // DMA matters
@@ -147,6 +147,8 @@ void NewSPI_MasterHW_RX_TX(SPI_MasterHW_t* S, DMA_Stream_TypeDef* RX_Stream, u32
   //==>>=>>=>>===============================================
   DMA_Init(S->DMA_TX->Stream, &DMA_TX_InitStruct);
   
+  BookDMA_Stream(S->DMA_RX->Stream);
+  BookDMA_Stream(S->DMA_TX->Stream);
   // Wire NVIC Interrupts for DMA TX only (it is the only way to get interrupt when all the bits have been shifted in or out. RX is too early. BUSY might even be better!
 
   // We need to initialize the hooks for DMA_RX...

@@ -25,8 +25,8 @@ void I2C_MasterIO_Test(void) {
 //  u32 u = (u32)&gMIO;
   MCUInitClocks();
   
-  gMIO.SDA = IO_PinInit(&MIO_SDA, PH7 ); // Initialize some quick pointers
-  gMIO.SCL = IO_PinInit(&MIO_SCL, PH8 ); // Initialize some quick pointers
+  gMIO.SDA = NewIO_Pin(&MIO_SDA, PH7 ); // Initialize some quick pointers
+  gMIO.SCL = NewIO_Pin(&MIO_SCL, PH8 ); // Initialize some quick pointers
 
   NewTimer_us(&Timer, TIM6, 1, GetMCUClockTree()); // usec countdown
   gMIO.Timer = &Timer;

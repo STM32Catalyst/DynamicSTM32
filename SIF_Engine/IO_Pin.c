@@ -12,7 +12,7 @@ GPIO_TypeDef* GPIOs[] = {
 };
 
 
-IO_Pin_t* IO_PinInit(IO_Pin_t* Pin, PinNameDef Name ) {
+IO_Pin_t* NewIO_Pin(IO_Pin_t* Pin, PinNameDef Name ) {
 
   GPIO_TypeDef* GPIOx = GPIOs[Name>>4];
   u8 PinPos = Name & 0xF;

@@ -102,7 +102,10 @@ void EnableDAC(DAC_t* D) { // Will configure the DAC (parameters can be override
   DMA_StreamChannelInfo_t* DMA_Info = Get_pStreamChannelForPPP_Signal((u32)DAC, DAC1_ANALOG, DMA_DIR_MemoryToPeripheral);
 
   DAC_Init(DAC_Channels[n], &D->InitStructure[n]);
-  if(D->SampleSize[n]>1) DMA_Cmd(DMA_Info->Stream, ENABLE);
+  if(D->SampleSize[n]>1) {
+    DMA_Cmd(DMA_Info->Stream, ENABLE);
+    BookDMA_Stream(DMA_Info->Stream);
+  };
   DAC_Cmd(DAC_Channels[n], ENABLE);
   if(D->SampleSize[n]>1) DAC_DMACmd(DAC_Channels[n], ENABLE);
 }

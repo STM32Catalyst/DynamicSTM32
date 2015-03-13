@@ -16,8 +16,8 @@ static IO_Pin_t I2C_SlaveIO_SCL; // for fast pin access using bitbanding area
 
 void TestI2C_SlaveIO(void) {
 
-  gI2C_Slave.SDA = IO_PinInit(&I2C_SlaveIO_SDA, PH10 ); // Initialize some quick pointers
-  gI2C_Slave.SCL = IO_PinInit(&I2C_SlaveIO_SCL, PH12 ); // Initialize some quick pointers
+  gI2C_Slave.SDA = NewIO_Pin(&I2C_SlaveIO_SDA, PH10 ); // Initialize some quick pointers
+  gI2C_Slave.SCL = NewIO_Pin(&I2C_SlaveIO_SCL, PH12 ); // Initialize some quick pointers
   
   NewI2C_SlaveIO(&gI2C_Slave, (u8*)I2C_SlaveAdresses, countof(I2C_SlaveAdresses), I2C_SlaveMemory, countof(I2C_SlaveMemory));
   SpyI2C_SlaveIO(&gI2C_Slave); // this is to go to spy code as well

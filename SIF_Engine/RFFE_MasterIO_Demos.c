@@ -71,8 +71,8 @@ void RFFE_Test(void) {
   
   MCUInitClocks();
   
-  myRFFE.SDATA = IO_PinInit(&RFFE_SDATA, PI6);
-  myRFFE.SCLK = IO_PinInit(&RFFE_SCLK, PI5);
+  myRFFE.SDATA = NewIO_Pin(&RFFE_SDATA, PI6);
+  myRFFE.SCLK = NewIO_Pin(&RFFE_SCLK, PI5);
 
   StuffsArtery_t* P = &mySequenceRFFE; // program
   NewSA(P, (u32)&RFFE_List[0], countof(RFFE_List));

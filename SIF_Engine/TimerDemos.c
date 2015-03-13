@@ -213,15 +213,15 @@ void Timer_IC_OC_PWM_Test(void) {
   // We will later give simple function to configure the capture and the timer behavious
   // For now all input capture are rising edge, no prescale, no filter, pin to channel, no special.
 #if 0
-  NewTimerOutputCC((u32) &Timer3, 1, IO_PinInit(&T3c1_PC6, PC6));  
+  NewTimerOutputCC((u32) &Timer3, 1, NewIO_Pin(&T3c1_PC6, PC6));  
   SetTimerOutputCC_SingleEdge(&Timer3, 1, GetRatio(30, 100, Timer3.TIM->ARR));// I want 30% duty cycle on PC6_T3.1
 #else // multiple pulses by DMA
-  NewTimerOutputCC((u32) &Timer3, 1, IO_PinInit(&T3c1_PC6, PC6));   
+  NewTimerOutputCC((u32) &Timer3, 1, NewIO_Pin(&T3c1_PC6, PC6));   
   SetTimerOutputCC_MultiEdges(&Timer3, 1, (u32)MultiOC, 4);// I want 30% duty cycle on PC6_T3.1
 #endif  
   
-//  SetTimerInputCC((u32)&Timer3, 1, IO_PinInit(&T3c1_PC6, PC6), ENABLE);
-  SetTimerInputCC((u32)&Timer3, 2, IO_PinInit(&T3c2_PC7, PC7), ENABLE);
+//  SetTimerInputCC((u32)&Timer3, 1, NewIO_Pin(&T3c1_PC6, PC6), ENABLE);
+  SetTimerInputCC((u32)&Timer3, 2, NewIO_Pin(&T3c2_PC7, PC7), ENABLE);
   EnableOneShotTimerCC_Triggered(&Timer3, 2); // Use T3.2 as trigger input
 //  EnableFreeRunTimer(&Timer3);
 
@@ -234,9 +234,9 @@ void Timer_IC_OC_PWM_Test(void) {
   //========== TIMER 5 related
   NewTimer_us(&Timer5, TIM5, 1000000, GetMCUClockTree());// 1s overflow tick period
 
-  SetTimerInputCC((u32)&Timer5, 1, IO_PinInit(&T5c1_PH10, PH10), ENABLE);
-  SetTimerInputCC((u32)&Timer5, 2, IO_PinInit(&T5c2_PH11, PH11), ENABLE);
-  SetTimerInputCC((u32)&Timer5, 3, IO_PinInit(&T5c3_PH12, PH12), ENABLE);
+  SetTimerInputCC((u32)&Timer5, 1, NewIO_Pin(&T5c1_PH10, PH10), ENABLE);
+  SetTimerInputCC((u32)&Timer5, 2, NewIO_Pin(&T5c2_PH11, PH11), ENABLE);
+  SetTimerInputCC((u32)&Timer5, 3, NewIO_Pin(&T5c3_PH12, PH12), ENABLE);
   EnableFreeRunTimer(&Timer5);
   
   EnableTimerCC_Interrupt((u32)&Timer5, 1, ENABLE);

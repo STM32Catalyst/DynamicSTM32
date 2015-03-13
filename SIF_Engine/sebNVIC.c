@@ -411,7 +411,7 @@ __irq void DMA1_Stream6_IRQHandler(void) {//  DMA1_Stream6_IRQn           = 17, 
 __irq void ADC_IRQHandler(void) {//  ADC_IRQn                    = 18,     /*!< ADC1, ADC2 and ADC3 global Interrupts                             */
   if(fnPreNVICs[ADC_IRQn]) ((u32(*)(u32))fnPreNVICs[ADC_IRQn])((u32)&NVIC_Stats[ADC_IRQn]); // call either an empty function or a hooked one with desired context predefined (if context missing... error)
     if(fnADC) ((u32(*)(u32))fnADC)(ctADC); // call either an empty function or a hooked one with desired context predefined (if context missing... error)
-    else;//TODO clear the pending flag EXTI->PR |= (1<<10);  // clear the pending flag
+    else while(1);//TODO clear the pending flag EXTI->PR |= (1<<10);  // clear the pending flag
     NVIC_ReleasePendingIRQ(ADC_IRQn);
   if(fnPostNVICs[ADC_IRQn]) ((u32(*)(u32))fnPostNVICs[ADC_IRQn])((u32)&NVIC_Stats[ADC_IRQn]); // call either an empty function or a hooked one with desired context predefined (if context missing... error)
 }

@@ -22,14 +22,14 @@ const DMA_StreamInfo_t DMA_StreamInfo[] = {
   {DMA2, DMA2_Stream7, 15, DMA2_Stream7_IRQn, DMA_FLAG_TCIF7 | DMA_FLAG_HTIF7 | DMA_FLAG_TEIF7 | DMA_FLAG_DMEIF7 | DMA_FLAG_FEIF7, DMA_FLAG_TCIF7 },
 };
 
-u32 Get_pDMA_Info(DMA_Stream_TypeDef* DMA_Stream) {
+DMA_StreamInfo_t* Get_pDMA_Info(DMA_Stream_TypeDef* DMA_Stream) {
   
   u8 n;
   
   for(n=0;n<countof(DMA_StreamInfo);n++) {
     
       if(DMA_Stream==DMA_StreamInfo[n].Stream) // the stream is a memory location, it is unique
-        return (u32) &DMA_StreamInfo[n];
+        return (DMA_StreamInfo_t*) &DMA_StreamInfo[n];
   }
   
   return 0; // failed to find it
@@ -233,19 +233,48 @@ const DMA_StreamChannelInfo_t DMA_StreamChannelInfo[] = {
 };
 
 
+
 DMA_StreamChannelInfo_t* Get_pStreamChannelForPPP_Signal(u32 PPP_Adr, u32 Signal, u32 Direction) {
   
   u32 n;
   
   for(n=0;n<countof(DMA_StreamChannelInfo);n++) {
     if(DMA_StreamChannelInfo[n].PPP_Adr == PPP_Adr)
-      if(DMA_StreamChannelInfo[n].Signal == Signal)
-        if(DMA_StreamChannelInfo[n].Direction & Direction)
+      if(DMA_StreamChannelInfo[n].Signal == Signal) {
+        if(IsDMA_StreamBooked(DMA_StreamChannelInfo[n].Stream)==FALSE) // if the stream is not booked, use this one
+//        if(DMA_StreamChannelInfo[n].Direction & Direction) // because MemoryToPeripheral is 0x00, this does not work. It is only for XXX_TX and XXX_RX signals.
           return (DMA_StreamChannelInfo_t*) &DMA_StreamChannelInfo[n];
+      }
   };
   
-  return 0; // not found!
+  while(1); // not found!
+  return 0;
 }
+
+//=========================
+// Booking DMA Stream management
+u32 DMAStreamBooked[16]; // 8 for DMA1, 8 for DMA2
+
+void BookDMA_Stream(DMA_Stream_TypeDef* DMA_Stream) {
+  
+  DMA_StreamInfo_t* DMASI = Get_pDMA_Info(DMA_Stream);
+  // Convert the Stream into a number
+  
+  u32 n = DMASI->fn_ct_index;
+  
+  if(DMAStreamBooked[n]) while(1); // This stream is already booked
+
+  DMAStreamBooked[n] = TRUE; // booked
+}
+
+u32 IsDMA_StreamBooked(DMA_Stream_TypeDef* DMA_Stream) {
+  
+  DMA_StreamInfo_t* DMASI = Get_pDMA_Info(DMA_Stream);
+  
+  return DMAStreamBooked[DMASI->fn_ct_index];
+}
+
+
 
 // we also need to have a conflict or solver function... need to have inventory of how many solutions are possible...
 // to run recursively with the right functions.

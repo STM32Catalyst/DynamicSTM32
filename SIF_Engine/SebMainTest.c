@@ -13,19 +13,20 @@
 // Fourth is to activate all the IRQs for the system to let go.
 // later the "global SRAM" could be a local variable so it could be destroyed once the job done.
 // case 1:
+
 void SebExample1(void);
 void SebExample2(void);
 void Test_SPI_MasterHW(void);;
 void Test_ConcurrentSPI_MasterHW(void);
 void TestCode(void);
-
+void ADC_Demo(void);
 
 void I2C_MasterIO_Test(void);
 void RFFE_Test(void);
 
 Timer_t Timer6_us, Timer7_ms;
 //*************
-vu8 choice=17; // default choice after reset
+vu8 choice=19; // default choice after reset
 //*************
 void SebMainTest(void) {
   
@@ -95,6 +96,7 @@ void SebMainTest(void) {
       DAC_Test();
       break;
     case 19:
+      ADC_Demo();
       break;
     case 20:
       break;
@@ -133,8 +135,8 @@ static IO_Pin_t myRs232TX; // for fast pin access using bitbanding area
 void SebExample1(void) {
 
   // I2C Slave description, using IO_Pin and EXTI (could later on use Basic Timer to implement a timeout like SMBus is doing)
-  mySlave.SDA = IO_PinInit(&mySDA, PH10 ); // Initialize some quick pointers
-  mySlave.SCL = IO_PinInit(&mySCL, PH12 ); // Initialize some quick pointers
+  mySlave.SDA = NewIO_Pin(&mySDA, PH10 ); // Initialize some quick pointers
+  mySlave.SCL = NewIO_Pin(&mySCL, PH12 ); // Initialize some quick pointers
   
   // This is the data byte vein flowing from I2C Spy to UART TX, and acts as a FIFO
   NewBV(&myBV_TX, (u32)myBV_I2CSpyToTX1, sizeof(myBV_I2CSpyToTX1));
@@ -152,8 +154,8 @@ void SebExample1(void) {
 */  
   // RS232 cell definition
   // Pin definition, RX1=PB7, TX1=PB6
-  myRs232.RX = IO_PinInit(&myRs232RX, PB7 ); // Initialize some quick pointers
-  myRs232.TX = IO_PinInit(&myRs232TX, PB6 ); // Initialize some quick pointers
+  myRs232.RX = NewIO_Pin(&myRs232RX, PB7 ); // Initialize some quick pointers
+  myRs232.TX = NewIO_Pin(&myRs232TX, PB6 ); // Initialize some quick pointers
   // Hook the pins to the RS232 USART (if pin not used, put null pointer)
   myRs232.RTS = 0;
   myRs232.CTS = 0;
@@ -211,8 +213,8 @@ static Timer_t Timer;
 void SebExample2(void) {
 #if 0 // superseaded
   // I2C Slave description, using IO_Pin and EXTI (could later on use Basic Timer to implement a timeout like SMBus is doing)
-  mySlave.fSDA = IO_PinInit(&mySDA, PH10 ); // Initialize some quick pointers
-  mySlave.fSCL = IO_PinInit(&mySCL, PH12 ); // Initialize some quick pointers
+  mySlave.fSDA = NewIO_Pin(&mySDA, PH10 ); // Initialize some quick pointers
+  mySlave.fSCL = NewIO_Pin(&mySCL, PH12 ); // Initialize some quick pointers
   
   // This is the data byte vein flowing from I2C Spy to UART TX, and acts as a FIFO
   NewBV(&myBV_TX, (u32)myBV_I2CSpyToTX1, sizeof(myBV_I2CSpyToTX1));
@@ -231,8 +233,8 @@ void SebExample2(void) {
   //====----> RS232 cell definition  
   // RS232 cell definition
   // Pin definition, RX1=PB7, TX1=PB6
-  myRs232.fRX = IO_PinInit(&myRs232RX, PB7 ); // Initialize some quick pointers
-  myRs232.fTX = IO_PinInit(&myRs232TX, PB6 ); // Initialize some quick pointers
+  myRs232.fRX = NewIO_Pin(&myRs232RX, PB7 ); // Initialize some quick pointers
+  myRs232.fTX = NewIO_Pin(&myRs232TX, PB6 ); // Initialize some quick pointers
   // Hook the pins to the RS232 USART (if pin not used, put null pointer)
   myRs232.fRTS = 0;
   myRs232.fCTS = 0;
@@ -250,8 +252,8 @@ void SebExample2(void) {
   //====----> Now we setup the I2C master
   u32 u = (u32)&gMIO;
   
-  gMIO.SDA = IO_PinInit(&MIO_SDA, PH7 ); // Initialize some quick pointers
-  gMIO.SCL = IO_PinInit(&MIO_SCL, PH8 ); // Initialize some quick pointers
+  gMIO.SDA = NewIO_Pin(&MIO_SDA, PH7 ); // Initialize some quick pointers
+  gMIO.SCL = NewIO_Pin(&MIO_SCL, PH8 ); // Initialize some quick pointers
 
   NewTimer_us(&Timer, TIM6, 1, GetMCUClockTree()); // usec countdown
   gMIO.Job = &Job;
@@ -384,10 +386,10 @@ void Test_SPI_MasterHW(void) {
   NewSA(P, (u32)&List[0], countof(List));
 //================== Pinout assignment
 // ====---> SPI6
-  mySPI6.MISO = IO_PinInit(&MISO6, PG12);  
-  mySPI6.MOSI = IO_PinInit(&MOSI6, PG14);  
-  mySPI6.SCK = IO_PinInit(&SCK6,  PG13);
-  mySPI6.NSSs[0] = IO_PinInit(&NSS6,  PG8);  
+  mySPI6.MISO = NewIO_Pin(&MISO6, PG12);  
+  mySPI6.MOSI = NewIO_Pin(&MOSI6, PG14);  
+  mySPI6.SCK = NewIO_Pin(&SCK6,  PG13);
+  mySPI6.NSSs[0] = NewIO_Pin(&NSS6,  PG8);  
 // Attach a HW SPI to the entity
   mySPI6.SPI = SPI6;
   mySPI6.SA = &mySequence;
@@ -406,10 +408,10 @@ void Test_SPI_MasterHW(void) {
 // SPI5 RX is DMA2 Stream3 channel 2
 // SPI5 TX is DMA2 Stream4 channel 2
 */  
-  mySPI5.MISO = IO_PinInit(&MISO5,PF8);  
-  mySPI5.MOSI = IO_PinInit(&MOSI5,PF9);  
-  mySPI5.SCK = IO_PinInit(&SCK5,PF7);
-  mySPI5.NSSs[0] = IO_PinInit(&NSS5,PF6);  
+  mySPI5.MISO = NewIO_Pin(&MISO5,PF8);  
+  mySPI5.MOSI = NewIO_Pin(&MOSI5,PF9);  
+  mySPI5.SCK = NewIO_Pin(&SCK5,PF7);
+  mySPI5.NSSs[0] = NewIO_Pin(&NSS5,PF6);  
 // Attach a HW SPI to the entity
   mySPI5.SPI = SPI5;
   mySPI5.SA = &mySequence;
@@ -429,10 +431,10 @@ void Test_SPI_MasterHW(void) {
 // SPI1 TX is DMA2 Stream1 channel 4
 */  
   
-  mySPI4.MISO = IO_PinInit(&MISO4, PE13);  
-  mySPI4.MOSI = IO_PinInit(&MOSI4, PE14);  
-  mySPI4.SCK = IO_PinInit(&SCK4, PE12);
-  mySPI4.NSSs[0] = IO_PinInit(&NSS4, PE11);  
+  mySPI4.MISO = NewIO_Pin(&MISO4, PE13);  
+  mySPI4.MOSI = NewIO_Pin(&MOSI4, PE14);  
+  mySPI4.SCK = NewIO_Pin(&SCK4, PE12);
+  mySPI4.NSSs[0] = NewIO_Pin(&NSS4, PE11);  
 // Attach a HW SPI to the entity
   mySPI4.SPI = SPI4;
   mySPI4.SA = &mySequence;
@@ -485,10 +487,10 @@ void Test_ConcurrentSPI_MasterHW(void) {
   NewSA(C, (u32)&ListC[0], countof(ListC));
 //================== Pinout assignment
 // ====---> SPI6
-  mySPI6.MISO = IO_PinInit(&MISO6, PG12);  
-  mySPI6.MOSI = IO_PinInit(&MOSI6, PG14);  
-  mySPI6.SCK = IO_PinInit(&SCK6,  PG13);
-  mySPI6.NSSs[0] = IO_PinInit(&NSS6,  PG8);  
+  mySPI6.MISO = NewIO_Pin(&MISO6, PG12);  
+  mySPI6.MOSI = NewIO_Pin(&MOSI6, PG14);  
+  mySPI6.SCK = NewIO_Pin(&SCK6,  PG13);
+  mySPI6.NSSs[0] = NewIO_Pin(&NSS6,  PG8);  
 
 // Attach a HW SPI to the entity
   mySPI6.SPI = SPI6;
@@ -499,7 +501,7 @@ void Test_ConcurrentSPI_MasterHW(void) {
 // Link the SPI to the corresponding sequencer
   
   // INT6 setupS
-  IO_PinInit(&INT6, PG6);
+  NewIO_Pin(&INT6, PG6);
   IO_PinClockEnable(&INT6);
   IO_PinSetInput(&INT6);    
 //  IO_PinSetLow(RS->fRX);//  IO_PinSetSpeedMHz(RS->fRX, 1);//  IO_PinEnableHighDrive(RS->fRX, ENABLE);
@@ -519,10 +521,10 @@ void Test_ConcurrentSPI_MasterHW(void) {
 */  
   StuffsArtery_t* B = &mySequenceB; // program
   NewSA(B, (u32)&ListB[0], countof(ListB));  
-  mySPI5.MISO = IO_PinInit(&MISO5,PF8);  
-  mySPI5.MOSI = IO_PinInit(&MOSI5,PF9);  
-  mySPI5.SCK = IO_PinInit(&SCK5,PF7);
-  mySPI5.NSSs[0] = IO_PinInit(&NSS5,PF6);  
+  mySPI5.MISO = NewIO_Pin(&MISO5,PF8);  
+  mySPI5.MOSI = NewIO_Pin(&MOSI5,PF9);  
+  mySPI5.SCK = NewIO_Pin(&SCK5,PF7);
+  mySPI5.NSSs[0] = NewIO_Pin(&NSS5,PF6);  
 
 // Attach a HW SPI to the entity
   mySPI5.SPI = SPI5;
@@ -533,7 +535,7 @@ void Test_ConcurrentSPI_MasterHW(void) {
 // Link the SPI to the corresponding sequencer
 
   // INT5 setupS
-  IO_PinInit(&INT5, PA1);
+  NewIO_Pin(&INT5, PA1);
   IO_PinClockEnable(&INT5);
   IO_PinSetInput(&INT5);    
 //  IO_PinSetLow(RS->fRX);//  IO_PinSetSpeedMHz(RS->fRX, 1);//  IO_PinEnableHighDrive(RS->fRX, ENABLE);
@@ -552,10 +554,10 @@ void Test_ConcurrentSPI_MasterHW(void) {
 */  
   StuffsArtery_t* A = &mySequenceA; // program
   NewSA(A, (u32)&ListA[0], countof(ListA));  
-  mySPI4.MISO = IO_PinInit(&MISO4, PE13);  
-  mySPI4.MOSI = IO_PinInit(&MOSI4, PE14);  
-  mySPI4.SCK = IO_PinInit(&SCK4, PE12);
-  mySPI4.NSSs[0] = IO_PinInit(&NSS4, PE11);  
+  mySPI4.MISO = NewIO_Pin(&MISO4, PE13);  
+  mySPI4.MOSI = NewIO_Pin(&MOSI4, PE14);  
+  mySPI4.SCK = NewIO_Pin(&SCK4, PE12);
+  mySPI4.NSSs[0] = NewIO_Pin(&NSS4, PE11);  
 
 // Attach a HW SPI to the entity
   mySPI4.SPI = SPI4;
@@ -566,7 +568,7 @@ void Test_ConcurrentSPI_MasterHW(void) {
 // Link the SPI to the corresponding sequencer
 
   // INT4 setup
-  IO_PinInit(&INT4, PG2);
+  NewIO_Pin(&INT4, PG2);
   IO_PinClockEnable(&INT4);
   IO_PinSetInput(&INT4);    
 //  IO_PinSetLow(RS->fRX);//  IO_PinSetSpeedMHz(RS->fRX, 1);//  IO_PinEnableHighDrive(RS->fRX, ENABLE);

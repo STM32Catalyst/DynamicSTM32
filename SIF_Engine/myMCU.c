@@ -98,6 +98,9 @@ const MCU_NodeDependency_t Signal2Info[] = {
 { ucTIM14, (u32)TIM14, RCC_APB1PeriphClockCmd, RCC_APB1Periph_TIM14, TIM8_TRG_COM_TIM14_IRQn, (u32)&fnTIM14, (u32)&ctTIM14 },
 
 { ucDAC, (u32)DAC, RCC_APB1PeriphClockCmd, RCC_APB1Periph_DAC, 0, (u32)0, (u32)0 },
+{ ucADC1, (u32)ADC1, RCC_APB2PeriphClockCmd, RCC_APB2Periph_ADC1, ADC_IRQn, (u32)&fnADC, (u32)&ctADC },
+{ ucADC2, (u32)ADC2, RCC_APB2PeriphClockCmd, RCC_APB2Periph_ADC2, ADC_IRQn, (u32)&fnADC, (u32)&ctADC },
+{ ucADC3, (u32)ADC3, RCC_APB2PeriphClockCmd, RCC_APB2Periph_ADC3, ADC_IRQn, (u32)&fnADC, (u32)&ctADC },
 };
 
 //======================================================================
@@ -230,4 +233,99 @@ MCU_TimerCapabilities_t* MCU_GetMCU_TimerCapabilitiesByPPP(u32 PPP_Adr) {
   
   while(1);
   
+}
+
+
+//=======================================================================
+
+ADC_Info_t ADCI[] = {
+  
+  {ADC1_IN0, PA0, ADC1, ADC_Channel_0},
+  {ADC2_IN0, PA0, ADC2, ADC_Channel_0},
+  {ADC3_IN0, PA0, ADC3, ADC_Channel_0},
+  
+  {ADC1_IN1, PA1, ADC1, ADC_Channel_1},
+  {ADC2_IN1, PA1, ADC2, ADC_Channel_1},
+  {ADC3_IN1, PA1, ADC3, ADC_Channel_1},
+  
+  {ADC1_IN2, PA2, ADC1, ADC_Channel_2},
+  {ADC2_IN2, PA2, ADC2, ADC_Channel_2},
+  {ADC3_IN2, PA2, ADC3, ADC_Channel_2},
+  
+  {ADC1_IN3, PA3, ADC1, ADC_Channel_3},
+  {ADC2_IN3, PA3, ADC2, ADC_Channel_3},
+  {ADC3_IN3, PA3, ADC3, ADC_Channel_3},
+  
+  {ADC1_IN4, PA4, ADC1, ADC_Channel_4},
+  {ADC2_IN4, PA4, ADC2, ADC_Channel_4},
+  {ADC3_IN4, PF6, ADC3, ADC_Channel_4},
+  
+  {ADC1_IN5, PA5, ADC1, ADC_Channel_5},
+  {ADC2_IN5, PA5, ADC2, ADC_Channel_5},
+  {ADC3_IN5, PF7, ADC3, ADC_Channel_5},
+  
+  {ADC1_IN6, PA6, ADC1, ADC_Channel_6},
+  {ADC2_IN6, PA6, ADC2, ADC_Channel_6},
+  {ADC3_IN6, PF8, ADC3, ADC_Channel_6},
+  
+  {ADC1_IN7, PA7, ADC1, ADC_Channel_7},
+  {ADC2_IN7, PA7, ADC2, ADC_Channel_7},
+  {ADC3_IN7, PF9, ADC3, ADC_Channel_7},
+  
+  {ADC1_IN8, PB0, ADC1, ADC_Channel_8},
+  {ADC2_IN8, PB0, ADC2, ADC_Channel_8},
+  {ADC3_IN8, PF10, ADC3, ADC_Channel_8},
+  
+  {ADC1_IN9, PB1, ADC1, ADC_Channel_9},
+  {ADC2_IN9, PB1, ADC2, ADC_Channel_9},
+  {ADC3_IN9, PF3, ADC3, ADC_Channel_9},
+  
+  {ADC1_IN10, PC0, ADC1, ADC_Channel_10},
+  {ADC2_IN10, PC0, ADC2, ADC_Channel_10},
+  {ADC3_IN10, PC0, ADC3, ADC_Channel_10},
+  
+  {ADC1_IN11, PC1, ADC1, ADC_Channel_11},
+  {ADC2_IN11, PC1, ADC2, ADC_Channel_11},
+  {ADC3_IN11, PC1, ADC3, ADC_Channel_11},
+  
+  {ADC1_IN12, PC2, ADC1, ADC_Channel_12},
+  {ADC2_IN12, PC2, ADC2, ADC_Channel_12},
+  {ADC3_IN12, PC2, ADC3, ADC_Channel_12},
+  
+  {ADC1_IN13, PC3, ADC1, ADC_Channel_13},
+  {ADC2_IN13, PC3, ADC2, ADC_Channel_13},
+  {ADC3_IN13, PC3, ADC3, ADC_Channel_13},
+  
+  {ADC1_IN14, PC4, ADC1, ADC_Channel_14},
+  {ADC2_IN14, PC4, ADC2, ADC_Channel_14},
+  {ADC3_IN14, PF4, ADC3, ADC_Channel_14},
+  
+  {ADC1_IN15, PC5, ADC1, ADC_Channel_15},
+  {ADC2_IN15, PC5, ADC2, ADC_Channel_15},
+  {ADC3_IN15, PF5, ADC3, ADC_Channel_15},
+
+// internal signals connected to ADCs  
+  {ADC1_VTEMP, NO_ALTERNATE, ADC1, ADC_Channel_TempSensor},//16
+  {ADC2_VTEMP, NO_ALTERNATE, ADC2, ADC_Channel_TempSensor},
+  {ADC3_VTEMP, NO_ALTERNATE, ADC3, ADC_Channel_TempSensor},
+  
+  {ADC1_VREF, NO_ALTERNATE, ADC1, ADC_Channel_Vrefint},//17
+  {ADC2_VREF, NO_ALTERNATE, ADC2, ADC_Channel_Vrefint},
+  {ADC3_VREF, NO_ALTERNATE, ADC3, ADC_Channel_Vrefint},
+  
+  {ADC1_VBAT, NO_ALTERNATE, ADC1, ADC_Channel_Vbat},//18
+  {ADC2_VBAT, NO_ALTERNATE, ADC2, ADC_Channel_Vbat},
+  {ADC3_VBAT, NO_ALTERNATE, ADC3, ADC_Channel_Vbat},
+  
+};
+
+ADC_Info_t* ADC_GetByPPP_PinName(ADC_TypeDef* ADCx, PinNameDef PinName) { // if there are multiple choice
+  // if ADCx is null, we find the first match
+  // if ADCx is non null, we use it for match check
+  u32 n;
+  for(n=0;n<countof(ADCI);n++)    
+    if(ADCI[n].PinName == PinName)
+      if((ADCx==0)||(ADCI[n].ADCx == ADCx))
+        return &ADCI[n];
+  while(1); // error, nothing found!
 }

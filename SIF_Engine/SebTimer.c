@@ -407,6 +407,7 @@ void TIM_DMA_Activate(Timer_t* Timer) {
     // This CC is hooked up to a DMA, let's enable them
     DMA_StreamChannelInfo_t* DSCI = Get_TimerDMA_InfoByPPP_n((u32)Timer->TIM, n, DMA_DIR_PeripheralToMemory | DMA_DIR_MemoryToPeripheral);
     DMA_Cmd(DSCI->Stream/*DMA1_Stream4*/, ENABLE);  // DMA enable
+    BookDMA_Stream(DSCI->Stream);
     TIM_DMACmd(Timer->TIM, TIM_DMA_n[n], ENABLE);  // TIM2 Update DMA Request enable 
   };
   

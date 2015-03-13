@@ -34,7 +34,7 @@ IO_Pin_t MCO2_PC9;
 void FTM_Generate48MHzOnMCO2_PC9(void) {
 
   IO_Pin_t* MCO2 = &MCO2_PC9;
-  IO_PinInit(MCO2, PC9);
+  NewIO_Pin(MCO2, PC9);
   
   //RCC_MCO2Config(RCC_MCO2Source_SYSCLK,RCC_MCO2Div_4);//24Mhz now. RCC_MCO2Div_2);// 96Mhz/2 = 48 MHz
   RCC_MCO2Config(RCC_MCO2Source_HSE,RCC_MCO2Div_4); // 24MHz/4=6MHz

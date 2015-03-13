@@ -39,6 +39,8 @@
 #define SebTIM8_UP_TIM13
 #define SebTIM8_TRG_COM_TIM14
 
+#define SebADC
+
 // These are types we use and might not be available for other compilers or libraries
 /*!< STM32F10x Standard Peripheral Library old types (maintained for legacy purpose) */
 #if 0 // activate these if the types don't exist in your project, we use compact type names because eyesight is narrow area, so we make it compact for source code.
@@ -84,9 +86,9 @@ typedef __IO uint8_t  vu8;
 
 
 // There is a specific include order to follow here
+#include "alternates.h"
 #include "myMCU.h"
 #include "SebClocks.h"
-#include "alternates.h"
 #include "SebNVIC.h"
 #include "SebDMA.h"
 #include "SebEXTI.h"
