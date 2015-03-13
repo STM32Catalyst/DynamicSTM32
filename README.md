@@ -1,9 +1,5 @@
 # DynamicSTM32
-Taking a step back at existing ways to build a solution on STM32, and use of experience in the field to try a fun alternative and complementary scheme.
-
-A custom demoboard based on STM32F437/BGA176 allow testing of many peripherals. Both USB are connected, Crystal is 24MHz, SYSCLK is 96MHz (to remain <100mA USB supply limit).
-
-This pet project came up after reading from ChiBios, Clojure, Espruino, Blockly, Arduino,...
+A different way to build solutions on STM32 MCUs (STM32F437 as baseline)
 
 When a new MCU based concept needs to be developped quickly, there are few strategies:
 
@@ -16,32 +12,30 @@ When a new MCU based concept needs to be developped quickly, there are few strat
 What if we could have nearly the best of (1) and (2)? Let's try to mimic the successful business that is living organism...
 
 For this, we need a mean to run HW very fast with a special SW library of elements (cells)
-Each of these elements are "floating". They need to be configured, and belong to a bigger structure. The configuration or the blueprints of what we architect does not need to be speedy, only its execution needs to.
-The configuration and link of these cells in RAM  could be described to an interpreter (like Espruino's Javascript Interpreter)
+Each of these elements are "floating". They need to be configured, and belong to a bigger structure. The configuration or the blueprints of what we architect does not need to be speedy. It could be described to an interpreter.
 
 We could compare this to high speed trains running on tracks. On the dashboard, we can change the train tracks slowly, without impairing the speediness of the trains themselves...
 
+
 Before reaching the level of embedding an interpreter, lots of basic blocks (cells) have to be built and refined.
-The more a code structure is simple, the easier it is to maintain and evolve. Also the functionality in the MCU should be translated into simple C tables (database), for example for the MCU to find out which DMA/Stream/Channel match a particular signal functionality.
+The more a code structure is simple, the easier it is to maintain and evolve.
 
-Here are some of the thoughts guiding me in the development (functionality paramount before formalizing the source code to coding standard)
+Looking at Clojure language (LISP derivative) books, some interesting concepts could be tried.
 
-- 32 bit allows to store either a data or an address, universal
-- Clojure uses weak type variables which also can be "not defined" "not available"
-- A NULL pointer does similar job...
-- Java is passing function parameters as hidden pointers (or in C any complex parameter is assumed pointer)
-- Interrupt handlers are the time critical processes, their latency and duration should be kept to minimum
-- A Job is a function pointer and its passing parameter (pointer to a structure which contains the function needed data)
-- ARM instructions can be conditional, so, for free we can call a function only if its pointer is non zero...
-- The code should give enough flexibility in a dynamic fashion, not precompiled.
-- The code should be scalable and re-entrant (the same function can be used for any type of timers)
-- All resource is a structure in RAM. Need more timers? Create more of them in RAM anytime needed!
+Have heard of RTOS/FreeRTOS/Chibios/MainLoop? RTOS is a multiple task management at a cost: Need to manage multiple tasks in memory (RAM). Clojure makes multiple Core or multiple Task management simple by only using re-entrant functions: Functions don't use global variables, they only use the passing parameters.
 
-As we have a 100kb project, the goal is to transform the code from optimized hardcoded to dynamically reconfigurable in the debugger or by terminal-style applications. This code is only the portion which can be added to any project (RTOS or not), and selectively "hook" itself from the NVIC interrupt handlers. (Cube uses __weak link statement, so it should be easy)
+What if the passing parameter is in fact all the funciton need to work?
+What if the passing parameter is a pointer to a structure?
 
-Each code release is like a new born code, each time its DNA is altered a bit to become a better future-proof fit :-)
+Heard of callback functions? What if the callback is defined by a "Hook" which is 2 things: A pointer of function AND a pointer to the data structure the function needs to operate? If the function pointer is NULL, then raise a flag instead.
 
-We improve our code with customer's or colleague's feedback. What if we could C code feedbacks and let the MCU converge to an optimized setup? What if the MCU has enough feedbacks like remaining power consumption, interrupt overrun, missed deadlines, so he can modulate its clock frequency itself? That's like Chappie movie :-)
+Next, we need something that is scalable, so we can reuse the same code for multiple implementations of the same "functionality". We also need a scheme which exploits Interrupt Handlers to the best and in a simple way.
+
+This is the goal of this fun project.
+
+For now, we are using the STM32F437 MCU as it has lots of peripherals, exists in BGA 176 pins and has enough memory to be future proof....
+
+Have a look at this code. It can "invade" a normal project (being simple main loop based or RTOS), as it only needs to grab some of the interrupt handlers for himself. This is the myNVIC.h file and SIF_Engine.h
 
 To create a system, it's like creating a soup. Create the ingredients you need (in RAM), prepare these ingredients (initialize them), link them together (blending), and cook them... by running the fireplace.
 
@@ -51,6 +45,26 @@ Have a look at the code example to understand the mecanics of the software.
 
 Hope will be fun. The baseline works, and higher level smart features are still missing to make it very versatile.
 
-The road is long, at least the vision exist and the path is clear, let's run!
+This folder is added to an IAR bigger standard application project which is main loop'ed base (no RTOS).
+The MCU is STM32437 with SYSCLK at 96MHz, and this clock is currently manually entered in this code.
+
+Next big add-ons will be:
+
+1. Support of General and Advanced Timers (programmable pulses and triggers)
+2. Support of Analog functions (including DMAs) (DAC and ADCs)
+3. Redesign the Slave State machines to use the same sequencer used in Master mode
+4. Add SPI Slave support
+5. Add Main loop task FIFO for non speed critical jobs, fired by timer interrupt or other background tasks
+6. Add support to launch in parralel multiple sequencers and have a mean for them to wait for each others in a milestone step
+7. Add 16x2 simple LCD Char using SPI in main loop
+8. Add Keyboard (5 way joystick)
+9. Add I2C EEPROM support
+10. Add Bluetooth protocol to have COM Port accessible from Phone or PC apps. (protocol handlers)
+11. Add Sensors support
+12. Clocks management (knowing the external crystal value, find the lowest clock that fits the required performance)
+13. HW Management (MCU finds out itself which HW resource to use like DMA Streams and Channels)
+14. How to pause a sequence (say waiting for interrupt from Sensor to run I2C read, pause it for main loop to use I2C bus to talk to other devices asap)
+
+Once the base line grows with more complex structures, things will become interesting
 
 
