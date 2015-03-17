@@ -12,7 +12,7 @@ extern u32 fnFLASH,ctFLASH;
 extern u32 fnRCC,ctRCC;
 extern u32 fnEXTIs[16], ctEXTIs[16];
 extern u32 fnDMA1s[8],ctDMA1s[8];
-extern u32 fnADC,ctADC;
+extern u32 fnADC1,ctADC1, fnADC2,ctADC2, fnADC3,ctADC3;
 extern u32 fnCAN1_TX,ctCAN1_RX;
 extern u32 fnCAN1_RX0,ctCAN1_RX0;
 extern u32 fnCAN1_RX1,ctCAN1_RX1;

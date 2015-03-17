@@ -1,6 +1,8 @@
 
 #include "sebEngine.h"
 
+// this file is MCU salestype dependent
+
 #if 0
 typedef enum IRQn
 {
@@ -169,7 +171,7 @@ u32 fnTAMP_STAMP,ctTAMP_STAMP;
 u32 fnRTC_WKUP,ctRTC_WKUP;
 u32 fnFLASH,ctFLASH;
 u32 fnRCC,ctRCC;
-u32 fnADC,ctADC;
+u32 fnADC1,fnADC2,fnADC3,ctADC1,ctADC2,ctADC3;
 u32 fnCAN1_TX,ctCAN1_TX;
 u32 fnCAN1_RX0,ctCAN1_RX0;
 u32 fnCAN1_RX1,ctCAN1_RX1;
@@ -410,8 +412,13 @@ __irq void DMA1_Stream6_IRQHandler(void) {//  DMA1_Stream6_IRQn           = 17, 
 #ifdef SebADC
 __irq void ADC_IRQHandler(void) {//  ADC_IRQn                    = 18,     /*!< ADC1, ADC2 and ADC3 global Interrupts                             */
   if(fnPreNVICs[ADC_IRQn]) ((u32(*)(u32))fnPreNVICs[ADC_IRQn])((u32)&NVIC_Stats[ADC_IRQn]); // call either an empty function or a hooked one with desired context predefined (if context missing... error)
-    if(fnADC) ((u32(*)(u32))fnADC)(ctADC); // call either an empty function or a hooked one with desired context predefined (if context missing... error)
+    if(fnADC1) ((u32(*)(u32))fnADC1)(ctADC1); // call either an empty function or a hooked one with desired context predefined (if context missing... error)
     else while(1);//TODO clear the pending flag EXTI->PR |= (1<<10);  // clear the pending flag
+    if(fnADC2) ((u32(*)(u32))fnADC2)(ctADC2); // call either an empty function or a hooked one with desired context predefined (if context missing... error)
+    else while(1);//TODO clear the pending flag EXTI->PR |= (1<<10);  // clear the pending flag
+    if(fnADC3) ((u32(*)(u32))fnADC3)(ctADC3); // call either an empty function or a hooked one with desired context predefined (if context missing... error)
+    else while(1);//TODO clear the pending flag EXTI->PR |= (1<<10);  // clear the pending flag
+    // if all hooks are null, disable the NVIC
     NVIC_ReleasePendingIRQ(ADC_IRQn);
   if(fnPostNVICs[ADC_IRQn]) ((u32(*)(u32))fnPostNVICs[ADC_IRQn])((u32)&NVIC_Stats[ADC_IRQn]); // call either an empty function or a hooked one with desired context predefined (if context missing... error)
 }

@@ -201,7 +201,8 @@ u32 SetSPI_MasterHW_Timings(SPI_MasterHW_t* S, u32 MaxBps, u32 CPol, u32 CPha, u
   };
 
   for(psc=0;psc<8;psc++) { // try all possible prescaler values
-    bps = (1000000 * S->FeedClockMHz) >> (psc + 1);
+    //bps = (1000000 * S->FeedClockMHz) >> (psc + 1);
+    bps = (S->FeedClockHz) >> (psc + 1);    
     if(bps<=MaxBps) break;
   };
   

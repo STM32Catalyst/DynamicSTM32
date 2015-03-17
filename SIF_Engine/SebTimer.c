@@ -161,9 +161,9 @@ void NewTimer_us(Timer_t* Timer, TIM_TypeDef* T, u32 Period_us, MCUClocks_t * Tr
   MCU_NodeDependency_t* I = GetSignal2InfoBy_PPP((u32)T);
           
   if(I->fnClk == RCC_APB1PeriphClockCmd)
-    Timer->FeedClockMHz = (Tree->APB1Clk_Hz * 2) / 1000000; // Timers have double the clock speed of APB
+    Timer->FeedClockHz = (Tree->APB1Clk_Hz * 2); // Timers have double the clock speed of APB
   else
-    Timer->FeedClockMHz = (Tree->APB2Clk_Hz * 2) / 1000000; // Timers have double the clock speed of APB
+    Timer->FeedClockHz = (Tree->APB2Clk_Hz * 2); // Timers have double the clock speed of APB
     
   u32 cy,psc,arr;
   if(Period_us==0) while(1); // invalid choice
@@ -192,7 +192,7 @@ void NewTimer_us(Timer_t* Timer, TIM_TypeDef* T, u32 Period_us, MCUClocks_t * Tr
   
   
   // we only need to guarantee the period in us with lowest timer clock for it
-  cy = Timer->FeedClockMHz * Period_us; // if 1 us: r = 96 cycles at 96MHz
+  cy = (Timer->FeedClockHz / 1000000) * Period_us; // if 1 us: r = 96 cycles at 96MHz (divide by 1000000?)
   // now let's cook the timer prescaler and autoreload values...
   psc = 0;
   arr = cy;

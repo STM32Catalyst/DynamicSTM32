@@ -16,7 +16,7 @@ typedef struct {
   u32 fnCountDown[TIMER_MAX_COUNTDOWN]; // First Function to call when an overflow occured
   u32 ctCountDown[TIMER_MAX_COUNTDOWN];
   
-  u32 FeedClockMHz; // for debug only, not really needed
+  u32 FeedClockHz; // for debug only, not really needed
   u32 OverflowPeriod_us;
 
   u32 InitialCountDown[TIMER_MAX_COUNTDOWN];

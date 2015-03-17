@@ -99,6 +99,7 @@ typedef __IO uint8_t  vu8;
 #include "SebStuffsArtery.h"
 #include "SebPrintf.h"
 #include "SebDac.h"
+#include "sebAdc.h"
 
 #include "I2C_SlaveIO.h"
 #include "I2C_MasterIO.h"

@@ -393,7 +393,7 @@ void Test_SPI_MasterHW(void) {
 // Attach a HW SPI to the entity
   mySPI6.SPI = SPI6;
   mySPI6.SA = &mySequence;
-  mySPI6.FeedClockMHz = 48;
+  mySPI6.FeedClockHz = 48000000;
   NewSPI_MasterHW_RX_TX(&mySPI6, DMA2_Stream6, DMA_Channel_1, DMA2_Stream5, DMA_Channel_1); // RX Stream, TX Stream
   SetSPI_MasterHW_Timings(&mySPI6, 20*1000000, SPI_CPOL_Low, SPI_CPHA_1Edge, SPI_FirstBit_MSB ); // 1200000, SPI_CPOL_Low, SPI_CPHA_1Edge, SPI_FirstBit_MSB
 // Link the SPI to the corresponding sequencer
@@ -415,7 +415,7 @@ void Test_SPI_MasterHW(void) {
 // Attach a HW SPI to the entity
   mySPI5.SPI = SPI5;
   mySPI5.SA = &mySequence;
-  mySPI5.FeedClockMHz = 48;
+  mySPI5.FeedClockHz = 48000000;
   NewSPI_MasterHW_RX_TX(&mySPI5, DMA2_Stream3, DMA_Channel_2, DMA2_Stream4, DMA_Channel_2); // RX Stream, TX Stream
   SetSPI_MasterHW_Timings(&mySPI5, 10*1000000, SPI_CPOL_Low, SPI_CPHA_1Edge, SPI_FirstBit_MSB ); // 1200000, SPI_CPOL_Low, SPI_CPHA_1Edge, SPI_FirstBit_MSB  
 // Link the SPI to the corresponding sequencer
@@ -438,7 +438,7 @@ void Test_SPI_MasterHW(void) {
 // Attach a HW SPI to the entity
   mySPI4.SPI = SPI4;
   mySPI4.SA = &mySequence;
-  mySPI4.FeedClockMHz = 48;
+  mySPI4.FeedClockHz = 48000000;
   NewSPI_MasterHW_RX_TX(&mySPI4, DMA2_Stream0, DMA_Channel_4, DMA2_Stream1, DMA_Channel_4); // RX Stream, TX Stream
   SetSPI_MasterHW_Timings(&mySPI4, 5*1000000, SPI_CPOL_Low, SPI_CPHA_1Edge, SPI_FirstBit_MSB ); // 1200000, SPI_CPOL_Low, SPI_CPHA_1Edge, SPI_FirstBit_MSB  
 // Link the SPI to the corresponding sequencer
@@ -495,7 +495,7 @@ void Test_ConcurrentSPI_MasterHW(void) {
 // Attach a HW SPI to the entity
   mySPI6.SPI = SPI6;
   mySPI6.SA = &mySequenceC;
-  mySPI6.FeedClockMHz = 48;
+  mySPI6.FeedClockHz = 48000000;
   NewSPI_MasterHW_RX_TX(&mySPI6, DMA2_Stream6, DMA_Channel_1, DMA2_Stream5, DMA_Channel_1); // RX Stream, TX Stream
   SetSPI_MasterHW_Timings(&mySPI6, 20*1000000, SPI_CPOL_Low, SPI_CPHA_1Edge, SPI_FirstBit_MSB ); // 1200000, SPI_CPOL_Low, SPI_CPHA_1Edge, SPI_FirstBit_MSB
 // Link the SPI to the corresponding sequencer
@@ -529,7 +529,7 @@ void Test_ConcurrentSPI_MasterHW(void) {
 // Attach a HW SPI to the entity
   mySPI5.SPI = SPI5;
   mySPI5.SA = &mySequenceB;
-  mySPI5.FeedClockMHz = 48;
+  mySPI5.FeedClockHz = 48000000;
   NewSPI_MasterHW_RX_TX(&mySPI5, DMA2_Stream3, DMA_Channel_2, DMA2_Stream4, DMA_Channel_2); // RX Stream, TX Stream
   SetSPI_MasterHW_Timings(&mySPI5, 10*1000000, SPI_CPOL_Low, SPI_CPHA_1Edge, SPI_FirstBit_MSB ); // 1200000, SPI_CPOL_Low, SPI_CPHA_1Edge, SPI_FirstBit_MSB  
 // Link the SPI to the corresponding sequencer
@@ -562,7 +562,7 @@ void Test_ConcurrentSPI_MasterHW(void) {
 // Attach a HW SPI to the entity
   mySPI4.SPI = SPI4;
   mySPI4.SA = &mySequenceA;
-  mySPI4.FeedClockMHz = 48;
+  mySPI4.FeedClockHz = 48000000;
   NewSPI_MasterHW_RX_TX(&mySPI4, DMA2_Stream0, DMA_Channel_4, DMA2_Stream1, DMA_Channel_4); // RX Stream, TX Stream
   SetSPI_MasterHW_Timings(&mySPI4, 5*1000000, SPI_CPOL_Low, SPI_CPHA_1Edge, SPI_FirstBit_MSB ); // 1200000, SPI_CPOL_Low, SPI_CPHA_1Edge, SPI_FirstBit_MSB  
 // Link the SPI to the corresponding sequencer

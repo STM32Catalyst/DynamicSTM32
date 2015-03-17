@@ -2,6 +2,8 @@
 #include "SebEngine.h"
 #include "myMCU.h"
 
+// this file is MCU salestype dependent
+
 /*
 typedef struct {
 
@@ -98,9 +100,9 @@ const MCU_NodeDependency_t Signal2Info[] = {
 { ucTIM14, (u32)TIM14, RCC_APB1PeriphClockCmd, RCC_APB1Periph_TIM14, TIM8_TRG_COM_TIM14_IRQn, (u32)&fnTIM14, (u32)&ctTIM14 },
 
 { ucDAC, (u32)DAC, RCC_APB1PeriphClockCmd, RCC_APB1Periph_DAC, 0, (u32)0, (u32)0 },
-{ ucADC1, (u32)ADC1, RCC_APB2PeriphClockCmd, RCC_APB2Periph_ADC1, ADC_IRQn, (u32)&fnADC, (u32)&ctADC },
-{ ucADC2, (u32)ADC2, RCC_APB2PeriphClockCmd, RCC_APB2Periph_ADC2, ADC_IRQn, (u32)&fnADC, (u32)&ctADC },
-{ ucADC3, (u32)ADC3, RCC_APB2PeriphClockCmd, RCC_APB2Periph_ADC3, ADC_IRQn, (u32)&fnADC, (u32)&ctADC },
+{ ucADC1, (u32)ADC1, RCC_APB2PeriphClockCmd, RCC_APB2Periph_ADC1, ADC_IRQn, (u32)&fnADC1, (u32)&ctADC1 },
+{ ucADC2, (u32)ADC2, RCC_APB2PeriphClockCmd, RCC_APB2Periph_ADC2, ADC_IRQn, (u32)&fnADC2, (u32)&ctADC2 },
+{ ucADC3, (u32)ADC3, RCC_APB2PeriphClockCmd, RCC_APB2Periph_ADC3, ADC_IRQn, (u32)&fnADC3, (u32)&ctADC3 },
 };
 
 //======================================================================

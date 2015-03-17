@@ -37,7 +37,7 @@ typedef struct {
   u32 MaxBps; // this is the maximum required baudrate
   u32 ActualBps; // HW bit rate (does not include delays between bytes)
 //  u32 AverageBps; // Averate bit rate per job
-  u32 FeedClockMHz; // SPI Clock feed. Internally only plays with PSC = 2^(n+1)
+  u32 FeedClockHz; // SPI Clock feed. Internally only plays with PSC = 2^(n+1)
   
   StuffsArtery_t* SA; // this points to Job feeding
   

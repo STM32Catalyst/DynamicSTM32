@@ -2,6 +2,7 @@
 #ifndef _MY_MCU_H_
 #define _MY_MCU_H_
 
+// this file is MCU salestype dependent
 
 typedef enum
 {
