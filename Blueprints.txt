@@ -1,0 +1,70 @@
+
+The DNA of this code, in summary.
+
+We will use the example of building an I2C Slave by GPIOs (max spy speed depends, between 100 to 400kHz)
+
+What is needed to create an I2C_Slave cell and make it alive?
+
+1. Create the cell in RAM (global or stack, it has to exist as long as it is needed)
+========== 8>< ---------------------
+   I2C_SlaveIO_t mySlave;
+========== 8>< ---------------------
+2. Sometime a cell may need smaller constituent cells to exist. Broswing the I2C_SlaveIO_t declaration should be intuitive:
+
+3. We need 2 IO_Pins, SDA and SCL for an I2C bus to exist:
+========== 8>< ---------------------
+IO_Pin_t mySDA; // for fast pin access using bitbanding area (we will use a fake HW registers which will check if all pins are not colliding)
+IO_Pin_t mySCL; // for fast pin access using bitbanding area
+========== 8>< ---------------------
+
+4. We want to simulate a slave with multiple slave addresses:
+========== 8>< ---------------------
+u8 mySlaveAdresses[] = { 0x40, 0xB0, 0xC0, 0xD0 }; // ram is faster
+========== 8>< ---------------------
+
+5. The slave will mimic a 256 byte memory using the simplest 1 byte sub address.
+   The memory hooked up to this I2C RAM memory will be:
+========== 8>< ---------------------
+u8 mySlaveMemory[256];
+========== 8>< ---------------------
+
+6. The Slave can also be a spy (a bus monitor), for it to exist, we need a FIFO buffer that I2C events will feed
+========== 8>< ---------------------
+u8 myBV_I2CSpyToTX1[1024]; // this is the FIFO RAM memory that the I2C Slave spy will fill
+ByteVein_t myBV_TX; // this emulates a FIFO which will be tied to the above buffer.
+========== 8>< ---------------------
+
+7. From lowest to highest level, we need to initialize all these cells to function as one.
+8. All the cell go through a New(), Timing(), Configure(), Enable() sequence of function (plus sometime more)
+   The New() function enables the clock, init most of the RAM members
+   The Timing() function deals with timings, clock speed, prescalers, timers, etc...
+   The Configure() function will write the HW peripheral registers and hook any interrupt handler when needed
+   === At this point, programmer can tweak/hack the configuration if customization is needed
+   The Enable() function will activate the cell (The electrical shock that will make the cell alive)
+   
+This is for now the basic idea.
+The naming conversion is simple: 
+Use Underscore only when it helps reading, use Uppercase or Numbers to separate words.
+For now, function starts with a verb. Might change to the end of the name like Japanese later.
+Keep types and name length minimal because our eyesight for concentration is a small area.
+All new types are like uint8_t, they end with < *_t > (not < *typedef >) 
+  
+  ===========================================================
+  
+The code will try to catch errors, will hang with a while(1); loop so that with a debugger, it's easy to findout the issue.
+This may evolve in the future.
+
+Except for checking a HW double booking, a function should be reentrant and not use any global variables.
+All it needs sould be passed by passing parameters. It is recommended to minimize the number of passing parameters: Use a pointer to a structure.
+
+Look into the demofiles for more examples.
+
+The structures in RAM can be cloned, the interrupt vectors could be shared between cores.
+The structure Timer_t supports all the standard various timers of STM32 (32 bit, 16 bit, basic, 1 CC, 2 CC, 4 CC, timebase, OneShot, FreeRun, PWM, multipulse, S/W or HW Pin triggered)
+
+The spirit of the whole S/W is that later, the S/W can reconfigure (optimize) itself for low power or low speed, like a feedback loop used to stabilize the system.
+Timers timings can be expressed in uS, ADC and DACs in mV, Serial Interfaces in Bps...
+This is because in the real world Lsb, bytes, words... means nothing.
+
+This description will evolve as various examples using various peripherals are being used. 
+This code DNA's will evolve to find the simplest structure that meet most of the needs.
