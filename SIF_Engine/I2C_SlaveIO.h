@@ -104,12 +104,15 @@ typedef struct {
   u8 FlagBusFree : 1;
   u8 FlagReceived : 1;
   u8 FlagTransmitted : 1;
-} I2C_SlaveIO;
+} I2C_SlaveIO_t;
 
 
-void NewI2C_SlaveIO(I2C_SlaveIO* S, u8* SlaveAddresses, u8 SlaveAddressesCountof, u8* pMemory, u32 MemoryCountof);
+void NewI2C_SlaveIO_SDA_SCL(I2C_SlaveIO_t* S, IO_Pin_t* SDA, IO_Pin_t* SCL);
+void EmulateMemoryI2C_SlaveIO(I2C_SlaveIO_t* S, u8* SlaveAddresses, u8 SlaveAddressesCountof, u8* pMemory, u32 MemoryCountof);
+void ConfigureI2C_SlaveIO(I2C_SlaveIO_t* S);
+void EnableI2C_SlaveIO(I2C_SlaveIO_t* S);
 
-u32 SpyI2C_SlaveIO(I2C_SlaveIO* u);
-u32 UnSpyI2C_SlaveIO(I2C_SlaveIO* u);
+u32 SpyI2C_SlaveIO(I2C_SlaveIO_t* u);
+u32 UnSpyI2C_SlaveIO(I2C_SlaveIO_t* u);
 
 #endif

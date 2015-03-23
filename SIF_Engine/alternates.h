@@ -419,6 +419,6 @@ ADC1_VBAT,
 ADC2_VBAT,
 ADC3_VBAT,
 
-} Signal_t;
+} SignalName_t;
 
 #endif

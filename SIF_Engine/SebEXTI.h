@@ -25,6 +25,6 @@ u32 sq_EXTI_Interrupt(u32 u);
 void BookEXTI(u32 PinName);
 void FreeEXTI(u32 PinName);
 
-void BookAF(u32 PinName, u32 AF);
-void FreeAF(u32 PinName);
+
+
 #endif

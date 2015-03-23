@@ -32,7 +32,7 @@ typedef struct {
   u32 fn_ct_index; // 0..7 for DMA1 stream 0..7, 8..15 for DMA2.
   u32 Channel;
   u32 PPP_Adr;
-  Signal_t Signal;
+  SignalName_t Signal;
   u32 Direction;
   
 } DMA_StreamChannelInfo_t; // this points to a const data

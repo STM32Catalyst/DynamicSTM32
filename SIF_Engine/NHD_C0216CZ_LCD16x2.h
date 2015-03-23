@@ -44,10 +44,13 @@ typedef struct {
 } NHD_LCD16x2_t;
 
 
-u32 NewNHD_LCD16x2(NHD_LCD16x2_t* L);
-u32 SetNHD_LCD16x2_Timings( NHD_LCD16x2_t* L);
+u32 NewNHD_LCD16x2(NHD_LCD16x2_t* L, IO_Pin_t* NRST, IO_Pin_t* RS);
+u32 SetNHD_LCD16x2_Timings(NHD_LCD16x2_t* L);
+u32 ConfigureNHD_LCD16x2(NHD_LCD16x2_t* L);
+u32 EnableNHD_LCD16x2(NHD_LCD16x2_t* L);
 
 // LCD Display Specifics (Controls)
+u32 NHD_LCD16x2_Init(NHD_LCD16x2_t* L);
 u32 NHD_LCD16x2_UpdateDisplay(NHD_LCD16x2_t* L);
 u32 NHD_FillRAM_With(NHD_LCD16x2_t* L, u8 c);
 u32 NHD_ClearRAM(NHD_LCD16x2_t* L);

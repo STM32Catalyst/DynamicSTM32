@@ -7,7 +7,7 @@
 // translated example with sequencer scheme
 static I2C_MasterIO_t gMIO;
 static IO_Pin_t MIO_SDA, MIO_SCL;
-static Timer_t Timer;
+static Timer_t Timer6;
 // create the instructions
 static u32 SubAdr = 0x80;
 static u8 SensorRegs[64];
@@ -24,24 +24,24 @@ void I2C_MasterIO_Test(void) {
 
 //  u32 u = (u32)&gMIO;
   MCUInitClocks();
-  
-  gMIO.SDA = NewIO_Pin(&MIO_SDA, PH7 ); // Initialize some quick pointers
-  gMIO.SCL = NewIO_Pin(&MIO_SCL, PH8 ); // Initialize some quick pointers
 
-  NewTimer_us(&Timer, TIM6, 1, GetMCUClockTree()); // usec countdown
-  gMIO.Timer = &Timer;
+  NewTimer(&Timer6, TIM6);
+  SetTimerTimings(&Timer6, 4, GetMCUClockTree());
+  ConfigureTimer(&Timer6);
+  gMIO.Timer = &Timer6;
   gMIO.Cn = 0; // use Countdown[0]
-  
-  NewI2C_MasterIO(&gMIO);
+
+  NewI2C_MasterIO_SDA_SCL(&gMIO, NewIO_Pin(&MIO_SDA,PH7), NewIO_Pin(&MIO_SCL,PH8) );
   SetI2C_MasterIO_Timings(&gMIO, 400*1000, GetMCUClockTree() );
-  
+
+  ConfigureI2C_MasterIO(&gMIO);
+  EnableI2C_MasterIO(&gMIO);
   // all zero: no action
   NVIC_TimersEnable(ENABLE);
 
   //===============
   StuffsArtery_t* P = &mySequence; // program
-  NewSA(P, (u32)&List[0], countof(List));  
-  gMIO.SA = P;
+  gMIO.SA = NewSA(P, (u32)&List[0], countof(List));  
   
   while(1) {  
     

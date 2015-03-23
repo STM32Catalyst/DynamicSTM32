@@ -2,8 +2,6 @@
 #ifndef _SPI_MASTER_IO_H_
 #define _SPI_MASTER_IO_H_
 
-
-
 void SPIIO_Test(void);
 
 void SPIIO_SendByte(u8 byte);
@@ -12,11 +10,8 @@ u8 SPIIO_Dummy(void);
 void SPIIO_Start(void);
 void SPIIO_Stop(void);
 
-
-
 void SPIIO_SetDelay(u8 delay);
 u8 SPIIO_GetDelay(void);
-
 
 //===============================-------------------------------------------->
 
@@ -51,9 +46,10 @@ typedef struct {
 } SPI_MasterIO_t;
 
 
-
-void NewSPI_MasterIO_RX_TX(SPI_MasterIO_t* M);
+void NewSPI_MasterIO(SPI_MasterIO_t* M, IO_Pin_t* MISO, IO_Pin_t* MOSI, IO_Pin_t* SCK, IO_Pin_t* NSS0); // this will be the first NSS[0]
 u32 SetSPI_MasterIO_Timings(SPI_MasterIO_t* M, u32 MaxBps, u32 CPol, u32 CPha, u32 FirstBit, MCUClocks_t* T ); // 1200000, SPI_CPOL_Low, SPI_CPHA_1Edge, SPI_FirstBit_MSB
+void ConfigureSPI_MasterIO(SPI_MasterIO_t* M);
+void EnableSPI_MasterIO(SPI_MasterIO_t* M);
 
 // Available SPI Functions For Sequencer use
 u32 sq_SPI_MIO_StartJob(u32 u); // SPI_MasterHW* and bitmask for NSS to go low

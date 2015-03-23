@@ -13,57 +13,19 @@ u32 TimerCountdownWait(u32 u);
 u32 NopsWait(u32 u);
 u32 WaitHere(u32 u, u32 delay);
 
-void NewSPI_MasterIO_RX_TX(SPI_MasterIO_t* M) {
+void NewSPI_MasterIO(SPI_MasterIO_t* M, IO_Pin_t* MISO, IO_Pin_t* MOSI, IO_Pin_t* SCK, IO_Pin_t* NSS0) {
 
-  u8 n; // NSSs sweep
+  if((MOSI==0)&&(MISO==0)) while(1);// MOSI must be MISO to work in this bidir only implementation
+  
 // we have to initialize the state machine first
-  
-  // configure the GPIOs
-//  if(M->MOSI!=M->MISO) while(1); // MOSI must be MISO to work in this bidir only implementation
-  if((M->MOSI==0)&&(M->MISO==0)) while(1);
-  
-  if((M->MISO)&&(M->MOSI!=M->MISO)) { // If MISO=MOSI then we don't configure the input pin
-    // configure MISO pin
-    IO_PinClockEnable(M->MISO);
-    IO_PinSetHigh(M->MISO);  
-    IO_PinSetInput(M->MISO);  
-    IO_PinEnablePullUpDown(M->MISO, ENABLE, DISABLE);
-    IO_PinEnableHighDrive(M->MISO, ENABLE);
-  };
- 
-  // configure MOSI pin
-  if(M->MOSI) {
-    IO_PinClockEnable(M->MOSI);
-    IO_PinSetHigh(M->MOSI);
-    IO_PinSetOutput(M->MOSI);  
-    IO_PinEnablePullUpDown(M->MOSI, ENABLE, DISABLE);
-    IO_PinEnableHighDrive(M->MOSI, ENABLE);
-  };
-  
-  // configure SCK pin
-  IO_PinClockEnable(M->SCK);
-  IO_PinSetHigh(M->SCK);
-  IO_PinSetOutput(M->SCK);  
-  IO_PinEnablePullUpDown(M->SCK, ENABLE, DISABLE);
-  IO_PinEnableHighDrive(M->SCK, ENABLE);
-  
-  // configure all the NSSs pins
-  for(n=0;n<16;n++) {
-    if(M->NSSs[n]==0) break;
-    IO_PinClockEnable(M->NSSs[n]);
-    IO_PinSetHigh(M->NSSs[n]);    
-    IO_PinSetOutput(M->NSSs[n]);  
-    IO_PinEnablePullUpDown(M->NSSs[n], ENABLE, DISABLE);
-    IO_PinEnableHighDrive(M->NSSs[n], ENABLE); // push pull enabled
-  };
-  
-  // We need to initialize the hooks for DMA_RX...
-//  HookIRQ_PPP((u32)S->DMA_RX->Stream, (u32)JobToDo, (u32)S->SA); // From DMA Stream, place the hooks
+  M->MISO = MISO;
+  M->MOSI = MOSI;
+  M->SCK = SCK;
+  M->NSSs[0] = NSS0;
 }
 
 u32 SetSPI_MasterIO_Timings(SPI_MasterIO_t* M, u32 MaxBps, u32 CPol, u32 CPha, u32 FirstBit, MCUClocks_t* T ) { // 1200000, SPI_CPOL_Low, SPI_CPHA_1Edge, SPI_FirstBit_MSB
 
-  u8 n;
   if(CPol!=SPI_CPOL_Low) while(1); // not supported yet
   if(CPha!=SPI_CPHA_1Edge) while(1); // not supported yet
   
@@ -71,15 +33,6 @@ u32 SetSPI_MasterIO_Timings(SPI_MasterIO_t* M, u32 MaxBps, u32 CPol, u32 CPha, u
   u32 HalfClockPeriod_us;
   
   M->MaxBps = MaxBps; // 400khz
-
-  IO_PinSetSpeedMHz(M->MISO, 1);  
-  IO_PinSetSpeedMHz(M->MOSI, 1);
-  IO_PinSetSpeedMHz(M->SCK, 1);
-  
-  for(n=0;n<16;n++) {
-    if(M->NSSs[n]==0) break;
-    IO_PinSetSpeedMHz(M->NSSs[n], 1);  
-  };
 
   HalfClockPeriod_Hz = MaxBps*2; // Timers runs at 1MHz max overflow speed. 500kHz = 2us
   
@@ -103,6 +56,53 @@ u32 SetSPI_MasterIO_Timings(SPI_MasterIO_t* M, u32 MaxBps, u32 CPol, u32 CPha, u
   M->WaitParam = HalfClockPeriod_us;
   
   return 0;
+}
+
+static void SetPinInput(IO_Pin_t* P) {
+
+  IO_PinClockEnable(P);
+  IO_PinSetSpeedMHz(P, 1);  
+  IO_PinSetHigh(P);  
+  IO_PinSetInput(P);  
+  IO_PinEnablePullUpDown(P, ENABLE, DISABLE);
+  IO_PinEnableHighDrive(P, ENABLE);
+}
+
+static void SetPinOutput(IO_Pin_t* P) {
+
+  IO_PinClockEnable(P);
+  IO_PinSetSpeedMHz(P, 1);
+  IO_PinSetHigh(P);
+  IO_PinSetOutput(P);  
+  IO_PinEnablePullUpDown(P, ENABLE, DISABLE);
+  IO_PinEnableHighDrive(P, ENABLE);
+}
+
+void ConfigureSPI_MasterIO(SPI_MasterIO_t* M) {
+
+  u8 n;
+  // configure the GPIOs
+  if((M->MISO)&&(M->MOSI!=M->MISO)) // If MISO=MOSI then we don't configure the input pin
+    // configure MISO pin
+    SetPinInput(M->MISO);
+ 
+  // configure MOSI pin
+  if(M->MOSI)
+    SetPinOutput(M->MOSI);
+  
+  // configure SCK pin
+  SetPinOutput(M->SCK);
+  
+  // configure all the NSSs pins
+  for(n=0;n<16;n++)
+    if(M->NSSs[n])
+      SetPinOutput(M->NSSs[n]);
+  
+}
+
+void EnableSPI_MasterIO(SPI_MasterIO_t* M) {
+  
+  // nothing to do
 }
 
 

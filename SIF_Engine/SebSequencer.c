@@ -27,7 +27,7 @@ u32 JobToDo(u32 u) { // this can be called by others OR by the DMA interrupt of 
 }
 
 
-// For sequences not using interrups (bitbanging I2C/SPI), call directly JobToDo (no return)  
+// For sequences using interrupts (bitbanging I2C/SPI), call directly JobToDo (no return)  (that the sequence is non blocking)
 u32 StartJobToDoInBackground(u32 u) { // this can be called by others OR by the DMA interrupt of this SPI
 
   StuffsArtery_t* SA = (StuffsArtery_t*) u;
@@ -36,16 +36,17 @@ u32 StartJobToDoInBackground(u32 u) { // this can be called by others OR by the 
   if(SA->bCount==0) while(1);
   SA->FlagEmptied = 0;
   
-  u32 Primask = __get_PRIMASK(); // get current primask (in the future, it should be to raise the priority to be the same as the IRQ handlers dealing with this sequence... to look like an interrupt
-  
-  __set_PRIMASK(Primask | 1); // if we don't do this, the function won't be over that an interrupt will also call it.... messing the bCount and the FIFO. Non blocking though, prevents useless stack depth
+//  u32 Primask = __get_PRIMASK(); // get current primask (in the future, it should be to raise the priority to be the same as the IRQ handlers dealing with this sequence... to look like an interrupt
+  __disable_irq(); // better is to set to the IRQ level 1 (level 0 being other higher priority normal functions like USB)
+//  __set_PRIMASK(Primask | 1); // if we don't do this, the function won't be over that an interrupt will also call it.... messing the bCount and the FIFO. Non blocking though, prevents useless stack depth
   JobToDo(u);
-  __set_PRIMASK(Primask);
+//  __set_PRIMASK(Primask);
+  __enable_irq();
   
   return 0;
 }
   
-// For sequences not using interrups (bitbanging I2C/SPI), call directly JobToDo (no return)  
+// For sequences not using interrupts (bitbanging I2C/SPI), call directly JobToDo (no return)  (that the function is blocking, leave the other unrelated interrupts going)
 u32 StartJobToDoInForeground(u32 u) { // this can be called by others OR by the DMA interrupt of this SPI
 
   StuffsArtery_t* SA = (StuffsArtery_t*) u;

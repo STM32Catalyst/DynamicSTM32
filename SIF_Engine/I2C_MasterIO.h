@@ -38,8 +38,10 @@ typedef struct {
 } I2C_MasterIO_t;
 
 
-u32 NewI2C_MasterIO(I2C_MasterIO_t* MIO);
+u32 NewI2C_MasterIO_SDA_SCL(I2C_MasterIO_t* M, IO_Pin_t* SDA, IO_Pin_t* SCL);
 u32 SetI2C_MasterIO_Timings( I2C_MasterIO_t* M, u32 MaxBps, MCUClocks_t* T);
+u32 ConfigureI2C_MasterIO(I2C_MasterIO_t* M);
+u32 EnableI2C_MasterIO(I2C_MasterIO_t* M);
 
 u32 sq_I2C_MIO_StartJob(u32 u);
 u32 sq_I2C_MIO_StopJob(u32 u);

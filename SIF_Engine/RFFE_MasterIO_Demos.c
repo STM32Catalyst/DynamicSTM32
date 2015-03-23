@@ -71,18 +71,18 @@ void RFFE_Test(void) {
   
   MCUInitClocks();
   
-  myRFFE.SDATA = NewIO_Pin(&RFFE_SDATA, PI6);
-  myRFFE.SCLK = NewIO_Pin(&RFFE_SCLK, PI5);
-
   StuffsArtery_t* P = &mySequenceRFFE; // program
-  NewSA(P, (u32)&RFFE_List[0], countof(RFFE_List));
-  myRFFE.SA = P;
+  myRFFE.SA = NewSA(P, (u32)&RFFE_List[0], countof(RFFE_List));
   
-//  NewTimer_us(&Timer, TIM6, 1, GetMCUClockTree()); // usec countdown
+//  NewTimer(&Timer, TIM6);
+//  SetTimerTimings(&Timer, 1, GetMCUClockTree());
+//  ConfigureTimer(&Timer);
 //  myRFFE.Timer = &Timer;
   
-  NewRFFE_MasterIO_RX_TX(&myRFFE); // this will configure the IO pins too.
+  NewRFFE_MasterIO_RX_TX_SCLK_SDATA(&myRFFE, NewIO_Pin(&RFFE_SCLK,PI5), NewIO_Pin(&RFFE_SDATA,PI6)); // this will configure the IO pins too.
   SetRFFE_MasterIO_Timings(&myRFFE, 26000000, GetMCUClockTree() ); // RFFE max clock speed is 26Mhz
+  ConfigureRFFE_MasterIO(&myRFFE);
+  EnableRFFE_MasterIO(&myRFFE);
   
   // Now we create a sequence to try on RFFE...
   

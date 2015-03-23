@@ -173,25 +173,31 @@ u32 sq_EXTI_Interrupt(u32 u) { // (n, fn, ct); n can be the pin name this is onl
 //===============================================
 // Resource overbooking sanity check
 
-u8 BookedEXTI[16];
+static u8 EXTI_Used[16];
+static u16 EXTI_PinName[16];
 
 void BookEXTI(u32 PinName) {
   
+  u8 PinPos = PinName % 16;
   if(PinName>MAX_PACKAGE_PIN)
     while(1); // not possible
 
-  if(BookedEXTI[PinName % 16]!=0)
-    while(1); // this EXTI is already used
-  
-  BookedEXTI[PinName % 16] = PinName>>4; // which GPIO is used for this EXTI
+  if(EXTI_Used[PinPos])
+   if(EXTI_PinName[PinPos]==PinName)
+     return; // already properly configured
+   else
+     while(1); // can't reassign the EXTI channel to a different pin No double booking without freeing the pin first
+    
+  EXTI_Used[PinPos] = 1;
+  EXTI_PinName[PinPos] = PinName;
 }
 
-void FreeEXTI(u32 PinName) {
+void FreeEXTI(u32 PinName) { // not implemented yet
   
   if(PinName>MAX_PACKAGE_PIN)
     while(1); // not possible
 
-  BookedEXTI[PinName % 16] = 0; // which GPIO is used for this EXTI  
+  //GPIOxEXTI[PinName % 16] = 0; // which GPIO is used for this EXTI  
 }
 
 //================================================

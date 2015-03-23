@@ -1,7 +1,7 @@
 
 #include "SebEngine.h"
 
-// Seb ADC Demos here
+
 
 //==================== Build a demonstration code for various modes
 u32 ADC_NormalCompleted(u32 u) {
@@ -60,7 +60,7 @@ void ADC_Demo(void) {
   NewADC_NormalChannel(Adc1, NewIO_Pin(&myPA4, PA4), 100); 
   UseADC_NormalTrigger(Adc1, NewIO_Pin(&myPH11, PH11), 0);
   SetADC_Waveform(Adc1, (u32)ADC1_Wave, countof(ADC1_Wave));
-  SetADC_Threshold_Pin_Min_Max_mV(Adc1, &myPA4, 1000, 2500);
+  SetADC_OOR_Pin_Min_Max_mV(Adc1, &myPA4, 1000, 2500);
   
   NewADC_InjectedChannelInternal(Adc1, ADC_Temp);  
   NewADC_InjectedChannelInternal(Adc1, ADC_VRef);
@@ -68,12 +68,12 @@ void ADC_Demo(void) {
   // Set ADC2
   NewADC(Adc2, ADC2, 3300, GetMCUClockTree() );  
   NewADC_NormalChannel(Adc2, NewIO_Pin(&myPC1, PC1), 40);
-  UseADC_NormalTrigger(Adc2, 0, ADC_ExternalTrigConv_Ext_IT11); // won't rebook the pin
+  UseADC_NormalTrigger(Adc2, NewIO_Pin(&myPH11, PH11), 0);
   SetADC_Waveform(Adc2, (u32)ADC2_Wave, countof(ADC2_Wave));
   
   // Set ADC3
   NewADC(Adc3, ADC3, 3300, GetMCUClockTree() );
-  UseADC_NormalTrigger(Adc3, 0, ADC_ExternalTrigConv_Ext_IT11); // won't rebook the pin 
+  UseADC_NormalTrigger(Adc3, NewIO_Pin(&myPH11, PH11), 0);
   UseADC_InjectedTrigger(Adc3, NewIO_Pin(&myPH15, PH15), 0);  
   NewADC_NormalChannel(Adc3, NewIO_Pin(&myPA0, PA0), 4); 
   NewADC_NormalChannel(Adc3, NewIO_Pin(&myPA1, PA1), 4); 

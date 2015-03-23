@@ -36,42 +36,20 @@ static u32 RS232_UARTs_IRQHandler(u32 u) {
 // In the RX Interrupt, if we have to provide a data byte to TX and the FIFO is empty, no choice: We have to disable the TX interrupt.
 // We will tell the FIFO to reenable the interrupt as soon as the FIFO is no longer empty.
 
-void NewRs232HW(Rs232_t* RS, USART_TypeDef* USART) {
+void NewRs232HW(Rs232_t* RS, USART_TypeDef* USART, IO_Pin_t* RX, IO_Pin_t* TX) {
 
   // first, we have to enable the GPIO and Clock of the peripheral (for now done already for all)
   RCC_APB2PeriphClockCmd(RCC_APB2Periph_USART1, ENABLE);// enable the peripheral clock
   
   RS->USART=USART;
+  RS->RX = RX;
+  RS->TX = TX;
   
 //  Hook_Rs232_IRQ_fn_ct(RS, (u32)RS232_UARTs_IRQHandler, (u32)RS);// we assume handlers are in flash or already loaded
   HookIRQ_PPP((u32)USART, (u32)RS232_UARTs_IRQHandler, (u32)RS); // to check if it works well.
-  
-  // second, we initialize the IO pins when they exist
-  // configure the GPIOs
-  // configure RX pin
-  if(RS->RX) {
-    NewIO_Pin(RS->RX, RS->RX->Name ); // Initialize some quick pointers
-    IO_PinClockEnable(RS->RX);
-    IO_PinSetInput(RS->RX);
-    IO_PinSetLow(RS->RX);
-    IO_PinEnablePullUpDown(RS->RX, ENABLE, DISABLE);
-    IO_PinEnableHighDrive(RS->RX, ENABLE);
-    IO_PinConfiguredAs(RS->RX,GPIO_AF_USART1); // to change later! based on pin name
-  }
-
-  if(RS->TX) {
-    NewIO_Pin(RS->TX, RS->TX->Name  ); // Initialize some quick pointers    
-    IO_PinClockEnable(RS->TX);
-    IO_PinSetLow(RS->TX);
-    IO_PinSetOutput(RS->TX);    
-    IO_PinEnablePullUpDown(RS->TX, ENABLE, DISABLE);
-    IO_PinEnableHighDrive(RS->TX, ENABLE);
-    IO_PinConfiguredAs(RS->TX,GPIO_AF_USART1); // to change later! based on pin name
-  }
  
   RS->Print.fnPutChar = (u32) RS232_putchar;
   RS->Print.ctPutChar = (u32) RS;
-  
 }
 
 
@@ -86,24 +64,43 @@ void SetRs232Timings(Rs232_t* RS, u32 BaudRate, u32 Parity2, u32 StopBits){ // T
         - Hardware flow control disabled (RTS and CTS signals)
         - Receive and transmit enabled
   */
-  
-  IO_PinSetSpeedMHz(RS->RX, 1);
-  IO_PinSetSpeedMHz(RS->TX, 1);
     
-  USART_InitTypeDef USART_InitStructure;
-  USART_InitStructure.USART_BaudRate = 115200;
-  USART_InitStructure.USART_WordLength = USART_WordLength_9b;
-  USART_InitStructure.USART_StopBits = USART_StopBits_1;
-  USART_InitStructure.USART_Parity = USART_Parity_Even;
-  USART_InitStructure.USART_HardwareFlowControl = USART_HardwareFlowControl_None;
-  USART_InitStructure.USART_Mode = USART_Mode_Rx | USART_Mode_Tx;
-  
-  USART_Init(RS->USART, &USART_InitStructure);
-  USART_Cmd(RS->USART, ENABLE); // The HW is ready, later we can enable interrupts to kick real transit of data
+  USART_InitTypeDef UI;
+  UI.USART_BaudRate = 115200;
+  UI.USART_WordLength = USART_WordLength_9b;
+  UI.USART_StopBits = USART_StopBits_1;
+  UI.USART_Parity = USART_Parity_Even;
+  UI.USART_HardwareFlowControl = USART_HardwareFlowControl_None;
+  UI.USART_Mode = USART_Mode_Rx | USART_Mode_Tx;
+  USART_Init(RS->USART, &UI);
+}
+
+void ConfigureRs232HW(Rs232_t* R) {
+
+  // second, we initialize the IO pins when they exist
+  // configure the GPIOs
+  // configure RX pin
+  if(R->RX) {
+    ConfigurePinAsInputTrigger(R->RX);
+    IO_PinConfiguredAs(R->RX, GetPinAF(R->RX->Name, (u32) R->USART)); // to check it works //IO_PinConfiguredAs(RS->RX,GPIO_AF_USART1); // to change later! based on pin name
+  }
+
+  if(R->TX) {
+    ConfigurePinAsPushPullOutputPU(R->TX);
+    IO_PinConfiguredAs(R->TX, GetPinAF(R->TX->Name, (u32) R->USART)); // to check it works//IO_PinConfiguredAs(RS->TX,GPIO_AF_USART1); // to change later! based on pin name
+  }
+
+}
+
+void EnableRs232HW(Rs232_t* R) {
+
+  USART_Cmd(R->USART, ENABLE); // The HW is ready, later we can enable interrupts to kick real transit of data
   
   // we can enable the RX interrupt assuming that the BV_RX is already setup
-  RS->USART->CR1 |= USART_IT_RXNE;
+  R->USART->CR1 |= USART_IT_RXNE;
 }
+
+
 
 void NVIC_Rs232sEnable(FunctionalState Enable) {
   // all the interrupt handlers exist and clear flags by default

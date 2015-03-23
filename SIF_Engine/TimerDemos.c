@@ -44,8 +44,12 @@ static u32 ToggleLED4(u32 u) {
 static Timer_t Timer1, Timer2, Timer3, Timer4, Timer5, Timer6, Timer7, Timer8, Timer9, Timer10, Timer11, Timer12, Timer13, Timer14;
 
 void Timer_T1_T2_Test(void) { // ...
-  NewTimer_us(&Timer1, TIM1, 1000, GetMCUClockTree());// 1ms tick period
-  NewTimer_us(&Timer2, TIM2, 10, GetMCUClockTree());// 10us period
+  NewTimer(&Timer1, TIM1);
+  NewTimer(&Timer2, TIM2);
+  SetTimerTimings(&Timer1, 1000, GetMCUClockTree());
+  SetTimerTimings(&Timer2, 10, GetMCUClockTree());
+  ConfigureTimer(&Timer1);
+  ConfigureTimer(&Timer2);
   EnableFreeRunTimer(&Timer1);
   EnableFreeRunTimer(&Timer2);
   NVIC_TimersEnable(ENABLE);
@@ -63,8 +67,12 @@ void Timer_T1_T2_Test(void) { // ...
 }
 
 void Timer_T3_T4_Test(void) { // basic timers
-  NewTimer_us(&Timer3, TIM3, 1000, GetMCUClockTree());// 1ms tick period
-  NewTimer_us(&Timer4, TIM4, 10, GetMCUClockTree());// 10us period
+  NewTimer(&Timer3, TIM3);
+  SetTimerTimings(&Timer3, 1000, GetMCUClockTree());
+  ConfigureTimer(&Timer3);
+  NewTimer(&Timer4, TIM4);
+  SetTimerTimings(&Timer4, 10, GetMCUClockTree());
+  ConfigureTimer(&Timer4);
   EnableFreeRunTimer(&Timer3);
   EnableFreeRunTimer(&Timer4);
   NVIC_TimersEnable(ENABLE);
@@ -82,8 +90,12 @@ void Timer_T3_T4_Test(void) { // basic timers
 }
 
 void Timer_T5_T6_Test(void) { // basic timers
-  NewTimer_us(&Timer5, TIM5, 1000, GetMCUClockTree());// 1ms tick period
-  NewTimer_us(&Timer6, TIM6, 10, GetMCUClockTree());// 10us period
+  NewTimer(&Timer5, TIM5);
+  SetTimerTimings(&Timer5, 1000, GetMCUClockTree());
+  ConfigureTimer(&Timer5);
+  NewTimer(&Timer6, TIM6);
+  SetTimerTimings(&Timer6, 10, GetMCUClockTree());
+  ConfigureTimer(&Timer6);
   EnableFreeRunTimer(&Timer5);
   EnableFreeRunTimer(&Timer6);
   NVIC_TimersEnable(ENABLE);
@@ -101,8 +113,12 @@ void Timer_T5_T6_Test(void) { // basic timers
 }
 
 void Timer_T7_T8_Test(void) { // basic timers
-  NewTimer_us(&Timer7, TIM7, 1000, GetMCUClockTree());// 1ms tick period
-  NewTimer_us(&Timer8, TIM8, 10, GetMCUClockTree());// 10us period
+  NewTimer(&Timer7, TIM7);
+  SetTimerTimings(&Timer7, 1000, GetMCUClockTree());
+  ConfigureTimer(&Timer7);
+  NewTimer(&Timer8, TIM8);
+  SetTimerTimings(&Timer8, 10, GetMCUClockTree());
+  ConfigureTimer(&Timer8);
   EnableFreeRunTimer(&Timer7);
   EnableFreeRunTimer(&Timer8);
   NVIC_TimersEnable(ENABLE);
@@ -120,8 +136,12 @@ void Timer_T7_T8_Test(void) { // basic timers
 }
 
 void Timer_T9_T10_Test(void) { // T9.2, T10.1
-  NewTimer_us(&Timer9, TIM9, 1000, GetMCUClockTree());// 1ms tick period
-  NewTimer_us(&Timer10, TIM10, 10, GetMCUClockTree());// 10us period
+  NewTimer(&Timer9, TIM9);
+  SetTimerTimings(&Timer9, 1000, GetMCUClockTree());
+  ConfigureTimer(&Timer9);
+  NewTimer(&Timer10, TIM10);
+  SetTimerTimings(&Timer10, 10, GetMCUClockTree());
+  ConfigureTimer(&Timer10);
   EnableFreeRunTimer(&Timer9);
   EnableFreeRunTimer(&Timer10);
   NVIC_TimersEnable(ENABLE);
@@ -138,8 +158,12 @@ void Timer_T9_T10_Test(void) { // T9.2, T10.1
 }
 
 void Timer_T11_T12_Test(void) { // T11.1 T12.2
-  NewTimer_us(&Timer11, TIM11, 1000, GetMCUClockTree());// 1ms tick period
-  NewTimer_us(&Timer12, TIM12, 10, GetMCUClockTree());// 10us period
+  NewTimer(&Timer11, TIM11);
+  SetTimerTimings(&Timer11, 1000, GetMCUClockTree());
+  ConfigureTimer(&Timer11);
+  NewTimer(&Timer12, TIM12);
+  SetTimerTimings(&Timer12, 10, GetMCUClockTree());
+  ConfigureTimer(&Timer12);
   EnableFreeRunTimer(&Timer11);
   EnableFreeRunTimer(&Timer12);
   NVIC_TimersEnable(ENABLE);
@@ -156,8 +180,12 @@ void Timer_T11_T12_Test(void) { // T11.1 T12.2
 }
 
 void Timer_T13_T14_Test(void) { // T13.1 T14.1
-  NewTimer_us(&Timer13, TIM13, 1000, GetMCUClockTree());// 1ms tick period
-  NewTimer_us(&Timer14, TIM14, 10, GetMCUClockTree());// 10us period
+  NewTimer(&Timer13, TIM13);
+  SetTimerTimings(&Timer13, 1000, GetMCUClockTree());
+  ConfigureTimer(&Timer13);
+  NewTimer(&Timer14, TIM14);
+  SetTimerTimings(&Timer14, 10, GetMCUClockTree());
+  ConfigureTimer(&Timer14);
   EnableFreeRunTimer(&Timer13);
   EnableFreeRunTimer(&Timer14);
   NVIC_TimersEnable(ENABLE);
@@ -208,7 +236,9 @@ void Timer_IC_OC_PWM_Test(void) {
   
   //=========== TIMER 3 related
   // Configure the corresponding pins
-  NewTimer_us(&Timer3, TIM3, 10000, GetMCUClockTree());// 0.01s overflow tick period
+  NewTimer(&Timer3, TIM3);
+  SetTimerTimings(&Timer3, 10000, GetMCUClockTree());
+  ConfigureTimer(&Timer3);
   
   // We will later give simple function to configure the capture and the timer behavious
   // For now all input capture are rising edge, no prescale, no filter, pin to channel, no special.
@@ -232,7 +262,9 @@ void Timer_IC_OC_PWM_Test(void) {
   EnableTimerCC_Interrupt((u32)&Timer3, 2, DISABLE);
 
   //========== TIMER 5 related
-  NewTimer_us(&Timer5, TIM5, 1000000, GetMCUClockTree());// 1s overflow tick period
+  NewTimer(&Timer5, TIM5);
+  SetTimerTimings(&Timer5, 1000000, GetMCUClockTree());
+  ConfigureTimer(&Timer5);
 
   SetTimerInputCC((u32)&Timer5, 1, NewIO_Pin(&T5c1_PH10, PH10), ENABLE);
   SetTimerInputCC((u32)&Timer5, 2, NewIO_Pin(&T5c2_PH11, PH11), ENABLE);

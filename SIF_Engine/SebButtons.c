@@ -1,68 +1,6 @@
 
 #include "SebEngine.h"
 #include "SebButtons.h"
-#if 0
-void UpdateKeyInformation (u8 Ch)
-{
-	KBD[Ch].bKeyLast = KBD[Ch].bCurKey;
-
-	KBD[Ch].bCurKey  = ScanKeyboard(Ch);
-	
-	// key is pressed
-	if(KBD[Ch].bCurKey != KBD[Ch].bKeyLast) 
-	{	// it is the same key as before
-		KBD[Ch].bKeyEvent	= NO_KEY_EVENT;// (KBD[Ch].wKeyTime<DebounceTime)?NO_KEY_EVENT:KEY_RELEASED;
-		KBD[Ch].bKeyCode 	= NO_KEY;//KBD[Ch].bKeyLast; 
-		KBD[Ch].wKeyTime	= 0;	// restart from scratch 
-		return;
-	}
-
-	// increment the time it has been pressed (up to the max)
-	if(KBD[Ch].wKeyTime<0xFFFF)
-		KBD[Ch].wKeyTime++;	
-
-	// Check if it has reached the debouncing delay
-	if(KBD[Ch].wKeyTime==KEY_DEBOUNCE_TIME) 
-	{
-		KBD[Ch].bKeyEvent	= KEY_PRESSED;
-		KBD[Ch].bKeyCode	= KBD[Ch].bKeyLast;//=KeyCur
-		KBD[Ch].bKeyRepeat_Countdown = KEY_REPEAT_START_DELAY;
-		return;
-	}
-
-	// check for hot key (time key)
-	if(KBD[Ch].wKeyTime==HOT_KEY_TIME) 
-	{
-		KBD[Ch].bKeyEvent	= HOT_KEY;
-		KBD[Ch].bKeyCode	= KBD[Ch].bKeyLast;//=KeyCur
-		return;
-	}
-
-	// Key repeat events using countdown (can't use _32msec: key repeat will stop after 4 seconds = 0xFF)
-	if(KBD[Ch].bKeyRepeat_Countdown) 
-	{
-          KBD[Ch].bKeyRepeat_Countdown--;
-
-          if(KBD[Ch].bKeyRepeat_Countdown==0) 
-          {	// repeat event reached
-            KBD[Ch].bKeyEvent	= KEY_REPEATED;
-            KBD[Ch].bKeyCode	= KBD[Ch].bKeyLast;//=KeyCur
-          // prepare for next repeat
-            if(KBD[Ch].wKeyTime<KEY_REPEAT_SLOW_DURATION) 	// if key pressed for less than 200x16ms = 2.6 sec			
-              KBD[Ch].bKeyRepeat_Countdown = KEY_REPEAT_SLOW_INTERVAL;
-            else
-              KBD[Ch].bKeyRepeat_Countdown = KEY_REPEAT_FAST_INTERVAL;
-
-            return;
-          }
-
-	}
-
-	// no caught event for now if we land here
-	KBD[Ch].bKeyEvent	= NO_KEY_EVENT;
-}
-#endif
-
 
 u32 KeysProcessInformation (Buttons_t* K)
 {
@@ -228,32 +166,6 @@ u32 InitButtons (Buttons_t* K)
   return 0;
 }
 
-               
-                 
-#if 0 // analog keyboard to be reactivated later as no HW available now.                 
-///=======================================
-// ADC Analog keyboard (to reactivate later)
-//### Additionnal FAE Functions for readability
-u8 IsADCMeasurementNear (u8 ADCValue, u8 KeyLevel, u8 Tolerance)
-{
-  u8 min,max;
-
-  if(KeyLevel<Tolerance)
-    min = 0; // unsigned range, down clipping to 0
-  else
-    min = KeyLevel - Tolerance;
-
-  if(KeyLevel>(0xFF-Tolerance))
-    max = 0xFF; // up clipping to 0xFF
-  else
-    max = KeyLevel + Tolerance;
-
-  if ( (ADCValue >= min ) && (ADCValue <= max) ) // check the range
-    return TRUE;
-
-   return FALSE;
-}
-#endif
     
 // This is to test the keyboard (digital input mode for now)
 

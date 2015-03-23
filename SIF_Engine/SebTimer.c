@@ -6,7 +6,7 @@
 static void TimerOutputCC_SetDMA(Timer_t* Timer, u32 n);
 static DMA_StreamChannelInfo_t* Get_TimerDMA_InfoByPPP_n(u32 PPP, u32 n, u32 Direction);
 
-static TimerRelatedSignals_t* FindBySignal(Signal_t Signal);
+static TimerRelatedSignals_t* FindBySignal(SignalName_t Signal);
 static TimerRelatedSignals_t* FindByTIM_n(TIM_TypeDef* TIMx, u8 n );
 // This is the 16 bit 4 channels timer, TIM3 and TIM4 only timers are 16 bit 4 channels timers on STM32F437
 // This also support the 16 bit 2 channels timers TIM9&12 (2ch), TIM10&11&13&14 (1ch), basic timers 6&7
@@ -155,25 +155,27 @@ static u32 Timer_CountDownModeIRQHandler(u32 u) {
   return 0;
 }
 
-void NewTimer_us(Timer_t* Timer, TIM_TypeDef* T, u32 Period_us, MCUClocks_t * Tree) {// if Period_us = 0, disable the timer
+void NewTimer(Timer_t* Timer, TIM_TypeDef* T/*, u32 Period_us, MCUClocks_t * Tree*/) {// if Period_us = 0, disable the timer
 
   // the structure should be edited by caller and only the specifics done here.
+#if 0  
   MCU_NodeDependency_t* I = GetSignal2InfoBy_PPP((u32)T);
-          
+
   if(I->fnClk == RCC_APB1PeriphClockCmd)
     Timer->FeedClockHz = (Tree->APB1Clk_Hz * 2); // Timers have double the clock speed of APB
   else
     Timer->FeedClockHz = (Tree->APB2Clk_Hz * 2); // Timers have double the clock speed of APB
-    
+  
   u32 cy,psc,arr;
   if(Period_us==0) while(1); // invalid choice
 
   if(Timer->OverflowPeriod_us)
     while(1); // already booked! Free the timer first before reusing it!
-  
+#endif  
   Timer->TIM = T;
+#if 0  
   Timer->OverflowPeriod_us = Period_us;
-
+#endif
   // Here we load the capability
   MCU_TimerCapabilities_t* C = MCU_GetMCU_TimerCapabilitiesByPPP((u32)T);
   Timer->Max = C->Max;
@@ -190,7 +192,7 @@ void NewTimer_us(Timer_t* Timer, TIM_TypeDef* T, u32 Period_us, MCUClocks_t * Tr
   if(C->SR_ValidFlags & TIM_FLAG_CC4)
     Timer->CCR[4] = (u32*) &Timer->TIM->CCR4;
   
-  
+#if 0  
   // we only need to guarantee the period in us with lowest timer clock for it
   cy = (Timer->FeedClockHz / 1000000) * Period_us; // if 1 us: r = 96 cycles at 96MHz (divide by 1000000?)
   // now let's cook the timer prescaler and autoreload values...
@@ -202,11 +204,11 @@ void NewTimer_us(Timer_t* Timer, TIM_TypeDef* T, u32 Period_us, MCUClocks_t * Tr
      arr = cy / (psc+1);
      if(psc>0xFFFF) while(1); // not possible, input clock too high or period too big
   }
-
+#endif
   ClockGateEnable_PPP((u32)T, ENABLE);
   
   HookIRQ_PPP((u32)T, (u32) Timer_CountDownModeIRQHandler, (u32) Timer);
-
+#if 0
   Timer->TIM->CR2 = 2<<4;// update event as trigger output
 
   Timer->TIM->PSC = psc; // This is the prescaler
@@ -214,6 +216,7 @@ void NewTimer_us(Timer_t* Timer, TIM_TypeDef* T, u32 Period_us, MCUClocks_t * Tr
   
   // We hook up the NVIC directly to the unique IRQ handler (scheme fixed)
   Timer->TIM->SR &= ~1; // clear the pending bit
+#endif  
 /* this will be done when a non zero countdown comes in  
   if(Period_us) { // Enable interrupt source
     Timer->TIM->DIER |= 0x0001; // Enable INT
@@ -225,7 +228,58 @@ void NewTimer_us(Timer_t* Timer, TIM_TypeDef* T, u32 Period_us, MCUClocks_t * Tr
   
 }
 
+
+u32 SetTimerTimings(Timer_t* Timer, u32 Period_us, MCUClocks_t* Tree ) {
+
+  // the structure should be edited by caller and only the specifics done here.
+  u32 Hz;
+
+  if(Period_us==0) while(1); // invalid choice
+
+  if(Timer->OverflowPeriod_us)
+    while(1); // already booked! Free the timer first before reusing it!
+          
+  MCU_NodeDependency_t* I = GetSignal2InfoBy_PPP((u32)Timer->TIM);
+
+  if(I->fnClk == RCC_APB1PeriphClockCmd)
+    Hz = (Tree->APB1Clk_Hz * 2); // Timers have double the clock speed of APB
+  else
+    Hz = (Tree->APB2Clk_Hz * 2); // Timers have double the clock speed of APB
+  
+  Timer->FeedClockHz = Hz;
     
+  u32 cy,psc,arr;
+  
+  Timer->OverflowPeriod_us = Period_us;
+  
+  // we only need to guarantee the period in us with lowest timer clock for it
+  cy = (Hz / 1000000) * Period_us; // if 1 us: r = 96 cycles at 96MHz (divide by 1000000?)
+  // now let's cook the timer prescaler and autoreload values...
+  psc = 0;
+  arr = cy;
+
+  while(arr>Timer->Max) { // in this scheme we want the lowest psc value (not best for power)
+     psc++;
+     arr = cy / (psc+1);
+     if(psc>0xFFFF) while(1); // not possible, input clock too high or period too big
+  }
+
+//==============
+  
+  Timer->TIM->CR2 = 2<<4;// update event as trigger output
+
+  Timer->TIM->PSC = psc; // This is the prescaler
+  Timer->TIM->ARR = arr; // The autoreload value
+  
+  // We hook up the NVIC directly to the unique IRQ handler (scheme fixed)
+  Timer->TIM->SR &= ~1; // clear the pending bit
+  
+}
+
+void ConfigureTimer(Timer_t* T) {
+  
+  // For timers, it is done during the Timings as it's time we play with
+}
 
 
 void HookTimerCountdown(Timer_t* Timer, u32 n, u32 fn, u32 ct) {
@@ -612,7 +666,7 @@ static TimerRelatedSignals_t TRS[] = {
 };
 
 
-static TimerRelatedSignals_t* FindBySignal(Signal_t Signal) {
+static TimerRelatedSignals_t* FindBySignal(SignalName_t Signal) {
 
   u32 i;
 
@@ -637,7 +691,7 @@ static TimerRelatedSignals_t* FindByTIM_n(TIM_TypeDef* TIMx, u8 n ) {
 // Now we need to find the channel and stream given the PPP and the index using the signal
 static DMA_StreamChannelInfo_t* Get_TimerDMA_InfoByPPP_n(u32 PPP, u32 n, u32 Direction) {
 
-  Signal_t Signal = FindByTIM_n((TIM_TypeDef*) PPP, n )->Signal;
+  SignalName_t Signal = FindByTIM_n((TIM_TypeDef*) PPP, n )->Signal;
   return Get_pStreamChannelForPPP_Signal((u32)PPP, Signal, Direction); // DMA_DIR_PeripheralToMemory | DMA_DIR_MemoryToPeripheral
 }
 

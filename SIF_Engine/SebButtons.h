@@ -89,7 +89,7 @@ u32 KeyHot(Buttons_t* K, u32 Key);
 u32 KeyReleased(Buttons_t* K, u32 Key);
 u32 KeysClearFlags(Buttons_t* K, u32 Key);
 u32 InitButton(Button_t* B);
-u32 InitButtons (Buttons_t* K);
+u32 InitButtons(Buttons_t* K);
 
 #endif
 

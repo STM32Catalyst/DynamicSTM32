@@ -82,6 +82,12 @@ typedef __IO uint8_t  vu8;
 //#define IS_FUNCTIONAL_STATE(STATE) (((STATE) == DISABLE) || ((STATE) == ENABLE))
 
 //typedef enum {ERROR = 0, SUCCESS = !ERROR} ErrorStatus;
+#define Absolute_Difference(x,y) (((x) < (y)) ? ((y) - (x)) : ((x) - (y)))
+#define ABS(x)                 ((x) < 0 ? -(x) : (x))
+#define CLAMP(x,min,max)       {if ((x) <= (min)) (x) = (min); else if ((x) >= (max)) (x) = (max);}
+#define min2(x,y)		(((x) < (y)) ? (x) : (y)) 
+#define max2(x,y)		(((x) > (y)) ? (x) : (y)) 
+
 #endif
 
 

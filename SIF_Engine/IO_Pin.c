@@ -14,8 +14,8 @@ GPIO_TypeDef* GPIOs[] = {
 
 IO_Pin_t* NewIO_Pin(IO_Pin_t* Pin, PinNameDef Name ) {
 
-  GPIO_TypeDef* GPIOx = GPIOs[Name>>4];
-  u8 PinPos = Name & 0xF;
+//  GPIO_TypeDef* GPIOx = GPIOs[Name>>4];
+//  u8 PinPos = Name & 0xF;
   if(Pin==0) while(1); // error
   Check_Pin(Pin->Name); // out of range check, cost time  
   
@@ -45,6 +45,7 @@ void IO_PinClearPR(IO_Pin_t* Pin) {
 void IO_PinClockEnable(IO_Pin_t* Pin) {
   
   BookPin(Pin->Name);
+  if(IsPinLocked(Pin->Name)) return; // already configured
   // we activate the clock of the corresponding GPIO port
   //ClearAndSetShiftedBits(RCC->AHB1ENR, 0, 1, (Pin->Name)>>4);
   RCC->AHB1ENR |= 1<<(Pin->Name>>4);
@@ -85,6 +86,8 @@ void IO_PinSetSpeedMHz(IO_Pin_t* Pin, u32 MHz) {
   // we can also take care of the output speed compensation
   u32 set = 0;
 
+  if(IsPinLocked(Pin->Name)) return; // already configured
+  
   if(MHz>=50)   {set = 3;} // 2 bits per speed
   else
     if(MHz>=25)     {set = 1;}
@@ -109,16 +112,18 @@ void IO_PinEnablePullUpDown(IO_Pin_t* Pin, FunctionalState UpEnable, FunctionalS
 
 void IO_PinEnableHighDrive(IO_Pin_t* Pin, FunctionalState Enable) {
   
+  if(IsPinLocked(Pin->Name)) return; // already configured
+  
   ClearAndSetShiftedBits(GPIOs[Pin->Name>>4]->OTYPER, 1, (Enable==DISABLE)?1:0, Pin->Name&0xF);  // 0 push pull, 1 open drain
 }
 
 
 // we should also catch if an alternate is already assigned to this pin, but all 16 values are valid...
-void IO_PinConfiguredAs(IO_Pin_t* Pin, u32 signal) {
- 
-  if(signal & 0xF0) // special mode
+void IO_PinConfiguredAs(IO_Pin_t* Pin, u32 AF) {
+
+  if(AF & 0xF0) // special mode
   {
-    switch(signal) { // this does not affect the alternate function value
+    switch(AF) { // this does not affect the alternate function value
       
     case GPIO_AF16_DIGITAL_INPUT:
 //        ClearAndSetShiftedBits(GPIOs[Pin->Name>>4]->MODER, 3, 0, (Pin->Name&0xF)*2);  // 00 = input, 01 = output, 10 = alternate, 11 = analog
@@ -143,12 +148,14 @@ void IO_PinConfiguredAs(IO_Pin_t* Pin, u32 signal) {
     
     return;
   }
+
+  if(IsPinLocked(Pin->Name)&&(AF!=Pin->AF)) while(1); // no you can't modify the AF as it's been already done by someone!
   
-  Pin->AF = signal;
+  Pin->AF = AF;
   // normal alternate function 0..15
 //  ClearAndSetShiftedBits(GPIOs[Pin->Name>>4]->AFR[(Pin->Name>>3)&1], 15, signal, (Pin->Name&0x7)*4);  // 32 bit = 8 pin x 4 bit field
 //  ClearAndSetShiftedBits(GPIOs[Pin->Name>>4]->MODER, 3, 2, (Pin->Name&0xF)*2);  // 00 = input, 01 = output, 10 = alternate, 11 = analog
-  ClearAndSetShiftedBits(Pin->GPIOx->AFR[(Pin->Name>>3)&1], 15, signal, (Pin->Name&0x7)*4);  // 32 bit = 8 pin x 4 bit field
+  ClearAndSetShiftedBits(Pin->GPIOx->AFR[(Pin->Name>>3)&1], 15, AF, (Pin->Name&0x7)*4);  // 32 bit = 8 pin x 4 bit field
   ClearAndSetShiftedBits(Pin->GPIOx->MODER, 3, 2, (Pin->Name&0xF)*2);  // 00 = input, 01 = output, 10 = alternate, 11 = analog
 }
 
@@ -158,15 +165,6 @@ void IO_PinConfiguredAs(IO_Pin_t* Pin, u32 signal) {
 // Let's create a list
 #include "alternates.h"
 
-typedef struct {
-  
-  u8 PinName;
-  u32 PPP_Base;
-  u32 Signal_Name;
-  u8 AF;
-  char* SignalName;
-  
-} PinAlternateDescription;
 
 //=========================------------------------> Here is a very long list which contains all
 #define SYS 254
@@ -174,7 +172,7 @@ typedef struct {
 //#define SDIO 256
 //#define ETH 257
 
-const PinAlternateDescription PAD[] = {
+const PinAlternateDescription_t PAD[] = {
 
 { PA0, (u32) TIM2, TIM2_CH1, 1, "TIM2_CH1" },
 { PA0, (u32) TIM2, TIM2_ETR, 1, "TIM2_ETR" },
@@ -243,7 +241,7 @@ const PinAlternateDescription PAD[] = {
 { PA7, (u32) ETH, ETH_RMII_CRS_DV, 11, "ETH_RMII_CRS_DV" },
 { PA7, (u32) SYS, EVENTOUT, 15, "EVENTOUT" },
 
-{ PA8, (u32) SYS, MCO1, 0, "MCO1" },
+{ PA8, (u32) RCC, MCO1, 0, "MCO1" },
 { PA8, (u32) TIM1, TIM1_CH1, 1, "TIM1_CH1" },
 { PA8, (u32) I2C3, I2C3_SCL, 4, "I2C3_SCL" },
 { PA8, (u32) USART1, USART1_CK, 7, "USART1_CK" },
@@ -483,7 +481,7 @@ const PinAlternateDescription PAD[] = {
 { PC8, (u32) DCMI, DCMI_D2, 13, "DCMI_D2" },
 { PC8, (u32) SYS, EVENTOUT, 15, "EVENTOUT" },
 
-{ PC9, (u32) SYS, MCO2, 0, "MCO2" },
+{ PC9, (u32) RCC, MCO2, 0, "MCO2" },
 { PC9, (u32) TIM3, TIM3_CH4, 2, "TIM3_CH4" },
 { PC9, (u32) TIM8, TIM8_CH4, 3, "TIM8_CH4" },
 { PC9, (u32) I2C3, I2C3_SDA, 4, "I2C3_SDA" },
@@ -1092,18 +1090,18 @@ const PinAlternateDescription PAD[] = {
 };
 
 //=============================
-// const PinAlternateDescription PAD[]
+// const PinAlternateDescription_t PAD[]
 // search functions from this const global structure (depends on dice and package)
 /*
 typedef struct {
   
   u8 PinName;
   u32 PPP_Base;
-  u32 Signal_Name;
+  SignalName_t SignalName;
   u8 AF;
-  char* SignalName;
+  char* SignalNameString;
   
-} PinAlternateDescription;
+} PinAlternateDescription_t;
 */
 
 // give the pin info
@@ -1127,24 +1125,51 @@ u32 GetPinAF(PinNameDef PinName, u32 PPP_Adr) {
 }
 
 
+PinAlternateDescription_t* GetSignalDescription(PinNameDef PinName, u32 PPP_Adr) {
+
+  u32 i;
+  PinAlternateDescription_t* result;
+  
+  for(i=0;i<countof(PAD);i++) {
+    
+    if(PAD[i].PinName==PinName)
+      if(PAD[i].PPP_Base==PPP_Adr) {
+        // we found the pin!
+        result = (PinAlternateDescription_t*) &PAD[i];
+        return result;
+      };
+    
+  };
+  
+  while(1); // nothing found...
+}
+
 //=============================================================================
 // Resource allocation, conflict detection
 
 // First, we need to check when a GPIO is being used
-u8 BookedPin[MAX_PACKAGE_PIN];
+static u8 BookedPin[MAX_PACKAGE_PIN];
 
 void BookPin(u32 PinName) {
   
   if(PinName>MAX_PACKAGE_PIN)
     while(1); // not possible
   
-  if(BookedPin[PinName]!=0)
-    while(1); // this pin is already used
-  
-  BookedPin[PinName] = 1; // booked
+//  if(BookedPin[PinName]!=0)
+//    while(1); // this pin is already used
+  if(BookedPin[PinName]<0xFF)
+    BookedPin[PinName]++;// = 1; // booked
 }
 
-void FreePin(u32 PinName) {
+u32 IsPinLocked(u32 PinName) {
+
+  if(PinName>MAX_PACKAGE_PIN)
+    while(1); // not possible
+  
+  return (BookedPin[PinName>1]);
+}
+
+void FreePin(u32 PinName) { // not implemented yet
 
   if(PinName>MAX_PACKAGE_PIN)
     while(1); // not possible
@@ -1152,32 +1177,6 @@ void FreePin(u32 PinName) {
   BookedPin[PinName] = 0; // booked
 }
 
-//===========---------
-// This is a bit delicate to find out how to manage it...
-// The AF which are unique are the ones from 0 to F
-u8 BookedAF[MAX_PACKAGE_PIN];
-
-void BookAF(u32 PinName, u32 AF) {
-  if(PinName>MAX_PACKAGE_PIN)
-    while(1); // not possible
-  
-  if(   (BookedPin[PinName]!=0) 
-     && (BookedPin[PinName]!=AF) ) // we can reassign the same AF value if we want...
-    while(1); // this pin is already used
-  
-  if(AF==0) AF = 0x80; // the value 0 becomes 80 when used
-  BookedAF[PinName] = AF; // booked
-}
-
-void FreeAF(u32 PinName) {
-  if(PinName>MAX_PACKAGE_PIN)
-    while(1); // not possible
-  
-  if(BookedPin[PinName]!=0)
-    while(1); // this pin is already used
-  
-  BookedPin[PinName] = 1; // booked
-}
 
 //===================================================
 // Sequencer related function
@@ -1198,3 +1197,67 @@ u32 sq_PinSetHighJob(u32 u) {
   IO_PinSetHigh(Pin);
   return 0; // done, immediate
 }
+
+//==================================================
+// Helper function to show the different category of pins to configure similarly
+u32 ConfigurePinAsAnalog(IO_Pin_t* P) {
+  
+  IO_PinClockEnable(P);
+  IO_PinSetInput(P);
+  IO_PinSetLow(P);
+  IO_PinSetSpeedMHz(P,1);
+  IO_PinEnablePullUpDown(P, DISABLE, DISABLE);
+  IO_PinEnableHighDrive(P, DISABLE);
+  IO_PinSetAnalog(P);
+  return 0;
+}
+
+u32 ConfigurePinAsInputTrigger(IO_Pin_t* P) {
+
+  IO_PinClockEnable(P);
+  IO_PinSetInput(P);
+  IO_PinSetLow(P);
+  IO_PinSetSpeedMHz(P, 1);
+  IO_PinEnablePullUpDown(P, ENABLE, DISABLE);
+  IO_PinEnableHighDrive(P, DISABLE);
+  IO_PinSetInput(P);
+  return 0;
+}
+
+u32 ConfigurePinAsPushPullOutput(IO_Pin_t* P) {
+  
+  IO_PinClockEnable(P);
+  IO_PinSetSpeedMHz(P, 1);
+  IO_PinSetLow(P);  
+  IO_PinSetOutput(P);  
+  IO_PinEnablePullUpDown(P, DISABLE, DISABLE);
+  IO_PinEnableHighDrive(P, ENABLE);  
+  return 0;
+}
+
+u32 ConfigurePinAsPushPullOutputPD(IO_Pin_t* P) {
+  
+  ConfigurePinAsPushPullOutput(P);
+  IO_PinEnablePullUpDown(P, DISABLE, ENABLE);
+  return 0;
+}
+
+u32 ConfigurePinAsPushPullOutputPU(IO_Pin_t* P) {
+  
+  ConfigurePinAsPushPullOutput(P);
+  IO_PinEnablePullUpDown(P, ENABLE, DISABLE);
+  return 0;
+}
+
+u32 ConfigurePinAsOpenDrainPU(IO_Pin_t* P) {
+
+  IO_PinClockEnable(P);
+  IO_PinSetSpeedMHz(P,1);
+  IO_PinSetHigh(P);    
+  IO_PinSetOutput(P);  
+  IO_PinEnablePullUpDown(P, ENABLE, DISABLE);
+  IO_PinEnableHighDrive(P, DISABLE);
+  return 0;
+}
+
+

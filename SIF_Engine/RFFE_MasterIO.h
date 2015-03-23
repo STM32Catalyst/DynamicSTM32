@@ -32,9 +32,10 @@ typedef struct {
 
   
 
-void NewRFFE_MasterIO_RX_TX(RFFE_MasterIO_t* M);
+void NewRFFE_MasterIO_RX_TX_SCLK_SDATA(RFFE_MasterIO_t* M, IO_Pin_t* SCLK, IO_Pin_t* SDATA);
 u32 SetRFFE_MasterIO_Timings(RFFE_MasterIO_t* M, u32 MaxBps, MCUClocks_t* T ); // 1200000, SPI_CPOL_Low, SPI_CPHA_1Edge, SPI_FirstBit_MSB
-// GPIOs?
+u32 ConfigureRFFE_MasterIO(RFFE_MasterIO_t* M);
+u32 EnableRFFE_MasterIO(RFFE_MasterIO_t* M);
 
 // Available SPI Functions For Sequencer use
 u32 sq_RFFE_MIO_StartJob(u32 u); // SPI_MasterHW_t* and bitmask for NSS to go low

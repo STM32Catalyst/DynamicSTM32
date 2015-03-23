@@ -22,6 +22,8 @@ u32 I2SClk_Hz;
 u32 ETH_Clk_Hz; // external feed
 u32 OTG_Clk_Hz; // external feed
 
+u32 Pll_Clk_Hz;
+
 //  IO_Pin_t* SDA; // we need the pointer to the pin
 //  u32 (*fnWaitMethod)(u32);
 //  u32 ctWaitMethod;
@@ -34,4 +36,23 @@ MCUClocks_t* GetMCUClockTree(void);
 
 //
 void FTM_Generate48MHzOnMCO2_PC9(void);
+
+// MCO related functions
+typedef enum {
+  
+  NO_CLOCK,
+  HSI_CLOCK,
+  HSE_CLOCK,
+  LSE_CLOCK,
+  PLL_CLOCK,
+  SYS_CLOCK,
+  I2S_CLOCK,
+  ANY_CLOCK, // required smarter code searching for best option
+  COUNTOF_CLOCK // the number of clock sources
+} MCO_ClockSource_t;
+
+u32 GetClockHz(MCO_ClockSource_t S);
+
+void Clocks_Demo(void);
+
 #endif

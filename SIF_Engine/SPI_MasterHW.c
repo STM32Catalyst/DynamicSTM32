@@ -13,139 +13,172 @@
 
 static u8 Dummy[1024];
 
-void NewSPI_MasterHW_RX_TX(SPI_MasterHW_t* S, DMA_Stream_TypeDef* RX_Stream, u32 DMA_RX_Channel, DMA_Stream_TypeDef* TX_Stream, u32 DMA_TX_Channel) {
+static void SetPinInput(IO_Pin_t* P) {
 
+  IO_PinClockEnable(P);
+  IO_PinSetSpeedMHz(P, 1);
+  IO_PinSetHigh(P);  
+  IO_PinSetInput(P);  
+  IO_PinEnablePullUpDown(P, ENABLE, DISABLE);
+  IO_PinEnableHighDrive(P, ENABLE);
+}
+
+static void SetPinOutput(IO_Pin_t* P) {
+  
+  IO_PinClockEnable(P);
+  IO_PinSetSpeedMHz(P, 1);
+  IO_PinSetHigh(P);
+  IO_PinSetOutput(P);  
+  IO_PinEnablePullUpDown(P, ENABLE, DISABLE);
+  IO_PinEnableHighDrive(P, ENABLE);
+}
+
+
+void NewSPI_MasterHW(SPI_MasterHW_t* S, SPI_TypeDef* SPI, IO_Pin_t* MISO, IO_Pin_t* MOSI, IO_Pin_t* SCK, IO_Pin_t* NSS0) {
+  
+  if(S==0) while(1);
+  if(SPI==0) while(1);
+  if(SCK==0) while(1);
+  if((MISO==0)&&(MOSI==0)) while(1);
+
+  S->SPI = SPI;
+  S->MISO = MISO;
+  S->MOSI = MOSI;
+  S->SCK = SCK;
+  S->NSSs[0] = NSS0;
+  
+  ClockGateEnable_PPP((u32)S->SPI, ENABLE);  // Clock enable SPI HW
+  
+  // here we have to find out which DMA stream and channel fits the needs automatically.
+}
+
+typedef struct {
+  SPI_TypeDef* PPP;
+  SignalName_t RX;
+  SignalName_t TX;
+} SPI_Info_t;
+
+
+const SPI_Info_t SPII[] = {
+  
+  { SPI1, SPI1_RX, SPI1_TX },
+  { SPI2, SPI2_RX, SPI2_TX },
+  { SPI3, SPI3_RX, SPI3_TX },
+  { SPI4, SPI4_RX, SPI4_TX },
+  { SPI5, SPI5_RX, SPI5_TX },
+  { SPI6, SPI6_RX, SPI6_TX },
+};
+
+SPI_Info_t* SPI_GetInfo(SPI_TypeDef* PPP) {
+
+  u8 n;
+  
+  for(n=0;n<countof(SPII);n++)    
+      if(PPP==SPII[n].PPP) // the stream is a memory location, it is unique
+        return (SPI_Info_t*) &SPII[n];
+  
+  return 0; // failed to find it
+}
+
+void ConfigureSPI_MasterHW(SPI_MasterHW_t* S) {
+  
   NVIC_InitTypeDef NVIC_InitStructure;  
 //  SPI_InitTypeDef  SPI_InitStructure;
-  DMA_InitTypeDef DMA_TX_InitStruct,DMA_RX_InitStruct;
+//  DMA_InitTypeDef DMA_TX_InitStruct,DMA_RX_InitStruct;
   
   u8 n; // NSSs sweep
-// we have to initialize the state machine first
-  
-  // configure the GPIOs
-  
+
   // configure MISO pin
-  IO_PinClockEnable(S->MISO);
-  IO_PinSetHigh(S->MISO);  
-  IO_PinSetInput(S->MISO);  
-  IO_PinEnablePullUpDown(S->MISO, ENABLE, DISABLE);
-  IO_PinEnableHighDrive(S->MISO, ENABLE);
+  SetPinInput(S->MISO);
   IO_PinConfiguredAs(S->MISO,GetPinAF(S->MISO->Name,(u32)S->SPI));  
 
   // configure MOSI pin
-  IO_PinClockEnable(S->MOSI);
-  IO_PinSetHigh(S->MOSI);
-  IO_PinSetOutput(S->MOSI);  
-  IO_PinEnablePullUpDown(S->MOSI, ENABLE, DISABLE);
-  IO_PinEnableHighDrive(S->MOSI, ENABLE);
+  SetPinOutput(S->MOSI);
   IO_PinConfiguredAs(S->MOSI,GetPinAF(S->MOSI->Name,(u32)S->SPI));    
 
   // configure SCK pin
-  IO_PinClockEnable(S->SCK);
-  IO_PinSetHigh(S->SCK);
-  IO_PinSetOutput(S->SCK);  
-  IO_PinEnablePullUpDown(S->SCK, ENABLE, DISABLE);
-  IO_PinEnableHighDrive(S->SCK, ENABLE);
+  SetPinOutput(S->SCK);
   IO_PinConfiguredAs(S->SCK,GetPinAF(S->SCK->Name,(u32)S->SPI));    
   
   // configure all the NSSs pins
-  for(n=0;n<16;n++) {
-    if(S->NSSs[n]==0) break;
-    IO_PinClockEnable(S->NSSs[n]);
-    IO_PinSetHigh(S->NSSs[n]);    
-    IO_PinSetOutput(S->NSSs[n]);  
-    IO_PinEnablePullUpDown(S->NSSs[n], ENABLE, DISABLE);
-    IO_PinEnableHighDrive(S->NSSs[n], ENABLE); // push pull enabled
-  };
-  
-  // all the existing NSS are polarized output push pull high.
-/*  
-  // Configure the HW SPI
-  // enable all the related clocks
-  ClockGateEnable_PPP((u32)S->SPI, ENABLE);  
-  
-  SPI_I2S_DeInit(S->SPI);
-  SPI_InitStructure.SPI_Direction = SPI_Direction_2Lines_FullDuplex;//SPI_Direction_2Lines_FullDuplex;SPI_Direction_2Lines_RxOnly
-  SPI_InitStructure.SPI_DataSize = SPI_DataSize_8b;
-  SPI_InitStructure.SPI_CPOL = SPI_CPOL_Low; // Fingertip CPOL = 1
-  SPI_InitStructure.SPI_CPHA = SPI_CPHA_1Edge; // Fingertip CPHA = 0
-  SPI_InitStructure.SPI_NSS = SPI_NSS_Soft;//SPI_NSS_Hard SPI_NSS_Soft
-  SPI_InitStructure.SPI_BaudRatePrescaler = SPI_BaudRatePrescaler_8;//4;//4;//2;//16;
-  SPI_InitStructure.SPI_FirstBit = SPI_FirstBit_MSB;
-  SPI_InitStructure.SPI_CRCPolynomial = 7;
-  SPI_InitStructure.SPI_Mode = SPI_Mode_Master;
-  SPI_Init(S->SPI, &SPI_InitStructure);  
-*/
+  for(n=0;n<16;n++)
+    if(S->NSSs[n])
+      SetPinOutput(S->NSSs[n]);
 
-  // to be automated... the DMA selection can be automatic or not...
-
-// Define the DMA Stream manually for now
+  //---- Here we patch the code to automatically find the right DMA and DMA stream for this SPI...
+  SPI_Info_t* SPII = SPI_GetInfo(S->SPI);
+  DMA_StreamChannelInfo_t* TXSCI = Get_pStreamChannelForPPP_Signal((u32)SPII->PPP, SPII->TX, 0);
+  DMA_StreamChannelInfo_t* RXSCI = Get_pStreamChannelForPPP_Signal((u32)SPII->PPP, SPII->RX, 0);
+  // override the passing parameters
+  DMA_Stream_TypeDef* RX_Stream = RXSCI->Stream;
+  u32 DMA_RX_Channel = RXSCI->Channel;
+  DMA_Stream_TypeDef* TX_Stream = TXSCI->Stream;
+  u32 DMA_TX_Channel = TXSCI->Channel;
+  //=============================
+  
   // DMA TX
   S->DMA_TX = Get_pDMA_Info(TX_Stream);
-  if(S->DMA_TX==0) while(1); // error, no DMA Stream for it
-
 
   // DMA RX  
   S->DMA_RX = Get_pDMA_Info(RX_Stream);
-  if(S->DMA_RX==0) while(1); // error, no DMA Stream for it
 
 // DMA matters
-  ClockGateEnable_PPP((u32)S->DMA_RX->DMA, ENABLE);  
-  ClockGateEnable_PPP((u32)S->DMA_TX->DMA, ENABLE);  
+  ClockGateEnable_PPP((u32)S->DMA_RX->DMA, ENABLE);  // Clock enable DMA stream RX
+  ClockGateEnable_PPP((u32)S->DMA_TX->DMA, ENABLE);  // Clock enable DMA stream TX
   
   // Next, configure the TX and RX stream DMAs (if exist, otherwise, stop)
   /* Initialize the DMA_Channel member */
-  DMA_TX_InitStruct.DMA_Channel = DMA_TX_Channel;
-  S->TX_Channel = DMA_TX_Channel; // for debugging
-  DMA_RX_InitStruct.DMA_Channel = DMA_RX_Channel;
-  S->RX_Channel = DMA_RX_Channel; // for debugging
+  S->DMA_TXI.DMA_Channel = DMA_TX_Channel;
+//  S->TX_Channel = DMA_TX_Channel; // for debugging
+  S->DMA_RXI.DMA_Channel = DMA_RX_Channel;
+//  S->RX_Channel = DMA_RX_Channel; // for debugging
   /* Initialize the DMA_PeripheralBaseAddr member */
-  DMA_TX_InitStruct.DMA_PeripheralBaseAddr = (u32) (&(S->SPI->DR));
-  DMA_RX_InitStruct.DMA_PeripheralBaseAddr = (u32) (&(S->SPI->DR));
+  S->DMA_TXI.DMA_PeripheralBaseAddr = (u32) (&(S->SPI->DR));
+  S->DMA_RXI.DMA_PeripheralBaseAddr = (u32) (&(S->SPI->DR));
   /* Initialize the DMA_Memory0BaseAddr member */
-  DMA_TX_InitStruct.DMA_Memory0BaseAddr = 0;
-  DMA_RX_InitStruct.DMA_Memory0BaseAddr = 0;
+  S->DMA_TXI.DMA_Memory0BaseAddr = 0;
+  S->DMA_RXI.DMA_Memory0BaseAddr = 0;
   /* Initialize the DMA_DIR member */
-  DMA_TX_InitStruct.DMA_DIR = DMA_DIR_MemoryToPeripheral;
-  DMA_RX_InitStruct.DMA_DIR = DMA_DIR_PeripheralToMemory;
+  S->DMA_TXI.DMA_DIR = DMA_DIR_MemoryToPeripheral;
+  S->DMA_RXI.DMA_DIR = DMA_DIR_PeripheralToMemory;
   /* Initialize the DMA_BufferSize member */
-  DMA_TX_InitStruct.DMA_BufferSize = 0;
-  DMA_RX_InitStruct.DMA_BufferSize = 0;
+  S->DMA_TXI.DMA_BufferSize = 0;
+  S->DMA_RXI.DMA_BufferSize = 0;
   /* Initialize the DMA_PeripheralInc member */
-  DMA_TX_InitStruct.DMA_PeripheralInc = DMA_PeripheralInc_Disable;
-  DMA_RX_InitStruct.DMA_PeripheralInc = DMA_PeripheralInc_Disable;
+  S->DMA_TXI.DMA_PeripheralInc = DMA_PeripheralInc_Disable;
+  S->DMA_RXI.DMA_PeripheralInc = DMA_PeripheralInc_Disable;
   /* Initialize the DMA_MemoryInc member */
-  DMA_TX_InitStruct.DMA_MemoryInc = DMA_MemoryInc_Enable;
-  DMA_RX_InitStruct.DMA_MemoryInc = DMA_MemoryInc_Enable;
+  S->DMA_TXI.DMA_MemoryInc = DMA_MemoryInc_Enable;
+  S->DMA_RXI.DMA_MemoryInc = DMA_MemoryInc_Enable;
   /* Initialize the DMA_PeripheralDataSize member */
-  DMA_TX_InitStruct.DMA_PeripheralDataSize = DMA_PeripheralDataSize_Byte;
-  DMA_RX_InitStruct.DMA_PeripheralDataSize = DMA_PeripheralDataSize_Byte;
+  S->DMA_TXI.DMA_PeripheralDataSize = DMA_PeripheralDataSize_Byte;
+  S->DMA_RXI.DMA_PeripheralDataSize = DMA_PeripheralDataSize_Byte;
   /* Initialize the DMA_MemoryDataSize member */
-  DMA_TX_InitStruct.DMA_MemoryDataSize = DMA_MemoryDataSize_Byte;
-  DMA_RX_InitStruct.DMA_MemoryDataSize = DMA_MemoryDataSize_Byte;
+  S->DMA_TXI.DMA_MemoryDataSize = DMA_MemoryDataSize_Byte;
+  S->DMA_RXI.DMA_MemoryDataSize = DMA_MemoryDataSize_Byte;
   /* Initialize the DMA_Mode member */
-  DMA_TX_InitStruct.DMA_Mode = DMA_Mode_Normal;
-  DMA_RX_InitStruct.DMA_Mode = DMA_Mode_Normal;
+  S->DMA_TXI.DMA_Mode = DMA_Mode_Normal;
+  S->DMA_RXI.DMA_Mode = DMA_Mode_Normal;
   /* Initialize the DMA_Priority member */
-  DMA_TX_InitStruct.DMA_Priority = DMA_Priority_High;
-  DMA_RX_InitStruct.DMA_Priority = DMA_Priority_High;
+  S->DMA_TXI.DMA_Priority = DMA_Priority_High;
+  S->DMA_RXI.DMA_Priority = DMA_Priority_High;
   /* Initialize the DMA_FIFOMode member */
-  DMA_TX_InitStruct.DMA_FIFOMode = DMA_FIFOMode_Disable;
-  DMA_RX_InitStruct.DMA_FIFOMode = DMA_FIFOMode_Disable;
+  S->DMA_TXI.DMA_FIFOMode = DMA_FIFOMode_Disable;
+  S->DMA_RXI.DMA_FIFOMode = DMA_FIFOMode_Disable;
   /* Initialize the DMA_FIFOThreshold member */
-  DMA_TX_InitStruct.DMA_FIFOThreshold = DMA_FIFOThreshold_1QuarterFull;
-  DMA_RX_InitStruct.DMA_FIFOThreshold = DMA_FIFOThreshold_1QuarterFull;
+  S->DMA_TXI.DMA_FIFOThreshold = DMA_FIFOThreshold_1QuarterFull;
+  S->DMA_RXI.DMA_FIFOThreshold = DMA_FIFOThreshold_1QuarterFull;
   /* Initialize the DMA_MemoryBurst member */
-  DMA_TX_InitStruct.DMA_MemoryBurst = DMA_MemoryBurst_Single;
-  DMA_RX_InitStruct.DMA_MemoryBurst = DMA_MemoryBurst_Single;
+  S->DMA_TXI.DMA_MemoryBurst = DMA_MemoryBurst_Single;
+  S->DMA_RXI.DMA_MemoryBurst = DMA_MemoryBurst_Single;
   /* Initialize the DMA_PeripheralBurst member */
-  DMA_TX_InitStruct.DMA_PeripheralBurst = DMA_PeripheralBurst_Single;
-  DMA_RX_InitStruct.DMA_PeripheralBurst = DMA_PeripheralBurst_Single;
+  S->DMA_TXI.DMA_PeripheralBurst = DMA_PeripheralBurst_Single;
+  S->DMA_RXI.DMA_PeripheralBurst = DMA_PeripheralBurst_Single;
 
   //==<<=<<=<<===============================================
-  DMA_Init(S->DMA_RX->Stream, &DMA_RX_InitStruct);
+  DMA_Init(S->DMA_RX->Stream, &S->DMA_RXI);
   //==>>=>>=>>===============================================
-  DMA_Init(S->DMA_TX->Stream, &DMA_TX_InitStruct);
+  DMA_Init(S->DMA_TX->Stream, &S->DMA_TXI);
   
   BookDMA_Stream(S->DMA_RX->Stream);
   BookDMA_Stream(S->DMA_TX->Stream);
@@ -187,18 +220,8 @@ u32 SetSPI_MasterHW_Timings(SPI_MasterHW_t* S, u32 MaxBps, u32 CPol, u32 CPha, u
   // members of the structure related to timings should be initialized
   u32 bps;
   u32 psc;
-  u8 n;
-  SPI_InitTypeDef  SPI_InitStructure;
-    
+   
   S->MaxBps = MaxBps;
-  
-  IO_PinSetSpeedMHz(S->MISO, 1); 
-  IO_PinSetSpeedMHz(S->MOSI, 1);  
-  IO_PinSetSpeedMHz(S->SCK, 1);
-  for(n=0;n<16;n++) {
-    if(S->NSSs[n]==0) break;
-    IO_PinSetSpeedMHz(S->NSSs[n], 1);
-  };
 
   for(psc=0;psc<8;psc++) { // try all possible prescaler values
     //bps = (1000000 * S->FeedClockMHz) >> (psc + 1);
@@ -210,24 +233,21 @@ u32 SetSPI_MasterHW_Timings(SPI_MasterHW_t* S, u32 MaxBps, u32 CPol, u32 CPha, u
   
   // we have found the highest compatible clock
   S-> ActualBps = bps;
-  SPI_InitStructure.SPI_BaudRatePrescaler = SPI_MasterHW_Psc[psc];
-  
-  ClockGateEnable_PPP((u32)S->SPI, ENABLE);  
-  
-  SPI_I2S_DeInit(S->SPI);
-  SPI_InitStructure.SPI_Direction = SPI_Direction_2Lines_FullDuplex;// Imposed. For 3 wires, just short MISO MOSI pins externally. Don't use Bidir to save pins with this code.
-  SPI_InitStructure.SPI_DataSize = SPI_DataSize_8b; // fixed support
-  SPI_InitStructure.SPI_CPOL = CPol;//SPI_CPOL_Low; // User choose
-  SPI_InitStructure.SPI_CPHA = CPha;//SPI_CPHA_1Edge; // User choose
-  SPI_InitStructure.SPI_NSS = SPI_NSS_Soft;// Fixed
-//  SPI_InitStructure->SPI_BaudRatePrescaler = SPI_BaudRatePrescaler_8;// Depends on clock info in SPI structure
-  SPI_InitStructure.SPI_FirstBit = FirstBit;//SPI_FirstBit_MSB; // USer choose
-  SPI_InitStructure.SPI_CRCPolynomial = 7; // Fixed for now
-  SPI_InitStructure.SPI_Mode = SPI_Mode_Master; // Fixed for this driver
-  SPI_Init(S->SPI, &SPI_InitStructure);   
-  
+//  SPI_I2S_DeInit(S->SPI);
+  S->SPII.SPI_BaudRatePrescaler = SPI_MasterHW_Psc[psc]; //SPI_BaudRatePrescaler_8;// Depends on clock info in SPI structure
+  S->SPII.SPI_Direction = SPI_Direction_2Lines_FullDuplex;// Imposed. For 3 wires, just short MISO MOSI pins externally. Don't use Bidir to save pins with this code.
+  S->SPII.SPI_DataSize = SPI_DataSize_8b; // fixed support
+  S->SPII.SPI_CPOL = CPol;//SPI_CPOL_Low; // User choose
+  S->SPII.SPI_CPHA = CPha;//SPI_CPHA_1Edge; // User choose
+  S->SPII.SPI_NSS = SPI_NSS_Soft;// Fixed
+  S->SPII.SPI_FirstBit = FirstBit;//SPI_FirstBit_MSB; // USer choose
+  S->SPII.SPI_CRCPolynomial = 7; // Fixed for now
+  S->SPII.SPI_Mode = SPI_Mode_Master; // Fixed for this driver
+  SPI_Init(S->SPI, &S->SPII);     
   return 0;
 }
+
+
 
 
 static void DMA_Interrupt(u32 u, FunctionalState Enable) {

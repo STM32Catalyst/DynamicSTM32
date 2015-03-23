@@ -33,6 +33,17 @@ typedef struct {
   u8    AF; // the chosen alternate function (difficult to manage right now)
 } IO_Pin_t; // 40 bytes per fast GPIO in Fast access should use RAM.
 
+typedef struct {
+  
+  u8 PinName;
+  u32 PPP_Base;
+  SignalName_t SignalName;
+  u8 AF;
+  char* SignalNameString;
+  
+} PinAlternateDescription_t;
+
+PinAlternateDescription_t* GetSignalDescription(PinNameDef PinName, u32 PPP_Adr);
 
 IO_Pin_t* NewIO_Pin(IO_Pin_t* Pin, PinNameDef Name);
 
@@ -47,7 +58,7 @@ void IO_PinEnablePullUp(IO_Pin_t* Pin, FunctionalState Enable);
 void IO_PinEnablePullDown(IO_Pin_t* Pin, FunctionalState Enable);
 void IO_PinEnablePullUpDown(IO_Pin_t* Pin, FunctionalState UpEnable, FunctionalState DownEnable);
 void IO_PinEnableHighDrive(IO_Pin_t* Pin, FunctionalState Enable);
-void IO_PinConfiguredAs(IO_Pin_t* Pin, u32 signal);
+void IO_PinConfiguredAs(IO_Pin_t* Pin, u32 AF);
 
 u32 IO_PinGetPR(IO_Pin_t* Pin);
 void IO_PinClearPR(IO_Pin_t* Pin);
@@ -73,13 +84,18 @@ u32 sq_PinSetHighJob(u32 u);
 // If all pins of a GPIO are freed, the clock enable can be turned off for power saving
 // Eventually the clock enable function will be replaced by this.
 void BookPin(u32 PinName);
+u32 IsPinLocked(u32 PinName);
 void FreePin(u32 PinName);
 
-void BookAF(u32 PinName, u32 AF);
-void FreeAF(u32 PinName);
+// helper functions (for code size and rationalization)
+u32 ConfigurePinAsAnalog(IO_Pin_t* P);
+u32 ConfigurePinAsInputTrigger(IO_Pin_t* P);
+u32 ConfigurePinAsPushPullOutputPD(IO_Pin_t* P);
+u32 ConfigurePinAsPushPullOutputPU(IO_Pin_t* P);
+u32 ConfigurePinAsPushPullOutput(IO_Pin_t* P);
+u32 ConfigurePinAsOpenDrainPU(IO_Pin_t* P); // this pull up is very weak. it does not replace an external pull up for I2C bus-like interfaces
 
 // These functions for now are global, they are unique resources.
-
 
 
 #endif

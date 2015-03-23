@@ -17,28 +17,15 @@ u32 TimerCountdownWait(u32 u);
 u32 NopsWait(u32 u);
 u32 WaitHere(u32 u, u32 delay);
 
-void NewRFFE_MasterIO_RX_TX(RFFE_MasterIO_t* M) {
+void NewRFFE_MasterIO_RX_TX_SCLK_SDATA(RFFE_MasterIO_t* M, IO_Pin_t* SCLK, IO_Pin_t* SDATA) {
 
   // configure the GPIOs
-  if(M->SDATA==0) while(1); // a pin must be hooked here
-  if(M->SCLK==0) while(1); // a pin must be hooked here
+  if(SDATA==0) while(1); // a pin must be hooked here
+  if(SCLK==0) while(1); // a pin must be hooked here
+  if(M==0) while(1); // need pointer to RAM
   
-  // configure SDATA pin
-  IO_PinClockEnable(M->SDATA);
-  IO_PinSetLow(M->SDATA);  
-  IO_PinSetOutput(M->SDATA);  
-  IO_PinEnablePullUpDown(M->SDATA, DISABLE, ENABLE);
-  IO_PinEnableHighDrive(M->SDATA, ENABLE);
- 
-  // configure SCLK pin
-  IO_PinClockEnable(M->SCLK);
-  IO_PinSetLow(M->SCLK);
-  IO_PinSetOutput(M->SCLK);  
-  IO_PinEnablePullUpDown(M->SCLK, DISABLE, ENABLE);
-  IO_PinEnableHighDrive(M->SCLK, ENABLE);
-  
-  // We need to initialize the hooks for DMA_RX...
-//  HookIRQ_PPP((u32)S->DMA_RX->Stream, (u32)JobToDo, (u32)S->SA); // From DMA Stream, place the hooks
+  M->SDATA = SDATA;
+  M->SCLK = SCLK;
 }
 
 u32 SetRFFE_MasterIO_Timings(RFFE_MasterIO_t* M, u32 MaxBps, MCUClocks_t* T ) { // 1200000, RFFE_CPOL_Low, RFFE_CPHA_1Edge, RFFE_FirstBit_MSB
@@ -47,9 +34,6 @@ u32 SetRFFE_MasterIO_Timings(RFFE_MasterIO_t* M, u32 MaxBps, MCUClocks_t* T ) { 
   u32 HalfClockPeriod_us;
   
   M->MaxBps = MaxBps; // 400khz
-  IO_PinSetSpeedMHz(M->SDATA, 1);
-  IO_PinSetSpeedMHz(M->SCLK, 1);
-  
   HalfClockPeriod_Hz = MaxBps*2; // Timers runs at 1MHz max overflow speed. 500kHz = 2us
   
   if(M->Timer) {
@@ -72,8 +56,21 @@ u32 SetRFFE_MasterIO_Timings(RFFE_MasterIO_t* M, u32 MaxBps, MCUClocks_t* T ) { 
   M->WaitParam = HalfClockPeriod_us;
   
   return 0;
+}
+
+u32 ConfigureRFFE_MasterIO(RFFE_MasterIO_t* M) { // this will write the HW peripheral registers and configure the HW for the coming "enable" function. Hack or Tweaks can be done in-between
+
+  // configure SDATA pin
+  ConfigurePinAsPushPullOutputPD(M->SDATA);
+  // configure SCLK pin
+  ConfigurePinAsPushPullOutputPD(M->SCLK);
+  return 0;
+}
+
+u32 EnableRFFE_MasterIO(RFFE_MasterIO_t* M) {
   
-  
+  // nothing to do for an IO way
+  return 0;
 }
 
 static u32 TimerCountdownWait(u32 u) {

@@ -18,24 +18,22 @@
 #define LCD_CONTRAST_SET_low 								 0x73    //contrast SET + DATA CONTRAST (LAST 4 DIGIT) //70
 #define LCD_CONTRAST_SET_high 							 0x7F    //contrast SET + DATA CONTRAST (LAST 4 DIGIT) //70
 
-u32 NewNHD_LCD16x2(NHD_LCD16x2_t* L) {
+static void SetPinOutputHigh(IO_Pin_t* P) {
   
-  // Initialize SPI Master GPIO
-  NewSPI_MasterIO_RX_TX(L->MIO);
+  IO_PinClockEnable(P);
+  IO_PinSetSpeedMHz(P, 1);
+  IO_PinSetHigh(P);
+  IO_PinSetOutput(P);  
+  IO_PinEnablePullUpDown(P, ENABLE, DISABLE);
+  IO_PinEnableHighDrive(P, ENABLE);
+}
+
+u32 NewNHD_LCD16x2(NHD_LCD16x2_t* L, IO_Pin_t* NRST, IO_Pin_t* RS) {
+  
+  L->NRST = NRST;
+  L->RS = RS;
   
   NHD_FillRAM_With(L, '-');//NHD_ClearRAM(NHD_LCD16x2_t* L)
-  
-  IO_PinClockEnable(L->RS);
-  IO_PinSetHigh(L->RS);
-  IO_PinSetOutput(L->RS);  
-  IO_PinEnablePullUpDown(L->RS, ENABLE, DISABLE);
-  IO_PinEnableHighDrive(L->RS, ENABLE);
-
-  IO_PinClockEnable(L->NRST);
-  IO_PinSetHigh(L->NRST);
-  IO_PinSetOutput(L->NRST);  
-  IO_PinEnablePullUpDown(L->NRST, ENABLE, DISABLE);
-  IO_PinEnableHighDrive(L->NRST, ENABLE);  
   
   L->Print.fnPutChar = (u32) NHD_LCD_putchar;
   L->Print.ctPutChar = (u32) L;
@@ -43,18 +41,29 @@ u32 NewNHD_LCD16x2(NHD_LCD16x2_t* L) {
 }
 
 u32 SetNHD_LCD16x2_Timings( NHD_LCD16x2_t* L) {
-
-  IO_PinSetSpeedMHz(L->RS, 1);
-  IO_PinSetSpeedMHz(L->NRST, 1);
   
   L->FullFrameRefreshRate = 0; // hard update
   L->FrameCountdown = 0;
   
-//  L->Cn = 0;
-  L->MIO->Cn = 1;
-  SetSPI_MasterIO_Timings(L->MIO, 100000, SPI_CPOL_Low, SPI_CPHA_1Edge, SPI_FirstBit_MSB, GetMCUClockTree() ); // 1200000, SPI_CPOL_Low, SPI_CPHA_1Edge, SPI_FirstBit_MSB
   return 0;
 }
+
+
+u32 ConfigureNHD_LCD16x2(NHD_LCD16x2_t* L) {
+  
+  SetPinOutputHigh(L->RS);
+  SetPinOutputHigh(L->NRST);  
+  return 0;
+}
+u32 EnableNHD_LCD16x2(NHD_LCD16x2_t* L) {
+  
+  NHD_LCD16x2_Init(L);
+  return 0;
+}
+
+
+
+
 
 u32 sq_LCD_StartJob(u32 u); // SPI_MasterHW_t* and bitmask for NSS to go low
 u32 sq_LCD_StopJob(u32 u); // same as start, bitmask which NSS will go high.

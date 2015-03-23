@@ -25,7 +25,9 @@ typedef struct {
   
 } Rs232_t;
 
-void NewRs232HW(Rs232_t* RS, USART_TypeDef* USART);
+void NewRs232HW(Rs232_t* RS, USART_TypeDef* USART, IO_Pin_t* RX, IO_Pin_t* TX);
+void ConfigureRs232HW(Rs232_t* R);
+void EnableRs232HW(Rs232_t* R);
 void NVIC_Rs232sEnable(FunctionalState Enable);
 void SetRs232BVs(Rs232_t* RS, ByteVein_t* BV_TX, ByteVein_t* BV_RX);
 void SetRs232Timings(Rs232_t* RS, u32 BaudRate, u32 Parity2, u32 StopBits);

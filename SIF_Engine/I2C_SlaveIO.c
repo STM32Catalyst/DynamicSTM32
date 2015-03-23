@@ -34,10 +34,19 @@ extern u32 I2C_SlaveIO_RAM24C02_States2fn[32]; // this contains the state machin
 
 //--------- this will become later global resources --------
 
-void NewI2C_SlaveIO(I2C_SlaveIO* S, u8* SlaveAddresses, u8 SlaveAddressesCountof, u8* pMemory, u32 MemoryCountof) {
+void NewI2C_SlaveIO_SDA_SCL(I2C_SlaveIO_t* S, IO_Pin_t* SDA, IO_Pin_t* SCL) {
 
-  u32 pinSDA = S->SDA->Name;
-  u32 pinSCL = S->SCL->Name;
+  if((SDA==0)||(SCL==0)) while(1); // define these pins first!
+  if(S==0) while(1); // create the cell in RAM first!
+  
+  S->SDA = SDA;
+  S->SCL = SCL;
+
+}
+
+
+void EmulateMemoryI2C_SlaveIO(I2C_SlaveIO_t* S, u8* SlaveAddresses, u8 SlaveAddressesCountof, u8* pMemory, u32 MemoryCountof) {
+
 // we have to initialize the state machine first
   S->STMA.State = 0;
   S->STMA.fnStates = I2C_SlaveIO_RAM24C02_States2fn;
@@ -55,28 +64,22 @@ void NewI2C_SlaveIO(I2C_SlaveIO* S, u8* SlaveAddresses, u8 SlaveAddressesCountof
   S->BusBusy = 0; // should be not available until a start or a stop is seen on the bus
 
   S->TalkEnded = 0;
+  
+}
 
-  // configure the GPIOs
+void ConfigureI2C_SlaveIO(I2C_SlaveIO_t* S) {
+
+  u32 PinSDA = S->SDA->Name;
+  u32 PinSCL = S->SCL->Name;
+
   // configure SDA pin
-  IO_PinClockEnable(S->SDA);
-  IO_PinSetHigh(S->SDA);
-  IO_PinSetOutput(S->SDA);
-  //IO_PinSetLow(S->SDA);
-  IO_PinSetSpeedMHz(S->SDA, 1);
-  IO_PinEnablePullUpDown(S->SDA, ENABLE, DISABLE);
-  IO_PinEnableHighDrive(S->SDA, DISABLE);
-
+  ConfigurePinAsOpenDrainPU(S->SDA);
   // configure SCL pin
-  IO_PinClockEnable(S->SCL);
-  IO_PinSetInput(S->SCL);
-  IO_PinSetLow(S->SCL);
-  IO_PinSetSpeedMHz(S->SCL, 1);
-  IO_PinEnablePullUpDown(S->SCL, ENABLE, DISABLE);
-  IO_PinEnableHighDrive(S->SCL, DISABLE);
+  ConfigurePinAsOpenDrainPU(S->SCL);
 
   // let's setup the edge configuration first
-  EXTI_SetEdgesEnable(pinSDA, ENABLE, ENABLE); // GPIO, channel and edge configuration
-  EXTI_SetEdgesEnable(pinSCL, ENABLE, ENABLE); // GPIO, channel and edge configuration
+  EXTI_SetEdgesEnable(PinSDA, ENABLE, ENABLE); // GPIO, channel and edge configuration
+  EXTI_SetEdgesEnable(PinSCL, ENABLE, ENABLE); // GPIO, channel and edge configuration
 
   // The I2C_Slave has its own hooks to setup first
   S->fnSlaveScheme = I2C_SlaveIO_STMA_Run; // run the state machine instead of a hardcoded stuff
@@ -84,12 +87,18 @@ void NewI2C_SlaveIO(I2C_SlaveIO* S, u8* SlaveAddresses, u8 SlaveAddressesCountof
   // debug code optional hook here
   // for now we hook the corresponding IRQ to the IRQ handler for EXTI channels
   // putting a non zero hook is needed to activate the EXTI interrupt enable going to NVIC channel
-  HookEXTIn(pinSDA & 0xF, (u32) I2C_SlaveIO_EXTI_IRQHandler , (u32)S); // this will move to EXTI cell later, it will activate the EXTI Interrupt enable, not the NVIC (later)
-  EXTI_Interrupt(pinSDA &0xF, ENABLE);
-  HookEXTIn(pinSCL & 0xF, (u32) (EXTI_PinShareSameNVIC(pinSDA,pinSCL)?(u32_fn_u32):(I2C_SlaveIO_EXTI_IRQHandler)), (u32)S); // shares the same IRQ handler, so don't call the same handler twice!
-  EXTI_Interrupt(pinSCL & 0xF, ENABLE);
+  HookEXTIn(PinSDA & 0xF, (u32) I2C_SlaveIO_EXTI_IRQHandler , (u32)S); // this will move to EXTI cell later, it will activate the EXTI Interrupt enable, not the NVIC (later)
+  HookEXTIn(PinSCL & 0xF, (u32) (EXTI_PinShareSameNVIC(PinSDA,PinSCL)?(u32_fn_u32):(I2C_SlaveIO_EXTI_IRQHandler)), (u32)S); // shares the same IRQ handler, so don't call the same handler twice!
 // not needed if they share the same IRQ  fnEXTI_n_Hook_To(pinSCL & 0xF, (u32) I2C_SlaveIO_EXTI_IRQHandler, (u32)&gI2C_Slave); // this will move to EXTI cell later
+}
 
+void EnableI2C_SlaveIO(I2C_SlaveIO_t* S) {
+
+  u32 PinSDA = S->SDA->Name;
+  u32 PinSCL = S->SCL->Name;
+
+  EXTI_Interrupt(PinSDA &0xF, ENABLE);  
+  EXTI_Interrupt(PinSCL & 0xF, ENABLE);  
 }
 
 //TODO: Create a Timings here
@@ -104,7 +113,7 @@ u32 I2C_SlaveIO_SpyProcess(u32);
 // The code should be in RAM to change easily the behaviour, but the linker will be lost...
 static u32 I2C_SlaveIO_EXTI_IRQHandler(u32 u) {
 
-  I2C_SlaveIO* S = (I2C_SlaveIO*) u;
+  I2C_SlaveIO_t* S = (I2C_SlaveIO_t*) u;
 
   u8 EventMask; // local variables generates less code than global
   // Implementation is made to enable low power scheme: The max bus speed depends on the core frequency which could be stopped
@@ -148,14 +157,14 @@ u32 I2C_SlaveIO_STMA_Run(u32 u) {
 //=============== These are the optional I2C spy mode to see what is happening on a bus.
 // the slave function is then disabled
 
-u32 SpyI2C_SlaveIO(I2C_SlaveIO* u) {
+u32 SpyI2C_SlaveIO(I2C_SlaveIO_t* u) {
 
   u->fnSpyScheme = I2C_SlaveIO_SpyProcess;
   u->I2C_BitCounter = 0;
   return 0;
 }
 
-u32 UnSpyI2C_SlaveIO(I2C_SlaveIO* u) {
+u32 UnSpyI2C_SlaveIO(I2C_SlaveIO_t* u) {
 
   u->fnSpyScheme = 0;
   return 0;
@@ -165,7 +174,7 @@ const u8 HexToAscii[] = {  '0','1','2','3','4','5','6','7','8','9','A','B','C','
 
 static u32 I2C_SlaveIO_SpyProcess(u32 u) {
 
-  I2C_SlaveIO* S = (I2C_SlaveIO*) u;
+  I2C_SlaveIO_t* S = (I2C_SlaveIO_t*) u;
   I2C_Symbols I2C_Symbol = S->I2C_Symbol;
   
   if(S->BV==0) while(1);// you forgot to point to a BV global structure... pointer is null.
@@ -308,7 +317,7 @@ enum {
 
 
 static u32 I2C_SlaveIO_sm_MakeSlaveIdle(u32 u) { // State S0 and state machine reset state
-  I2C_SlaveIO* S = (I2C_SlaveIO*) u;
+  I2C_SlaveIO_t* S = (I2C_SlaveIO_t*) u;
   I2C_Symbols I2C_Symbol = S->I2C_Symbol; // made local var as it is read only in this function  
   // SDA = input
   //  SetSDALow(); // will be low if turns output for ack bit... and stays input otherwise
@@ -339,7 +348,7 @@ static u32 I2C_SlaveIO_sm_MakeSlaveIdle(u32 u) { // State S0 and state machine r
 
 
 static u32 I2C_SlaveIO_sm_StartBitReceived(u32 u) {
-  I2C_SlaveIO* S = (I2C_SlaveIO*) u;
+  I2C_SlaveIO_t* S = (I2C_SlaveIO_t*) u;
   S->BusBusy = 1;
   S->Bitmask = 0x100;
   S->Data = 0x00;
@@ -350,7 +359,7 @@ static u32 I2C_SlaveIO_sm_StartBitReceived(u32 u) {
 // State S1
 static u32 I2C_SlaveIO_sm_WaitForStartBit(u32 u) {
   u32 thisSx = S1_WaitForStartBit;
-  I2C_SlaveIO* S = (I2C_SlaveIO*) u;
+  I2C_SlaveIO_t* S = (I2C_SlaveIO_t*) u;
   I2C_Symbols I2C_Symbol = S->I2C_Symbol; // made local var as it is read only in this function
   switch((u8)I2C_Symbol) {
       case I2C_Start:  // start bit: communication starting right now
@@ -368,7 +377,7 @@ static u32 I2C_SlaveIO_sm_WaitForStartBit(u32 u) {
 // State S2
 static u32 I2C_SlaveIO_sm_Receive8BitsAdr(u32 u) {
   u32 thisSx = S2_Receive8BitsAdr;
-  I2C_SlaveIO* S = (I2C_SlaveIO*) u;
+  I2C_SlaveIO_t* S = (I2C_SlaveIO_t*) u;
   I2C_Symbols I2C_Symbol = S->I2C_Symbol; // made local var as it is read only in this function
   u8 i;
   switch(I2C_Symbol) {
@@ -425,7 +434,7 @@ static u32 I2C_SlaveIO_sm_Receive8BitsAdr(u32 u) {
 // State S5
 static u32 I2C_SlaveIO_sm_Receiving8bitSubAdr(u32 u) {
   u32 thisSx = S5_Receiving8bitSubAdr;
-  I2C_SlaveIO* S = (I2C_SlaveIO*) u;
+  I2C_SlaveIO_t* S = (I2C_SlaveIO_t*) u;
   I2C_Symbols I2C_Symbol = S->I2C_Symbol; // made local var as it is read only in this function
   
 //===--->
@@ -474,7 +483,7 @@ static u32 I2C_SlaveIO_sm_Receiving8bitSubAdr(u32 u) {
 static u32 I2C_SlaveIO_sm_Receiving8bitData(u32 u) {
   
   u32 thisSx = S8_Receiving8bitData;
-  I2C_SlaveIO* S = (I2C_SlaveIO*) u;
+  I2C_SlaveIO_t* S = (I2C_SlaveIO_t*) u;
   I2C_Symbols I2C_Symbol = S->I2C_Symbol; // made local var as it is read only in this function
   
   switch(I2C_Symbol) {
@@ -527,7 +536,7 @@ static u32 I2C_SlaveIO_sm_Transmit8BitData(u32 u) {
   
   
   u32 thisSx = S11_Transmit8BitData;
-  I2C_SlaveIO* S = (I2C_SlaveIO*) u;
+  I2C_SlaveIO_t* S = (I2C_SlaveIO_t*) u;
   I2C_Symbols I2C_Symbol = S->I2C_Symbol; // made local var as it is read only in this function
   
   switch(I2C_Symbol) {

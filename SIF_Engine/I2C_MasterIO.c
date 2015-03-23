@@ -25,23 +25,13 @@ u32 TimerCountdownWait(u32 u);
 u32 NopsWait(u32 u);
 //--------- this will become later global resources --------
 
-u32 NewI2C_MasterIO(I2C_MasterIO_t* M) {
+u32 NewI2C_MasterIO_SDA_SCL(I2C_MasterIO_t* M, IO_Pin_t* SDA, IO_Pin_t* SCL) {
 
-// we have to initialize the state machine first
-  // configure the GPIOs
-  // configure SDA pin
-  IO_PinClockEnable(M->SDA);
-  IO_PinSetOutput(M->SDA);  
-  IO_PinSetHigh(M->SDA);  
-  IO_PinEnablePullUpDown(M->SDA, ENABLE, DISABLE);
-  IO_PinEnableHighDrive(M->SDA, DISABLE);
-
-  // configure SCL pin
-  IO_PinClockEnable(M->SCL);
-  IO_PinSetOutput(M->SCL);  
-  IO_PinSetHigh(M->SCL);
-  IO_PinEnablePullUpDown(M->SCL, ENABLE, DISABLE);
-  IO_PinEnableHighDrive(M->SCL, DISABLE);
+  if((SDA==0)||(SCL==0)) while(1); // define the 2 pins please.
+  if(M==0) while(1); // define a RAM structure for the I2C Master!
+  
+  M->SDA = SDA;
+  M->SCL = SCL;
  
   return 0;
 }
@@ -54,10 +44,6 @@ u32 SetI2C_MasterIO_Timings(I2C_MasterIO_t* M, u32 MaxBps, MCUClocks_t* T ) {
   
   M->MaxBps = MaxBps; // 400khz
 
-  IO_PinSetSpeedMHz(M->SDA, 1);
-  IO_PinSetSpeedMHz(M->SCL, 1);
-
-  
   HalfClockPeriod_Hz = MaxBps*2; // Timers runs at 1MHz max overflow speed. 500kHz = 2us
   
   if(M->Timer) {
@@ -84,9 +70,19 @@ u32 SetI2C_MasterIO_Timings(I2C_MasterIO_t* M, u32 MaxBps, MCUClocks_t* T ) {
 
 
 //=============================================
+u32 ConfigureI2C_MasterIO(I2C_MasterIO_t* M) { // configure the HW registers
 
+  // configure SDA pin
+  ConfigurePinAsOpenDrainPU(M->SDA);
+  // configure SCL pin
+  ConfigurePinAsOpenDrainPU(M->SCL);
+  return 0;
+}
 
-
+u32 EnableI2C_MasterIO(I2C_MasterIO_t* M) {
+  
+  return 0;
+}
 //==============================================
 //=============== These are the optional I2C spy mode to see what is happening on a bus.
 // the slave function is then disabled

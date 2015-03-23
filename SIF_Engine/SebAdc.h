@@ -43,7 +43,7 @@ typedef struct {
   ADC_TypeDef* ADCx;
   ADC_InitTypeDef ADCI;
   
-  u32       VRef_mV; // The ADC supply voltage in mV
+  u16       VRef_mV; // The ADC supply voltage in mV
   u32       FeedClockHz;
   
   IO_Pin_t* NormalAnalogInPins[16]; // this correspond to the normal sequence
@@ -57,7 +57,7 @@ typedef struct {
   
   u32       NormalInternalTrigger;
   u32       NormalSamplesAdr; // DMA
-  u32       NormalSamplesCount; // DMA if 1+
+  u16       NormalSamplesCount; // DMA if 1+
   ADC_ScanScheme       NormalScheme;
   
   IO_Pin_t* InjectedAnalogInPins[4]; // this correspond to the injected (normal interruptable by injected priority channel)
@@ -71,12 +71,12 @@ typedef struct {
   u32       InjectedMaxSamplingRate_Hz;
   ADC_ScanScheme       InjectedScheme;
   
-  u16       MinThreshold_mV;  //
-  u16       MaxThreshold_mV;  // 
-  IO_Pin_t* ThresholdMonitoredPin; // NULL = function on all pins
-  u32       fnThreshold;
-  u32       ctThreshold;
+  u16       MinOOR_mV;  // Out Of Range
+  u16       MaxOOR_mV;  // Out Of Range
+  IO_Pin_t* OOR_Pin; // NULL = function on all pins
   
+  u32       fnOOR;
+  u32       ctOOR;
   u32       fnNormalDone;
   u32       ctNormalDone;
   u32       fnInjectedDone;
@@ -93,8 +93,14 @@ typedef struct {
   
   u8        NormalDone : 1;
   u8        InjectedDone : 1;
-  u8        Threshold : 1;
+  u8        OOR : 1;
   u8        Overflow : 1;
+  
+  u32 RX_Channel;
+  DMA_StreamInfo_t* DMA_RX; // this point to a const structure based on datasheet info  
+  
+  StuffsArtery_t* SA; // this points to Job feeding
+  
 } ADC_t;
 
 /* ADC_CommonInitTypeDef */
@@ -107,8 +113,8 @@ u32 NewADC_InjectedChannelInternal(ADC_t* A, ADC_Internal_Signals Channel);
 u32 UseADC_NormalTrigger(ADC_t* A, IO_Pin_t* T, u32 InternalTrigger);
 u32 UseADC_InjectedTrigger(ADC_t* A, IO_Pin_t* T, u32 InternalTrigger);
 
-void SetADC_Waveform(ADC_t* A, u32 Adr, u32 Size);
-u32 SetADC_Threshold_Pin_Min_Max_mV(ADC_t* A, IO_Pin_t* P, u32 MinThreshold_mV, u32 MaxThreshold_mV);
+void SetADC_Waveform(ADC_t* A, u32 Adr, u16 Size);
+u32 SetADC_OOR_Pin_Min_Max_mV(ADC_t* A, IO_Pin_t* P, u32 MinOOR_mV, u32 MaxOOR_mV);
 
 void ConfigureADC(ADC_t* A, ADC_ScanScheme NormalScheme, ADC_ScanScheme InjectedScheme);
 void HookADC(ADC_t* A, u16 ADC_IT, u32 fn, u32 ct);
@@ -128,6 +134,6 @@ u32 ADC_ConvertInjectedTo_mV(ADC_t* A);
 
 s32 ADC_Convert_VRefByLsb(ADC_t* A, u32 Lsb);
 s32 ADC_FeedbackVdd(ADC_t* A, u32 Vdd_mV);
-
+s32 ADC_Convert_mV_to_DegC_x10(ADC_t* A, u32 mV);
 
 #endif

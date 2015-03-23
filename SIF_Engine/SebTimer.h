@@ -42,7 +42,9 @@ void HookTimerCountdown(Timer_t* Timer, u32 n, u32 fn, u32 ct);
 void ReArmTimerCountdown(Timer_t* Timer, u32 n);
 void NVIC_TimersEnable(FunctionalState Enable);
 
-void NewTimer_us(Timer_t* Timer, TIM_TypeDef* T, u32 Period_us, MCUClocks_t * Tree);
+void NewTimer(Timer_t* Timer, TIM_TypeDef* T);//, u32 Period_us, MCUClocks_t * Tree);
+u32 SetTimerTimings(Timer_t* Timer, u32 Period_us, MCUClocks_t* Tree );
+void ConfigureTimer(Timer_t* T);
 
 void SetTimerScheme(Timer_t* Timer, u32 Scheme);
 void SetCC_Scheme(Timer_t* Timer, u32 n, u32 Scheme);
@@ -60,7 +62,7 @@ u32 SetTimerInputCC(u32 u, u32 n, IO_Pin_t* Pin, FunctionalState Enable);
 u32 EnableTimerCC_Interrupt(u32 u, u32 n, FunctionalState Enable);
 
 typedef struct {
-  Signal_t Signal;
+  SignalName_t Signal;
   TIM_TypeDef* TIMx;
   u8 n;
 } TimerRelatedSignals_t;

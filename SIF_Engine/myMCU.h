@@ -159,7 +159,7 @@ MCU_TimerCapabilities_t* MCU_GetMCU_TimerCapabilitiesByPPP(u32 PPP_Adr);
 
 
 typedef struct {
-  Signal_t Signal;
+  SignalName_t Signal;
   PinNameDef PinName;
   ADC_TypeDef* ADCx;
   u16       Channel;

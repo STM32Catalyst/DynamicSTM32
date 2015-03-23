@@ -19,7 +19,7 @@ u32 HookSA_Emptied(StuffsArtery_t* SA, u32 (*fn)(u32), u32 ct) {
 
 //==========================================================
 // StrandCreation
-u32 NewSA(StuffsArtery_t* SA, u32 begin, s32 size) { // size is the number of u32 in the buffer which starts in begin.
+StuffsArtery_t* NewSA(StuffsArtery_t* SA, u32 begin, s32 size) { // size is the number of u32 in the buffer which starts in begin.
 
   if(size==0)
     while(1); // no memory for it?
@@ -31,7 +31,7 @@ u32 NewSA(StuffsArtery_t* SA, u32 begin, s32 size) { // size is the number of u3
   { // valid SRAM space
     SA->bCountLimit = size; // we validate the strand size (action can occur)
     SA->bCount = 0;
-    return begin;
+    return SA;
   }
   
 //  SA->bCount = SA->bCountLimit = 0; // no strand possible

@@ -28,15 +28,15 @@ typedef struct {
   u32 (*fnEmptied)(u32);
   u32 ctEmptied;
   
-  u8 FlagNoLongerEmpty : 1; // unused
-  u8 FlagEmptied : 1; // unused
+  u8 FlagNoLongerEmpty : 1; 
+  u8 FlagEmptied : 1; 
 //  u8 FlagFull : 1; // unused
 //  u8 FlagNoLongerFull : 1; // unused
   
 } StuffsArtery_t;
 
 
-u32 NewSA(StuffsArtery_t* SA, u32 begin, s32 size);
+StuffsArtery_t* NewSA(StuffsArtery_t* SA, u32 begin, s32 size);
 
 u32 GetSA_Down(StuffsArtery_t* SA);
 u32 GetSA_Up(StuffsArtery_t* SA);

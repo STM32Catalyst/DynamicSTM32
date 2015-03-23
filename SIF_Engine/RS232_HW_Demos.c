@@ -17,9 +17,7 @@ void TestSebUART(void) {
   
   char* pu8;
   u32 tmp = 0;
-  Rs232.RX = &Rs232RX;
-  Rs232.TX = &Rs232TX;
-  NewRs232HW(&Rs232, USART1); // The HW connectivity, handle, register base, RX pin, TX pin, CTS pin, RTS pin, if non null.
+  NewRs232HW(&Rs232, USART1, NewIO_Pin(&Rs232RX,PB7), NewIO_Pin(&Rs232TX, PB6)); // The HW connectivity, handle, register base, RX pin, TX pin, CTS pin, RTS pin, if non null.
   SetRs232Timings(&Rs232, 115200, 2, 1); // Things depending on time and internal clocks
   // we have also to initialize the BV_TX and BV_RX at higher level...
   // initialize the BV first!
@@ -28,6 +26,8 @@ void TestSebUART(void) {
 
   SetRs232BVs( &Rs232, &BV_TX, &BV_RX);
   
+  ConfigureRs232HW(&Rs232);
+  EnableRs232HW(&Rs232);
   // now we need to activate everything after all the architecture is done (the other end of the BV_TX, BV_RX)
   NVIC_Rs232sEnable(ENABLE);
 
@@ -39,13 +39,13 @@ void TestSebUART(void) {
     pu8++;
   };
 
-  __set_PRIMASK(tmp | 1);  
+  __disable_irq();//__set_PRIMASK(tmp | 1);  
   pu8 = (char*)Hello2;
   while(*pu8) {// empty string check first
     AddToBV(Rs232.BV_TX, *pu8); // add to head (new)
     pu8++;
   };
-  __set_PRIMASK(tmp);
+  __enable_irq();//__set_PRIMASK(tmp);
   
   while(1);
 }

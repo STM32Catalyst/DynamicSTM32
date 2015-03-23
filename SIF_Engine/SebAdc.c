@@ -1,9 +1,22 @@
 
 #include "SebEngine.h"
 
+// Seb ADC Demos here
+#ifndef _SEB_MATH_H_
+static s32 Interpolate_s32 (s32 x0, s32 x1, s32 y0, s32 y1, s32 x)
+{ 
+// code for 32 bit mcu
+    s32 dwQ;
+        dwQ = ((y1-y0))*x+(x1*y0)-(x0*y1);	// overflow not checked yet
+	dwQ = dwQ / (x1-x0);// we can also do roundings here
+  
+	return dwQ;
+}
+#endif
+
 void ADCx_IRQHandler(u32 u);
 // First, we need to match the pin name with the ADC number and its channel
-const u16 ADC_Cycles[] = {
+static const u16 ADC_Cycles[] = {
 3, //#define ADC_SampleTime_3Cycles                    ((uint8_t)0x00)
 15, //#define ADC_SampleTime_15Cycles                   ((uint8_t)0x01)
 28, //#define ADC_SampleTime_28Cycles                   ((uint8_t)0x02)
@@ -46,31 +59,8 @@ u32 NewADC(ADC_t* A, ADC_TypeDef* ADCx, u32 VRef_mV, MCUClocks_t * Tree ) {
   return 0;
 }
 
-static void SetADC_Pin(IO_Pin_t* P) {
-  
-  IO_PinClockEnable(P);
-  IO_PinSetInput(P);
-  IO_PinSetLow(P);
-  IO_PinSetSpeedMHz(P, 1);
-  IO_PinEnablePullUpDown(P, DISABLE, DISABLE);// try mid voltage if it works
-  IO_PinEnableHighDrive(P, DISABLE);
-  IO_PinSetAnalog(P);  
-}
-
-static void SetADC_PinTrigger(IO_Pin_t* P) {
-
-  IO_PinClockEnable(P);
-  IO_PinSetInput(P);
-  IO_PinSetLow(P);
-  IO_PinSetSpeedMHz(P, 1);
-  IO_PinEnablePullUpDown(P, ENABLE, DISABLE);
-  IO_PinEnableHighDrive(P, DISABLE);
-  IO_PinSetInput(P);
-}
 
 // Temperature Sensor, Vrefint and VBAT management functions ******************
-//void ADC_TempSensorVrefintCmd(FunctionalState NewState);
-//void ADC_VBATCmd(FunctionalState NewState);
 
 u32 NewADC_NormalChannel(ADC_t* A, IO_Pin_t* P, u32 SampleTime_cy) {
   
@@ -174,8 +164,6 @@ u32 NewADC_InjectedChannelInternal(ADC_t* A, ADC_Internal_Signals Channel) {
 
 //=====
 
-
-
 u32 UseADC_NormalTrigger(ADC_t* A, IO_Pin_t* T, u32 InternalTrigger) {
   
   A->NormalInternalTrigger = InternalTrigger;
@@ -205,10 +193,8 @@ u32 UseADC_InjectedTrigger(ADC_t* A, IO_Pin_t* T, u32 InternalTrigger) {
 }
 
 // Regular Channels DMA Configuration functions *******************************
-//void ADC_DMACmd(ADC_TypeDef* ADCx, FunctionalState NewState);
-//void ADC_DMARequestAfterLastTransferCmd(ADC_TypeDef* ADCx, FunctionalState NewState);
 
-void SetADC_Waveform(ADC_t* A, u32 Adr, u32 Size) {
+void SetADC_Waveform(ADC_t* A, u32 Adr, u16 Size) {
 
   A->NormalSamplesAdr = Adr;
   A->NormalSamplesCount = Size;
@@ -218,7 +204,7 @@ void SetADC_Waveform(ADC_t* A, u32 Adr, u32 Size) {
 static void SetADC_DMA(ADC_t* A, u32 Adr, u32 Size) {
 
   DMA_InitTypeDef       DMA_InitStructure;
-  u32 Signal;
+  SignalName_t Signal;
   if(A->ADCx == ADC1) Signal = ADC1_ANALOG;
   else
   if(A->ADCx == ADC2) Signal = ADC2_ANALOG;
@@ -228,6 +214,11 @@ static void SetADC_DMA(ADC_t* A, u32 Adr, u32 Size) {
     while(1); // error!
 
   DMA_StreamChannelInfo_t* DSCI = Get_pStreamChannelForPPP_Signal((u32)A->ADCx, Signal, DMA_DIR_PeripheralToMemory);
+  DMA_StreamInfo_t* DSI = Get_pDMA_Info(DSCI->Stream);
+  
+  A->DMA_RX = Get_pDMA_Info(DSCI->Stream); // for future
+  A->RX_Channel = DSCI->Channel; // for future
+  
   /* DMA2 Stream0 channel2 configuration **************************************/
   DMA_InitStructure.DMA_Channel = DSCI->Channel;
   DMA_InitStructure.DMA_PeripheralBaseAddr = (u32)&A->ADCx->DR;
@@ -288,7 +279,7 @@ void ConfigureADC(ADC_t* A, ADC_ScanScheme NormalScheme, ADC_ScanScheme Injected
   if(A->NormalSamplesCount) { // if the number of normal samples to aquires is non zero, we use DMA, otherwise, it's a single channel which will be used (discontinuous mode?)
 
     u32 Adr = A->NormalSamplesAdr;
-    u32 Size = A->NormalSamplesCount;
+    u16 Size = A->NormalSamplesCount;
     
     if(Adr==0) { // If no address, use the ADC's RAM limited RAM buffer to its fullest
       Adr = (u32)&A->Normal_Lsb[0];
@@ -307,14 +298,14 @@ void ConfigureADC(ADC_t* A, ADC_ScanScheme NormalScheme, ADC_ScanScheme Injected
   for(n=0;n<A->NormalUsedChannelCount;n++) {
     ADC_RegularChannelConfig(A->ADCx, A->NormalChannel[n], n+1, ADC_CyclesToSampletime(A->NormalSampleTime_cy[n]));
     if(A->NormalAnalogInPins[n])
-      SetADC_Pin(A->NormalAnalogInPins[n]);
+      ConfigurePinAsAnalog(A->NormalAnalogInPins[n]);
   };
 
   // Injected Channels
   for(n=0;n<A->InjectedUsedChannelCount;n++) {
     ADC_InjectedChannelConfig(A->ADCx, A->InjectedChannel[n], n+1, ADC_CyclesToSampletime(A->InjectedSampleTime_cy[n]));
     if(A->InjectedAnalogInPins[n])
-      SetADC_Pin(A->InjectedAnalogInPins[n]);
+      ConfigurePinAsAnalog(A->InjectedAnalogInPins[n]);
   };
   
   A->ADCx->JSQR = 0; // re-do it better
@@ -327,7 +318,7 @@ void ConfigureADC(ADC_t* A, ADC_ScanScheme NormalScheme, ADC_ScanScheme Injected
   // Normal Trigger (we need to check for double booking as same trigger may be shared by multiple ADCs)
   if(A->NormalTriggerPin && (A->NormalInternalTrigger!=SHARED)) {
     RCC_APB2PeriphClockCmd(RCC_APB2Periph_SYSCFG, ENABLE);
-    SetADC_PinTrigger(A->NormalTriggerPin);
+    ConfigurePinAsInputTrigger(A->NormalTriggerPin);
     EXTI_SetEdgesEnable(A->NormalTriggerPin->Name, ENABLE, DISABLE); // Rising Edge is the trigger/event
     EXTI_SetEvent(A->NormalTriggerPin->Name & 0xF, ENABLE); // no checks on overbooking here...
   };
@@ -335,12 +326,11 @@ void ConfigureADC(ADC_t* A, ADC_ScanScheme NormalScheme, ADC_ScanScheme Injected
   // Injected Trigger (we need to check for double booking as same trigger may be shared by multiple ADCs)
   if(A->InjectedTriggerPin && (A->InjectedInternalTrigger!=SHARED)) {
     RCC_APB2PeriphClockCmd(RCC_APB2Periph_SYSCFG, ENABLE);
-    SetADC_PinTrigger(A->InjectedTriggerPin);
+    ConfigurePinAsInputTrigger(A->InjectedTriggerPin);
     EXTI_SetEdgesEnable(A->InjectedTriggerPin->Name, ENABLE, DISABLE); // Rising Edge is the trigger/event
     EXTI_SetEvent(A->InjectedTriggerPin->Name & 0xF, ENABLE); // no checks on overbooking here...
   };
   
-
 // ADC Init related call  
   A->ADCI.ADC_Resolution = ADC_Resolution_12b;
   A->ADCI.ADC_ScanConvMode = ENABLE; // Always
@@ -408,63 +398,28 @@ void StartADC_InjectedConversion(ADC_t* A) {
 }
 
 
-/*
-// Initialization and Configuration functions *********************************
-void ADC_Init(ADC_TypeDef* ADCx, ADC_InitTypeDef* ADC_InitStruct);
-void ADC_StructInit(ADC_InitTypeDef* ADC_InitStruct);
-void ADC_CommonInit(ADC_CommonInitTypeDef* ADC_CommonInitStruct);
-void ADC_CommonStructInit(ADC_CommonInitTypeDef* ADC_CommonInitStruct);
-void ADC_Cmd(ADC_TypeDef* ADCx, FunctionalState NewState);
-
-// Regular Channels Configuration functions ***********************************
-void ADC_RegularChannelConfig(ADC_TypeDef* ADCx, uint8_t ADC_Channel, uint8_t Rank, uint8_t ADC_SampleTime);
-void ADC_SoftwareStartConv(ADC_TypeDef* ADCx);
-FlagStatus ADC_GetSoftwareStartConvStatus(ADC_TypeDef* ADCx);
-void ADC_EOCOnEachRegularChannelCmd(ADC_TypeDef* ADCx, FunctionalState NewState);
-void ADC_ContinuousModeCmd(ADC_TypeDef* ADCx, FunctionalState NewState);
-void ADC_DiscModeChannelCountConfig(ADC_TypeDef* ADCx, uint8_t Number);
-void ADC_DiscModeCmd(ADC_TypeDef* ADCx, FunctionalState NewState);
-uint16_t ADC_GetConversionValue(ADC_TypeDef* ADCx);
-uint32_t ADC_GetMultiModeConversionValue(void);
-
-// Injected channels Configuration functions **********************************
-void ADC_InjectedChannelConfig(ADC_TypeDef* ADCx, uint8_t ADC_Channel, uint8_t Rank, uint8_t ADC_SampleTime);
-void ADC_InjectedSequencerLengthConfig(ADC_TypeDef* ADCx, uint8_t Length);
-void ADC_SetInjectedOffset(ADC_TypeDef* ADCx, uint8_t ADC_InjectedChannel, uint16_t Offset);
-void ADC_ExternalTrigInjectedConvConfig(ADC_TypeDef* ADCx, uint32_t ADC_ExternalTrigInjecConv);
-void ADC_ExternalTrigInjectedConvEdgeConfig(ADC_TypeDef* ADCx, uint32_t ADC_ExternalTrigInjecConvEdge);
-void ADC_SoftwareStartInjectedConv(ADC_TypeDef* ADCx);
-FlagStatus ADC_GetSoftwareStartInjectedConvCmdStatus(ADC_TypeDef* ADCx);
-void ADC_AutoInjectedConvCmd(ADC_TypeDef* ADCx, FunctionalState NewState);
-void ADC_InjectedDiscModeCmd(ADC_TypeDef* ADCx, FunctionalState NewState);
-uint16_t ADC_GetInjectedConversionValue(ADC_TypeDef* ADCx, uint8_t ADC_InjectedChannel);
-*/
 
 //============================
 // THRESHOLD SETUP FUNCTIONS
-// Analog Watchdog configuration functions ************************************
-//void ADC_AnalogWatchdogCmd(ADC_TypeDef* ADCx, uint32_t ADC_AnalogWatchdog);
-//void ADC_AnalogWatchdogThresholdsConfig(ADC_TypeDef* ADCx, uint16_t HighThreshold,uint16_t LowThreshold);
-//void ADC_AnalogWatchdogSingleChannelConfig(ADC_TypeDef* ADCx, uint8_t ADC_Channel);
 
-u32 SetADC_Threshold_Pin_Min_Max_mV(ADC_t* A, IO_Pin_t* P, u32 MinThreshold_mV, u32 MaxThreshold_mV) {
+u32 SetADC_OOR_Pin_Min_Max_mV(ADC_t* A, IO_Pin_t* P, u32 MinOOR_mV, u32 MaxOOR_mV) {
   
   if(A==0) while(1);
   if(A->VRef_mV==0) while(1); // we need this to convert to LSB!
 
-  A->MinThreshold_mV = MinThreshold_mV;
-  A->MaxThreshold_mV = MaxThreshold_mV;
-  A->ThresholdMonitoredPin = P;
+  A->MinOOR_mV = MinOOR_mV;
+  A->MaxOOR_mV = MaxOOR_mV;
+  A->OOR_Pin = P;
 
   ADC_Info_t* ADCI = ADC_GetByPPP_PinName(A->ADCx, P->Name);
   
-  if(MaxThreshold_mV==0) {
+  if(MaxOOR_mV==0) {
     ADC_AnalogWatchdogCmd(A->ADCx, ADC_AnalogWatchdog_None); // disable the feature
     return 0;
   }
 
-  u32 MinLsb = Interpolate_s32 (0, A->VRef_mV, 0, 0xFFF, MinThreshold_mV ); // convert to a positive 12 bit quantity
-  u32 MaxLsb = Interpolate_s32 (0, A->VRef_mV, 0, 0xFFF, MaxThreshold_mV ); // convert to a positive 12 bit quantity
+  u32 MinLsb = Interpolate_s32 (0, A->VRef_mV, 0, 0xFFF, MinOOR_mV ); // convert to a positive 12 bit quantity
+  u32 MaxLsb = Interpolate_s32 (0, A->VRef_mV, 0, 0xFFF, MaxOOR_mV ); // convert to a positive 12 bit quantity
   
   ADC_AnalogWatchdogThresholdsConfig(A->ADCx, MaxLsb, MinLsb);
   ADC_AnalogWatchdogSingleChannelConfig(A->ADCx, ADCI->Channel);
@@ -477,13 +432,6 @@ u32 SetADC_Threshold_Pin_Min_Max_mV(ADC_t* A, IO_Pin_t* P, u32 MinThreshold_mV, 
 // Interrupt related functions
 // The possible interrupts generated by this would be conversion complete by normal or injected channels
 // and the watchdog
-
-// Interrupts and flags management functions **********************************
-//void ADC_ITConfig(ADC_TypeDef* ADCx, uint16_t ADC_IT, FunctionalState NewState);
-//FlagStatus ADC_GetFlagStatus(ADC_TypeDef* ADCx, uint8_t ADC_FLAG);
-//void ADC_ClearFlag(ADC_TypeDef* ADCx, uint8_t ADC_FLAG);
-//ITStatus ADC_GetITStatus(ADC_TypeDef* ADCx, uint16_t ADC_IT);
-//void ADC_ClearITPendingBit(ADC_TypeDef* ADCx, uint16_t ADC_IT);
 
 void NVIC_ADCsEnable(FunctionalState Enable) {
   
@@ -500,7 +448,7 @@ void NVIC_ADCsEnable(FunctionalState Enable) {
 void HookADC(ADC_t* A, u16 ADC_IT, u32 fn, u32 ct) {
 
   if(ADC_IT == ADC_IT_EOC) { A->fnNormalDone = fn; A->ctNormalDone = ct; };
-  if(ADC_IT == ADC_IT_AWD) { A->fnThreshold = fn; A->ctThreshold = ct; };
+  if(ADC_IT == ADC_IT_AWD) { A->fnOOR = fn; A->ctOOR = ct; };
   if(ADC_IT == ADC_IT_JEOC) { A->fnInjectedDone = fn; A->ctInjectedDone = ct; };
   if(ADC_IT == ADC_IT_OVR) { while(1); }; // no hook for this case
 
@@ -510,13 +458,6 @@ void HookADC(ADC_t* A, u16 ADC_IT, u32 fn, u32 ct) {
 //            @arg ADC_IT_AWD: Analog watchdog interrupt mask
 //            @arg ADC_IT_JEOC: End of injected conversion interrupt mask
 //            @arg ADC_IT_OVR: Overrun interrupt enable   
-
-//            @arg ADC_FLAG_AWD: Analog watchdog flag
-//            @arg ADC_FLAG_EOC: End of conversion flag
-//            @arg ADC_FLAG_JEOC: End of injected group conversion flag
-//            @arg ADC_FLAG_JSTRT: Start of injected group conversion flag
-//            @arg ADC_FLAG_STRT: Start of regular group conversion flag
-//            @arg ADC_FLAG_OVR: Overrun flag    
 void ADC_InterruptEnable(ADC_t* A, u16 ADC_IT, FunctionalState NewState) {
   
   u32 Flag = 0;
@@ -549,8 +490,8 @@ void ADCx_IRQHandler(u32 u) {
   }
 
   if(ADC_GetITStatus(A->ADCx, ADC_IT_AWD)==SET) {
-    A->Threshold = 1;
-    if(A->fnThreshold) ((u32(*)(u32))A->fnThreshold)(A->ctThreshold);
+    A->OOR = 1;
+    if(A->fnOOR) ((u32(*)(u32))A->fnOOR)(A->ctOOR);
     ADC_ClearITPendingBit(A->ADCx, ADC_IT_AWD);    
   }
 
@@ -630,4 +571,8 @@ s32 ADC_Convert_VRefByLsb(ADC_t* A, u32 Lsb) {
 s32 ADC_FeedbackVdd(ADC_t* A, u32 Vdd_mV) {
   
   A->VRef_mV = A->MeasuredVdd_mV; // hmm....
+  return 0;
 }
+
+//  // We need to initialize the hooks for DMA_RX... DMA management
+//  HookIRQ_PPP((u32)S->DMA_RX->Stream, (u32)JobToDo, (u32)S->SA); // From DMA Stream, place the hooks
