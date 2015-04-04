@@ -4,6 +4,8 @@
 
 // THIS IS THE SAR ADC. (Sigma delta ADC to be created later, as it does not exist in STM32F437 initial test vehicle)
 
+// Remains to express each channel in us for the conversion time, so we can be ADC Clock speed independent and just request for a minimum value in MHz (>8MHz)
+
 // F437 bugged std lib?
 typedef enum {
   ADC_VRef,
@@ -44,7 +46,7 @@ typedef struct {
   ADC_InitTypeDef ADCI;
   
   u16       VRef_mV; // The ADC supply voltage in mV
-  u32       FeedClockHz;
+  MCU_Clocks_t* Clocks; // This includes everything about clocks, and Vdd.
   
   IO_Pin_t* NormalAnalogInPins[16]; // this correspond to the normal sequence
   u8        NormalChannel[18];
@@ -105,16 +107,16 @@ typedef struct {
 
 /* ADC_CommonInitTypeDef */
 
-u32 NewADC(ADC_t* A, ADC_TypeDef* ADCx, u32 Vdd_mV, MCUClocks_t * Tree );
-u32 NewADC_NormalChannel(ADC_t* A, IO_Pin_t* P, u32 SampleTime_cy);
-u32 NewADC_NormalChannelInternal(ADC_t* A, ADC_Internal_Signals Channel);
-u32 NewADC_InjectedChannel(ADC_t* A, IO_Pin_t* P, u32 SampleTime_cy);
-u32 NewADC_InjectedChannelInternal(ADC_t* A, ADC_Internal_Signals Channel);
-u32 UseADC_NormalTrigger(ADC_t* A, IO_Pin_t* T, u32 InternalTrigger);
-u32 UseADC_InjectedTrigger(ADC_t* A, IO_Pin_t* T, u32 InternalTrigger);
+void NewADC(ADC_t* A, ADC_TypeDef* ADCx, u32 Vdd_mV );
+void NewADC_NormalChannel(ADC_t* A, IO_Pin_t* P, u32 SampleTime_cy);
+void NewADC_NormalChannelInternal(ADC_t* A, ADC_Internal_Signals Channel);
+void NewADC_InjectedChannel(ADC_t* A, IO_Pin_t* P, u32 SampleTime_cy);
+void NewADC_InjectedChannelInternal(ADC_t* A, ADC_Internal_Signals Channel);
+void UseADC_NormalTrigger(ADC_t* A, IO_Pin_t* T, u32 InternalTrigger);
+void UseADC_InjectedTrigger(ADC_t* A, IO_Pin_t* T, u32 InternalTrigger);
 
 void SetADC_Waveform(ADC_t* A, u32 Adr, u16 Size);
-u32 SetADC_OOR_Pin_Min_Max_mV(ADC_t* A, IO_Pin_t* P, u32 MinOOR_mV, u32 MaxOOR_mV);
+void SetADC_OOR_Pin_Min_Max_mV(ADC_t* A, IO_Pin_t* P, u32 MinOOR_mV, u32 MaxOOR_mV);
 
 void ConfigureADC(ADC_t* A, ADC_ScanScheme NormalScheme, ADC_ScanScheme InjectedScheme);
 void HookADC(ADC_t* A, u16 ADC_IT, u32 fn, u32 ct);

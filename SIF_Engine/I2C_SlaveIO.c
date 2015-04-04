@@ -45,6 +45,22 @@ void NewI2C_SlaveIO_SDA_SCL(I2C_SlaveIO_t* S, IO_Pin_t* SDA, IO_Pin_t* SCL) {
 }
 
 
+void SetI2C_SlaveIO_Timings(I2C_SlaveIO_t* S, u32 MinBps, u32 MaxBps ) {
+
+  if(S->Clocks==0) while(1); // must exist and predefined content
+  if(MinBps>400000) while(1); // this is not possible
+  S->Bps.Min = MinBps;
+    // 200kHz with 96MHz, proportional (depends on compiler optimisation, spy on/off, memory on/off...
+  // This function should be called after we know which mode is running
+  if(S->Clocks->OutCoreClk_Hz.Value==0) {
+    MakeItNoLessThan(S->Clocks->OutCoreClk_Hz.Value, (MinBps * 96)/200000); // if the speed is higher than what is possible... boum!
+  }
+}
+
+void SetI2C_SlaveIO_Format(I2C_SlaveIO_t* S) {
+  
+}
+
 void EmulateMemoryI2C_SlaveIO(I2C_SlaveIO_t* S, u8* SlaveAddresses, u8 SlaveAddressesCountof, u8* pMemory, u32 MemoryCountof) {
 
 // we have to initialize the state machine first
@@ -583,7 +599,4 @@ static u32 I2C_SlaveIO_sm_Transmit8BitData(u32 u) {
 
   return thisSx;
 }
-
-
-
 

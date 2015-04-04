@@ -20,17 +20,20 @@ u32 NHD_LCD16x2Test(void) {
   MCUInitClocks();
   
   // Declare the Timer
+  Timer.Clocks = &MCU_Clocks;
   NewTimer(&Timer, TIM6);
-  SetTimerTimings(&Timer, 100, GetMCUClockTree());
+  SetTimerTimings_us(&Timer, 100);
   ConfigureTimer(&Timer);
   NVIC_TimersEnable(ENABLE);
   
   // Use Timer for LCD and SPI (2 channels used)
 //  LCD.Timer = &Timer;
   LCD_SPI.Timer = &Timer;
-  
+
+  LCD_SPI.Clocks = &MCU_Clocks;
   NewSPI_MasterIO(&LCD_SPI, NewIO_Pin(&SI,PE6), NewIO_Pin(&SI,PE6),NewIO_Pin(&SCL, PE5),NewIO_Pin(&CS, PE4)); 
-  SetSPI_MasterIO_Timings(&LCD_SPI, 100000, SPI_CPOL_Low, SPI_CPHA_1Edge, SPI_FirstBit_MSB, GetMCUClockTree() ); // 1200000, SPI_CPOL_Low, SPI_CPHA_1Edge, SPI_FirstBit_MSB
+  SetSPI_MasterIO_Timings(&LCD_SPI, 100000, MHzToHz(12) ); // 1200000, SPI_CPOL_Low, SPI_CPHA_1Edge, SPI_FirstBit_MSB
+  SetSPI_MasterIO_Format(&LCD_SPI, SPI_CPOL_Low, SPI_CPHA_1Edge, SPI_FirstBit_MSB);
   ConfigureSPI_MasterIO(&LCD_SPI);
   EnableSPI_MasterIO(&LCD_SPI);
   

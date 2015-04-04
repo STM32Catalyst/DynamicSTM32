@@ -12,12 +12,8 @@ typedef struct {
   u32 RX;
   u32 bCount;
   
-  u32 MaxBps; // this is the maximum required baudrate
-//  u32 ActualBps; // HW bit rate (does not include delays between bytes)
-//  u32 AverageBps; // Averate bit rate per job
-//  u32 FeedClockMHz; // SPI Clock feed. Internally only plays with PSC = 2^(n+1)
-  
-  StuffsArtery_t* SA; // this points to Job feeding
+  RangedValue_t Bps; // input
+  MCU_Clocks_t* Clocks; // This includes everything about clocks, and Vdd.
   
   Timer_t* Timer; // this will be to control time ticks
   u8 Cn; //  a number between 0 and 3
@@ -25,6 +21,8 @@ typedef struct {
   u32 (*fnWaitMethod)(u32);
   u32 ctWaitMethod;
   u32 WaitParam;
+
+  StuffsArtery_t* SA; // this points to Job feeding
   
   u8 ParityError : 1;
   
@@ -33,9 +31,10 @@ typedef struct {
   
 
 void NewRFFE_MasterIO_RX_TX_SCLK_SDATA(RFFE_MasterIO_t* M, IO_Pin_t* SCLK, IO_Pin_t* SDATA);
-u32 SetRFFE_MasterIO_Timings(RFFE_MasterIO_t* M, u32 MaxBps, MCUClocks_t* T ); // 1200000, SPI_CPOL_Low, SPI_CPHA_1Edge, SPI_FirstBit_MSB
-u32 ConfigureRFFE_MasterIO(RFFE_MasterIO_t* M);
-u32 EnableRFFE_MasterIO(RFFE_MasterIO_t* M);
+void SetRFFE_MasterIO_Timings(RFFE_MasterIO_t* M, u32 MinBps, u32 MaxBps ); // 1200000, SPI_CPOL_Low, SPI_CPHA_1Edge, SPI_FirstBit_MSB
+void SetRFFE_MasterIO_Format(RFFE_MasterIO_t* M);
+void ConfigureRFFE_MasterIO(RFFE_MasterIO_t* M);
+void EnableRFFE_MasterIO(RFFE_MasterIO_t* M);
 
 // Available SPI Functions For Sequencer use
 u32 sq_RFFE_MIO_StartJob(u32 u); // SPI_MasterHW_t* and bitmask for NSS to go low

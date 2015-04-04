@@ -11,6 +11,8 @@
 typedef struct {
 
   u16 VRef_mV;
+  
+  MCU_Clocks_t* Clocks; // This includes everything about clocks, and Vdd.
 //  DMA_InitTypeDef DMA_InitStructure[4];
   u32 PPP; // same base address for both...
   u8 n; // 1 or 2   

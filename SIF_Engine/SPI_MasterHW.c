@@ -215,26 +215,45 @@ static const u32 SPI_MasterHW_Psc[] = {
 
   
 
-u32 SetSPI_MasterHW_Timings(SPI_MasterHW_t* S, u32 MaxBps, u32 CPol, u32 CPha, u32 FirstBit ) { // 1200000, SPI_CPOL_Low, SPI_CPHA_1Edge, SPI_FirstBit_MSB
+void SetSPI_MasterHW_Timings(SPI_MasterHW_t* S, u32 MinBps, u32 MaxBps ) { // 1200000, SPI_CPOL_Low, SPI_CPHA_1Edge, SPI_FirstBit_MSB
 
   // members of the structure related to timings should be initialized
-  u32 bps;
-  u32 psc;
-   
-  S->MaxBps = MaxBps;
+  u32 IsAPB1 = (GetSignal2InfoBy_PPP((u32)S->SPI)->fnClk == RCC_APB1PeriphClockCmd); // clock domain (is it a fast or slow SPI? APB1 slow or APB2 fast?) 
+  u32 bps, psc;
+  u32 Hz;
+  
+  // find the feeding clock directly
+
+  if(IsAPB1) {
+    Hz = S->Clocks->OutAPB1Clk_Hz.Value;
+  }else{
+    Hz = S->Clocks->OutAPB2Clk_Hz.Value;
+  };
+    
+  S->Bps.Min = MinBps;
 
   for(psc=0;psc<8;psc++) { // try all possible prescaler values
     //bps = (1000000 * S->FeedClockMHz) >> (psc + 1);
-    bps = (S->FeedClockHz) >> (psc + 1);    
-    if(bps<=MaxBps) break;
+    bps = (Hz) >> (psc + 1);    
+    if(bps<=MinBps) break;
   };
   
   if(psc>7) while(1); // failed to find proper prescaler. Was the FeedClockMHz initialized?
   
   // we have found the highest compatible clock
-  S-> ActualBps = bps;
+  S->Bps.Value = bps;
 //  SPI_I2S_DeInit(S->SPI);
   S->SPII.SPI_BaudRatePrescaler = SPI_MasterHW_Psc[psc]; //SPI_BaudRatePrescaler_8;// Depends on clock info in SPI structure
+
+  if((IsAPB1==TRUE) && (S->Clocks->OutAPB1Clk_Hz.Value==0))
+    S->Clocks->OutAPB1Clk_Hz.Min = MinBps * 2; // or 4 depending on which clock domain is used
+
+  if((IsAPB1==FALSE) && (S->Clocks->OutAPB1Clk_Hz.Value==0))
+    S->Clocks->OutAPB2Clk_Hz.Min = MinBps * 4; // or 4 depending on which clock domain is used
+}
+
+void SetSPI_MasterHW_Format(SPI_MasterHW_t* S, u32 CPol, u32 CPha, u32 FirstBit ) {
+
   S->SPII.SPI_Direction = SPI_Direction_2Lines_FullDuplex;// Imposed. For 3 wires, just short MISO MOSI pins externally. Don't use Bidir to save pins with this code.
   S->SPII.SPI_DataSize = SPI_DataSize_8b; // fixed support
   S->SPII.SPI_CPOL = CPol;//SPI_CPOL_Low; // User choose
@@ -243,12 +262,9 @@ u32 SetSPI_MasterHW_Timings(SPI_MasterHW_t* S, u32 MaxBps, u32 CPol, u32 CPha, u
   S->SPII.SPI_FirstBit = FirstBit;//SPI_FirstBit_MSB; // USer choose
   S->SPII.SPI_CRCPolynomial = 7; // Fixed for now
   S->SPII.SPI_Mode = SPI_Mode_Master; // Fixed for this driver
-  SPI_Init(S->SPI, &S->SPII);     
-  return 0;
+  
+  SPI_Init(S->SPI, &S->SPII);  
 }
-
-
-
 
 static void DMA_Interrupt(u32 u, FunctionalState Enable) {
   SPI_MasterHW_t* S = (SPI_MasterHW_t*) u;

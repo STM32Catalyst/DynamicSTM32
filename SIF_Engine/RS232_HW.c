@@ -64,15 +64,29 @@ void SetRs232Timings(Rs232_t* RS, u32 BaudRate, u32 Parity2, u32 StopBits){ // T
         - Hardware flow control disabled (RTS and CTS signals)
         - Receive and transmit enabled
   */
+  if(RS->Clocks==0) while(1); // define the clock tree first
     
-  USART_InitTypeDef UI;
-  UI.USART_BaudRate = 115200;
-  UI.USART_WordLength = USART_WordLength_9b;
-  UI.USART_StopBits = USART_StopBits_1;
-  UI.USART_Parity = USART_Parity_Even;
-  UI.USART_HardwareFlowControl = USART_HardwareFlowControl_None;
-  UI.USART_Mode = USART_Mode_Rx | USART_Mode_Tx;
-  USART_Init(RS->USART, &UI);
+  RS->UI.USART_BaudRate = 115200;
+  RS->UI.USART_WordLength = USART_WordLength_9b;
+  RS->UI.USART_StopBits = USART_StopBits_1;
+  RS->UI.USART_Parity = USART_Parity_Even;
+  RS->UI.USART_HardwareFlowControl = USART_HardwareFlowControl_None;
+  RS->UI.USART_Mode = USART_Mode_Rx | USART_Mode_Tx;
+  USART_Init(RS->USART, &RS->UI); // this relies on std lib core frequency info from std lib. Should be modified to be free from it.
+  
+  MCU_NodeDependency_t* MND = GetSignal2InfoBy_PPP((u32)RS->USART);
+  if(RS->Clocks->OutAPB1Clk_Hz.Value==0) { // set the min-max range of the corresponding APBx clock tree
+    if(MND->fnClk==RCC_APB1PeriphClockCmd) {
+        MakeItNoLessThan(RS->Clocks->OutAPB1Clk_Hz.Min, MHzToHz(8));
+    }else{
+        MakeItNoLessThan(RS->Clocks->OutAPB2Clk_Hz.Min, MHzToHz(8));
+    }
+  };
+  
+}
+
+void SetRs232Format(Rs232_t* RS) {
+  
 }
 
 void ConfigureRs232HW(Rs232_t* R) {
@@ -163,7 +177,17 @@ u32 RS232_putchar(Rs232_t* RS, u32 c) {
 }
 
 
-
+//==================================
+// Self tuning clock
+u32 GetRs232HW_Timings( Rs232_t* RS) {
+  
+  // the minimum speed depends on the baudrate and this will impact a clock frequency.
+  // to simplify, we will express the minimum clock frequency for both APB1 and APB2.
+  // we will assume that the min clock rate is 16MHz fixed.
+  
+//  T->SysClk_Hz = 16000000;
+  return 0; // prescaler have a fine granularity as they were used with low clock frequency 8 bit MCUs
+}
 
 
 

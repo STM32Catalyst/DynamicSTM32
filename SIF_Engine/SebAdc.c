@@ -39,13 +39,13 @@ static u32 ADC_CyclesToSampletime(u32 cy) {
 
 //============================== The public functions to build your system mecanics
 
-u32 NewADC(ADC_t* A, ADC_TypeDef* ADCx, u32 VRef_mV, MCUClocks_t * Tree ) {
-  
+void NewADC(ADC_t* A, ADC_TypeDef* ADCx, u32 VRef_mV ) {
+
+  if(A->Clocks==0) while(1); // setup the clocks first
   ClockGateEnable_PPP((u32) ADCx, ENABLE); // Enable ADC Clocks
   if(VRef_mV==0) while(1);
   A->VRef_mV = VRef_mV;
   A->ADCx = ADCx;
-  A->FeedClockHz = Tree->APB2Clk_Hz;
   
   ADC_StructInit(&A->ADCI);
   
@@ -55,14 +55,12 @@ u32 NewADC(ADC_t* A, ADC_TypeDef* ADCx, u32 VRef_mV, MCUClocks_t * Tree ) {
   
   // we hook the NVIC interrupt handler
   HookIRQ_PPP((u32)A->ADCx, (u32) ADCx_IRQHandler, (u32) A);
-  
-  return 0;
 }
 
 
 // Temperature Sensor, Vrefint and VBAT management functions ******************
 
-u32 NewADC_NormalChannel(ADC_t* A, IO_Pin_t* P, u32 SampleTime_cy) {
+void NewADC_NormalChannel(ADC_t* A, IO_Pin_t* P, u32 SampleTime_cy) {
   
   u8 n = A->NormalUsedChannelCount;
   // Configure the pin as analog input
@@ -77,10 +75,9 @@ u32 NewADC_NormalChannel(ADC_t* A, IO_Pin_t* P, u32 SampleTime_cy) {
   
   n++;
   A->NormalUsedChannelCount = n;
-  return 0;
 }
 
-u32 NewADC_InjectedChannel(ADC_t* A, IO_Pin_t* P, u32 SampleTime_cy) {
+void NewADC_InjectedChannel(ADC_t* A, IO_Pin_t* P, u32 SampleTime_cy) {
 
   u8 n = A->InjectedUsedChannelCount;
   // Configure the pin as analog input
@@ -95,12 +92,11 @@ u32 NewADC_InjectedChannel(ADC_t* A, IO_Pin_t* P, u32 SampleTime_cy) {
   
   n++;
   A->InjectedUsedChannelCount = n;
-  return 0;
 }  
 
 //===== special internal channels
 
-u32 NewADC_NormalChannelInternal(ADC_t* A, ADC_Internal_Signals Channel) {
+void NewADC_NormalChannelInternal(ADC_t* A, ADC_Internal_Signals Channel) {
   
   u8 n = A->NormalUsedChannelCount;
   u8 ADC_Channel;
@@ -128,10 +124,9 @@ u32 NewADC_NormalChannelInternal(ADC_t* A, ADC_Internal_Signals Channel) {
   
   n++;
   A->NormalUsedChannelCount = n;
-  return 0;
 }
 
-u32 NewADC_InjectedChannelInternal(ADC_t* A, ADC_Internal_Signals Channel) {
+void NewADC_InjectedChannelInternal(ADC_t* A, ADC_Internal_Signals Channel) {
   
   u8 n = A->InjectedUsedChannelCount;
   u8 ADC_Channel;
@@ -159,12 +154,11 @@ u32 NewADC_InjectedChannelInternal(ADC_t* A, ADC_Internal_Signals Channel) {
   
   n++;
   A->InjectedUsedChannelCount = n;
-  return 0;
 }  
 
 //=====
 
-u32 UseADC_NormalTrigger(ADC_t* A, IO_Pin_t* T, u32 InternalTrigger) {
+void UseADC_NormalTrigger(ADC_t* A, IO_Pin_t* T, u32 InternalTrigger) {
   
   A->NormalInternalTrigger = InternalTrigger;
   A->NormalTriggerPin = T;
@@ -175,10 +169,9 @@ u32 UseADC_NormalTrigger(ADC_t* A, IO_Pin_t* T, u32 InternalTrigger) {
     A->NormalInternalTrigger = ADC_ExternalTrigConv_Ext_IT11;
   };
 
-  return 0;
 }
 
-u32 UseADC_InjectedTrigger(ADC_t* A, IO_Pin_t* T, u32 InternalTrigger) {
+void UseADC_InjectedTrigger(ADC_t* A, IO_Pin_t* T, u32 InternalTrigger) {
   
   A->InjectedInternalTrigger = InternalTrigger;
   A->InjectedTriggerPin = T;
@@ -189,7 +182,6 @@ u32 UseADC_InjectedTrigger(ADC_t* A, IO_Pin_t* T, u32 InternalTrigger) {
     A->InjectedInternalTrigger = ADC_ExternalTrigInjecConv_Ext_IT15;
   };
   
-  return 0;
 }
 
 // Regular Channels DMA Configuration functions *******************************
@@ -243,12 +235,14 @@ static void SetADC_DMA(ADC_t* A, u32 Adr, u32 Size) {
 }
 
 
-
+  
 
 //========================================================================
 // How to calculate which prescaler, which sampling time for each ADC?
 static void CalculateADC_Timings(ADC_t* A) {
   u8 n;
+  
+  u32 FeedClockHz = A->Clocks->OutAPB2Clk_Hz.Value;
   
   A->NormalTotalCycle_cy=A->InjectedMaxSamplingRate_Hz=0;
   // we check how long it takes to sweep through all the defined normal and injected channels
@@ -259,12 +253,11 @@ static void CalculateADC_Timings(ADC_t* A) {
     A->InjectedTotalCycle_cy += 12 + A->InjectedSampleTime_cy[n];
   
   // we assume the APB2 div2 prescaler mode is used
-
   if(A->NormalTotalCycle_cy)
-    A->NormalMaxSamplingRate_Hz = (A->FeedClockHz / 2) / A->NormalTotalCycle_cy;
+    A->NormalMaxSamplingRate_Hz = (FeedClockHz / 2) / A->NormalTotalCycle_cy;
   
   if(A->InjectedTotalCycle_cy)
-    A->InjectedMaxSamplingRate_Hz = (A->FeedClockHz / 2) / A->InjectedTotalCycle_cy;
+    A->InjectedMaxSamplingRate_Hz = (FeedClockHz / 2) / A->InjectedTotalCycle_cy;
 }
 
 
@@ -402,7 +395,7 @@ void StartADC_InjectedConversion(ADC_t* A) {
 //============================
 // THRESHOLD SETUP FUNCTIONS
 
-u32 SetADC_OOR_Pin_Min_Max_mV(ADC_t* A, IO_Pin_t* P, u32 MinOOR_mV, u32 MaxOOR_mV) {
+void SetADC_OOR_Pin_Min_Max_mV(ADC_t* A, IO_Pin_t* P, u32 MinOOR_mV, u32 MaxOOR_mV) {
   
   if(A==0) while(1);
   if(A->VRef_mV==0) while(1); // we need this to convert to LSB!
@@ -415,7 +408,7 @@ u32 SetADC_OOR_Pin_Min_Max_mV(ADC_t* A, IO_Pin_t* P, u32 MinOOR_mV, u32 MaxOOR_m
   
   if(MaxOOR_mV==0) {
     ADC_AnalogWatchdogCmd(A->ADCx, ADC_AnalogWatchdog_None); // disable the feature
-    return 0;
+    return;
   }
 
   u32 MinLsb = Interpolate_s32 (0, A->VRef_mV, 0, 0xFFF, MinOOR_mV ); // convert to a positive 12 bit quantity
@@ -424,8 +417,6 @@ u32 SetADC_OOR_Pin_Min_Max_mV(ADC_t* A, IO_Pin_t* P, u32 MinOOR_mV, u32 MaxOOR_m
   ADC_AnalogWatchdogThresholdsConfig(A->ADCx, MaxLsb, MinLsb);
   ADC_AnalogWatchdogSingleChannelConfig(A->ADCx, ADCI->Channel);
   ADC_AnalogWatchdogCmd(A->ADCx, ADC_AnalogWatchdog_SingleRegOrInjecEnable);
-  
-  return 0;
 }
 
 //===============================

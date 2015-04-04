@@ -97,5 +97,12 @@ u32 ConfigurePinAsOpenDrainPU(IO_Pin_t* P); // this pull up is very weak. it doe
 
 // These functions for now are global, they are unique resources.
 
+//=========================================
+// Interpreter needed links
+const char* hmPinNameToString(PinNameDef Name);
+//PinNameDef hmStringToPinName(char* sName);
+
+
+  
 
 #endif

@@ -28,20 +28,22 @@ void NewRFFE_MasterIO_RX_TX_SCLK_SDATA(RFFE_MasterIO_t* M, IO_Pin_t* SCLK, IO_Pi
   M->SCLK = SCLK;
 }
 
-u32 SetRFFE_MasterIO_Timings(RFFE_MasterIO_t* M, u32 MaxBps, MCUClocks_t* T ) { // 1200000, RFFE_CPOL_Low, RFFE_CPHA_1Edge, RFFE_FirstBit_MSB
+void SetRFFE_MasterIO_Timings(RFFE_MasterIO_t* M, u32 MinBps, u32 MaxBps ) { // 1200000, RFFE_CPOL_Low, RFFE_CPHA_1Edge, RFFE_FirstBit_MSB
 
   u32 HalfClockPeriod_Hz;
   u32 HalfClockPeriod_us;
   
-  M->MaxBps = MaxBps; // 400khz
-  HalfClockPeriod_Hz = MaxBps*2; // Timers runs at 1MHz max overflow speed. 500kHz = 2us
+  if(M->Clocks==0) while(1); // point to the clock info first
+  
+  M->Bps.Min = MinBps; // 400khz
+  HalfClockPeriod_Hz = MinBps*2; // Timers runs at 1MHz max overflow speed. 500kHz = 2us
   
   if(M->Timer) {
     
     M->WaitParam = 1000000 / ( M->Timer->OverflowPeriod_us * HalfClockPeriod_Hz);
     if(M->WaitParam) {
       M->fnWaitMethod = TimerCountdownWait; // here we should take care of the timings, and choose the best scheme based on CPU MHz and bps of bus...    
-      return 0; // found a tick period compatible with this Basic Timer
+      return; // found a tick period compatible with this Basic Timer
     };
     // otherwise, the strategy will be NOPs.
   }
@@ -50,27 +52,31 @@ u32 SetRFFE_MasterIO_Timings(RFFE_MasterIO_t* M, u32 MaxBps, MCUClocks_t* T ) { 
   //!!! In IAR, 96MHz core STM32F437, No optimisation: WaitParam = 2. With max optimisation for speed: WaitParam = 20 (400kHz)
   // Later, we will use the help of the Timer with precise time to tune it dynamically.... more high tech and requires some time to tune.
   M->fnWaitMethod = NopsWait;
-  
-  HalfClockPeriod_us = (T->CoreClk_Hz )/(MaxBps*12); // Here the feedclock is the core speed for IO emulated we assume 1 cycle per instruction which is not realistic.
-  // it should not be zero or the delays won't scale for the communication
-  M->WaitParam = HalfClockPeriod_us;
-  
-  return 0;
+
+  if(M->Clocks->OutCoreClk_Hz.Value==0) { // feedclock not finalized yet, narrow the range if needed
+    MakeItNoLessThan(M->Clocks->OutCoreClk_Hz.Min, MinBps * 12 * 20);
+  }else{ // Feedclock has been defined
+    HalfClockPeriod_us = M->Clocks->OutCoreClk_Hz.Value/(MinBps*12); // Here the feedclock is the core speed for IO emulated we assume 1 cycle per instruction which is not realistic.
+    // it should not be zero or the delays won't scale for the communication
+    M->WaitParam = HalfClockPeriod_us;
+  }
 }
 
-u32 ConfigureRFFE_MasterIO(RFFE_MasterIO_t* M) { // this will write the HW peripheral registers and configure the HW for the coming "enable" function. Hack or Tweaks can be done in-between
+void SetRFFE_MasterIO_Format(RFFE_MasterIO_t* M) {
+  
+}
+
+void ConfigureRFFE_MasterIO(RFFE_MasterIO_t* M) { // this will write the HW peripheral registers and configure the HW for the coming "enable" function. Hack or Tweaks can be done in-between
 
   // configure SDATA pin
   ConfigurePinAsPushPullOutputPD(M->SDATA);
   // configure SCLK pin
   ConfigurePinAsPushPullOutputPD(M->SCLK);
-  return 0;
 }
 
-u32 EnableRFFE_MasterIO(RFFE_MasterIO_t* M) {
+void EnableRFFE_MasterIO(RFFE_MasterIO_t* M) {
   
   // nothing to do for an IO way
-  return 0;
 }
 
 static u32 TimerCountdownWait(u32 u) {
@@ -311,4 +317,5 @@ u32 sq_RFFE_MIO_MoveJob(u32 u){
 u32 sq_RFFE_MIO_DMA_Interrupt(u32 u){
   return 0;
 }
+
 

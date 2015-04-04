@@ -16,9 +16,11 @@ static IO_Pin_t I2C_SlaveIO_SCL; // for fast pin access using bitbanding area
 
 void TestI2C_SlaveIO(void) {
 
+  gI2C_Slave.Clocks = &MCU_Clocks;
   NewI2C_SlaveIO_SDA_SCL(&gI2C_Slave, NewIO_Pin(&I2C_SlaveIO_SDA,PH10), NewIO_Pin(&I2C_SlaveIO_SCL,PH12));
+  SetI2C_SlaveIO_Timings(&gI2C_Slave, 150000, 400000 );  
+  SetI2C_SlaveIO_Format(&gI2C_Slave);
   EmulateMemoryI2C_SlaveIO(&gI2C_Slave, (u8*)I2C_SlaveAdresses, countof(I2C_SlaveAdresses), I2C_SlaveMemory, countof(I2C_SlaveMemory));
-  
   ConfigureI2C_SlaveIO(&gI2C_Slave);
   SpyI2C_SlaveIO(&gI2C_Slave); // this is to go to spy code as well
   EnableI2C_SlaveIO(&gI2C_Slave);

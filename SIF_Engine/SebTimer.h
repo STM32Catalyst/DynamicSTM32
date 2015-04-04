@@ -16,7 +16,7 @@ typedef struct {
   u32 fnCountDown[TIMER_MAX_COUNTDOWN]; // First Function to call when an overflow occured
   u32 ctCountDown[TIMER_MAX_COUNTDOWN];
   
-  u32 FeedClockHz; // for debug only, not really needed
+  MCU_Clocks_t* Clocks; // This includes everything about clocks, and Vdd. (timers use either APB1 or APB2 x2 (?)
   u32 OverflowPeriod_us;
 
   u32 InitialCountDown[TIMER_MAX_COUNTDOWN];
@@ -43,7 +43,7 @@ void ReArmTimerCountdown(Timer_t* Timer, u32 n);
 void NVIC_TimersEnable(FunctionalState Enable);
 
 void NewTimer(Timer_t* Timer, TIM_TypeDef* T);//, u32 Period_us, MCUClocks_t * Tree);
-u32 SetTimerTimings(Timer_t* Timer, u32 Period_us, MCUClocks_t* Tree );
+void SetTimerTimings_us(Timer_t* Timer, u32 Period_us);
 void ConfigureTimer(Timer_t* T);
 
 void SetTimerScheme(Timer_t* Timer, u32 Scheme);

@@ -25,14 +25,17 @@ void I2C_MasterIO_Test(void) {
 //  u32 u = (u32)&gMIO;
   MCUInitClocks();
 
+  Timer6.Clocks = &MCU_Clocks;
   NewTimer(&Timer6, TIM6);
-  SetTimerTimings(&Timer6, 4, GetMCUClockTree());
+  SetTimerTimings_us(&Timer6, 4);
   ConfigureTimer(&Timer6);
   gMIO.Timer = &Timer6;
   gMIO.Cn = 0; // use Countdown[0]
 
+  gMIO.Clocks = &MCU_Clocks; // Attach the global clocktree info to the cell. (the clock tree is unique)
   NewI2C_MasterIO_SDA_SCL(&gMIO, NewIO_Pin(&MIO_SDA,PH7), NewIO_Pin(&MIO_SCL,PH8) );
-  SetI2C_MasterIO_Timings(&gMIO, 400*1000, GetMCUClockTree() );
+  SetI2C_MasterIO_Timings(&gMIO, 100000, 400000 );
+  SetI2C_MasterIO_Format( &gMIO );
 
   ConfigureI2C_MasterIO(&gMIO);
   EnableI2C_MasterIO(&gMIO);

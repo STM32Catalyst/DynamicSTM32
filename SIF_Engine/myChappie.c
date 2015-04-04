@@ -19,23 +19,64 @@ static SPI_MasterHW_t mySPI1, mySPI2, mySPI3, mySPI4, mySPI5, mySPI6; // 6 HW SP
 static SPI_MasterIO_t mySPI7, mySPI8, mySPI9, mySPI10; // these are IO emulated SPIs.
 
 // higher level devices
-static Buttons_t myButtons; // The rock 5 way switch and extra button (like Boot pin could be used as well in normal mode after booting)
+static KeyGroup_t myButtons; // The rock 5 way switch and extra button (like Boot pin could be used as well in normal mode after booting)
 static NHD_LCD16x2_t myLCD; // a 16x2 char LCD Low power display, which relies on SPI master for communication
+
+
+
+static StuffsArtery_t UrgentTopSA, NormalTopSA; // These are the different global and common sequences
+static u32 UrgentTopSpace[100]; // pointers list
+static u32 NormalTopSpace[100]; // pointers list
+
 
 // we should create a mega structure which groups all this...
 //MCUClocks_t* GetMCUClockTree(void) // unique global resource
-void Conception(void) {
+void NewChappie(void) {
+
+//  StuffsArtery_t* UrgentTop = &UrgentTopSA; // program
+//  NewSA(UrgentTop, (u32)&UrgentTopSpace[0], countof(UrgentTopSpace));
+  
+  StuffsArtery_t* NormalTop = &NormalTopSA; // program
+  NewSA(NormalTop, (u32)&NormalTopSpace[0], countof(NormalTopSpace));
+}
+
+void SetChappieTimings(void) {
+  
+    MCUInitClocks(); // breathing starts
+}
+
+void ConfigureChappie(void) {
   
 }
 
-void Birth(void) {
-  MCUInitClocks(); // breathing starts
+u32 EnableChappie(void) {
+
+    
+//    StartJobToDoInForeground((u32)&UrgentSA);
+//    while(UrgentSA.FlagEmptied==0);
+//    NOPs(1);
+  
+    StartJobToDoInForeground((u32)&NormalTopSA); // will come back if there is background task going on...
+    while(NormalTopSA.FlagEmptied==0);
+    NOPs(1);
+  
+    return 0;
 }
 
 void Disintegration(void) {
   
 }
 
+void LifeCycleChappie(void) {
+  
+  NewChappie();
+  SetChappieTimings();
+  ConfigureChappie();
+  while(EnableChappie()==0);
+  Disintegration();
+  while(1); // now press reset or power cycle...
+  
+}
 
 // === workbench to create new items below =====>
 // Tasks can be added by tasks

@@ -1,6 +1,7 @@
 
 #include "SebEngine.h"
 
+#if 0
 MCUClocks_t MCUClocks;
 
 void MCUInitClocks(void) {
@@ -23,12 +24,46 @@ void MCUInitClocks(void) {
   MCUClocks.ETH_Clk_Hz = 0;
   MCUClocks.OTG_Clk_Hz = 0;
 }
+#else
+void ClockTreeInit(MCU_Clocks_t* C, u32 InHSE_Hz, u32 InLSE_Hz, u32 I2S_CKIN_Hz, u32 InETH_Clk_Hz, u32 InOTG_Clk_Hz );
 
+void MCUInitClocks(void) {
+  
+  // for now, this is hardcoded
+  ClockTreeInit(&MCU_Clocks, MHzToHz(24), 0, 0, 0, 0 );
+  
+  MCU_Clocks.InHSI_Hz = 0; // internal oscillator, if put zero here means it is not allowed to use it (ETH/USB/...) (16MHz)(16000000)
+
+  MCU_Clocks.OutSysClk_Hz.Value = 96000000;
+  MCU_Clocks.OutCoreClk_Hz.Value = 96000000;
+  MCU_Clocks.OutAPB1Clk_Hz.Value = 24000000;
+  MCU_Clocks.OutAPB2Clk_Hz.Value = 48000000;
+  MCU_Clocks.OutSAIClk_Hz.Value = 0;
+  MCU_Clocks.OutI2SClk_Hz.Value = 0;
+  MCU_Clocks.OutMainClk_Hz.Value = 96000000;
+
+  MCU_Clocks.InETH_Clk_Hz = 0;
+  MCU_Clocks.InOTG_Clk_Hz = 0;
+}
+
+
+#endif
+
+
+#if 0
 MCUClocks_t* GetMCUClockTree(void) {
   
   return &MCUClocks;
 }
+#else
+MCU_Clocks_t* GetMCUClockTree(void) {
+  
+  return &MCU_Clocks;
+}
+#endif
 
+
+#if 0
 u32 GetClockHz(MCO_ClockSource_t S) {
   
   switch(S) {
@@ -40,8 +75,22 @@ u32 GetClockHz(MCO_ClockSource_t S) {
   case I2S_CLOCK: return MCUClocks.I2SClk_Hz;
   default: return 0; // no clock
   };
-  
 }
+#else
+u32 GetClockHz(MCO_ClockSource_t S) {
+  
+  switch(S) {
+  case HSI_CLOCK: return MCU_Clocks.InHSI_Hz;
+  case HSE_CLOCK: return MCU_Clocks.InHSE_Hz;
+  case LSE_CLOCK: return MCU_Clocks.InLSE_Hz;
+  case PLL_CLOCK: return MCU_Clocks.OutMainClk_Hz.Value;
+  case SYS_CLOCK: return MCU_Clocks.OutSysClk_Hz.Value;
+  case I2S_CLOCK: return MCU_Clocks.OutI2SClk_Hz.Value;
+  default: return 0; // no clock
+  };
+}
+#endif
+
 
 // MCO pins are used to generate output frequency clocks
 IO_Pin_t MCO2_PC9;
@@ -164,7 +213,7 @@ const MCO_Info_t MCOI[] = {
   
 };
 
-u32 NewClockOutHW_Hz_Src(ClockOut_t* C, IO_Pin_t* MCO, u32 Desired_Hz, MCO_ClockSource_t CS, MCUClocks_t* T) {
+u32 NewClockOutHW_Hz_Src(ClockOut_t* C, IO_Pin_t* MCO, u32 Desired_Hz, MCO_ClockSource_t CS) {
 
   s32 ErrorHz, MinErrorHz;
   u32 Hz;
@@ -223,11 +272,11 @@ static IO_Pin_t myPA8,myPC9;
 static ClockOut_t myC1,myC2;
 void Clocks_Demo(void) {
   
-  NewClockOutHW_Hz_Src(&myC1, NewIO_Pin(&myPA8, PA8), 5000000, HSE_CLOCK, GetMCUClockTree());
+  NewClockOutHW_Hz_Src(&myC1, NewIO_Pin(&myPA8, PA8), 5000000, HSE_CLOCK);
   ConfigureClockOut(&myC1);
   EnableClockOut(&myC1);
 
-  NewClockOutHW_Hz_Src(&myC2, NewIO_Pin(&myPC9, PC9), 1000000, ANY_CLOCK, GetMCUClockTree());
+  NewClockOutHW_Hz_Src(&myC2, NewIO_Pin(&myPC9, PC9), 1000000, ANY_CLOCK);
   ConfigureClockOut(&myC2);
   EnableClockOut(&myC2);
   

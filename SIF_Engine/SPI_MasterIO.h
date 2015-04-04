@@ -28,26 +28,25 @@ typedef struct {
   u32 TX;
   u32 RX;
   u32 bCount;
-  
-  u32 MaxBps; // this is the maximum required baudrate
-  u32 ActualBps; // HW bit rate (does not include delays between bytes)
-//  u32 AverageBps; // Averate bit rate per job
-  u32 FeedClockHz; // SPI Clock feed. Internally only plays with PSC = 2^(n+1)
-  
-  StuffsArtery_t* SA; // this points to Job feeding
-  
+
   Timer_t* Timer; // this will be to control time ticks
   u8 Cn; //  a number between 0 and 3
 
   u32 (*fnWaitMethod)(u32);
   u32 ctWaitMethod;
   u32 WaitParam;
+  
+  RangedValue_t Bps; // input
+  MCU_Clocks_t* Clocks;
+  
+  StuffsArtery_t* SA; // this points to Job feeding
 
 } SPI_MasterIO_t;
 
 
 void NewSPI_MasterIO(SPI_MasterIO_t* M, IO_Pin_t* MISO, IO_Pin_t* MOSI, IO_Pin_t* SCK, IO_Pin_t* NSS0); // this will be the first NSS[0]
-u32 SetSPI_MasterIO_Timings(SPI_MasterIO_t* M, u32 MaxBps, u32 CPol, u32 CPha, u32 FirstBit, MCUClocks_t* T ); // 1200000, SPI_CPOL_Low, SPI_CPHA_1Edge, SPI_FirstBit_MSB
+void SetSPI_MasterIO_Timings(SPI_MasterIO_t* M, u32 MinBps, u32 MaxBps ); // 1200000, SPI_CPOL_Low, SPI_CPHA_1Edge, SPI_FirstBit_MSB
+void SetSPI_MasterIO_Format(SPI_MasterIO_t* M, u32 CPol, u32 CPha, u32 FirstBit );
 void ConfigureSPI_MasterIO(SPI_MasterIO_t* M);
 void EnableSPI_MasterIO(SPI_MasterIO_t* M);
 

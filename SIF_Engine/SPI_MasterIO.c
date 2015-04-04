@@ -24,24 +24,23 @@ void NewSPI_MasterIO(SPI_MasterIO_t* M, IO_Pin_t* MISO, IO_Pin_t* MOSI, IO_Pin_t
   M->NSSs[0] = NSS0;
 }
 
-u32 SetSPI_MasterIO_Timings(SPI_MasterIO_t* M, u32 MaxBps, u32 CPol, u32 CPha, u32 FirstBit, MCUClocks_t* T ) { // 1200000, SPI_CPOL_Low, SPI_CPHA_1Edge, SPI_FirstBit_MSB
+void SetSPI_MasterIO_Timings(SPI_MasterIO_t* M, u32 MinBps, u32 MaxBps ) { // 1200000, SPI_CPOL_Low, SPI_CPHA_1Edge, SPI_FirstBit_MSB
 
-  if(CPol!=SPI_CPOL_Low) while(1); // not supported yet
-  if(CPha!=SPI_CPHA_1Edge) while(1); // not supported yet
-  
   u32 HalfClockPeriod_Hz;
   u32 HalfClockPeriod_us;
   
-  M->MaxBps = MaxBps; // 400khz
+  if(MinBps>MHzToHz(10)) while(1); // over 10 MHz is not reasonable for bit banging
+  if(MinBps==0) MinBps = 100000; // l00kHz default min
+  M->Bps.Min = MinBps; // 400khz
 
-  HalfClockPeriod_Hz = MaxBps*2; // Timers runs at 1MHz max overflow speed. 500kHz = 2us
+  HalfClockPeriod_Hz = MinBps*2; // Timers runs at 1MHz max overflow speed. 500kHz = 2us
   
   if(M->Timer) {
     
     M->WaitParam = 1000000 / ( M->Timer->OverflowPeriod_us * HalfClockPeriod_Hz);
     if(M->WaitParam) {
       M->fnWaitMethod = TimerCountdownWait; // here we should take care of the timings, and choose the best scheme based on CPU MHz and bps of bus...    
-      return 0; // found a tick period compatible with this Basic Timer
+      return; // found a tick period compatible with this Basic Timer
     };
     // otherwise, the strategy will be NOPs.
   }
@@ -51,12 +50,22 @@ u32 SetSPI_MasterIO_Timings(SPI_MasterIO_t* M, u32 MaxBps, u32 CPol, u32 CPha, u
   // Later, we will use the help of the Timer with precise time to tune it dynamically.... more high tech and requires some time to tune.
   M->fnWaitMethod = NopsWait;
   
-  HalfClockPeriod_us = (T->CoreClk_Hz )/(MaxBps*12); // Here the feedclock is the core speed for IO emulated we assume 1 cycle per instruction which is not realistic.
-  // it should not be zero or the delays won't scale for the communication
-  M->WaitParam = HalfClockPeriod_us;
-  
-  return 0;
+  if(M->Clocks->OutCoreClk_Hz.Value) {
+    // clock is known, calculate the right NOPs delay
+    HalfClockPeriod_us = (M->Clocks->OutCoreClk_Hz.Value )/(MinBps*12); // Here the feedclock is the core speed for IO emulated we assume 1 cycle per instruction which is not realistic.
+    // it should not be zero or the delays won't scale for the communication
+    M->WaitParam = HalfClockPeriod_us;
+  }else{ // give estimation of min frequency to operate at desired min baud rate
+    M->Clocks->OutCoreClk_Hz.Min = MinBps * 12 * 20; // estimation only
+  };
 }
+
+void SetSPI_MasterIO_Format(SPI_MasterIO_t* M, u32 CPol, u32 CPha, u32 FirstBit ) {
+
+  if(CPol!=SPI_CPOL_Low) while(1); // not supported yet
+  if(CPha!=SPI_CPHA_1Edge) while(1); // not supported yet
+  
+};
 
 static void SetPinInput(IO_Pin_t* P) {
 
@@ -106,10 +115,7 @@ void EnableSPI_MasterIO(SPI_MasterIO_t* M) {
 }
 
 
-
-
 static u32 TimerCountdownWait(u32 u) {
-  
   SPI_MasterIO_t* M = (SPI_MasterIO_t*) u;
   ArmTimerCountdown(M->Timer,M->Cn, M->WaitParam * M->ctWaitMethod);
   while(M->Timer->CountDownDone[M->Cn]==0) ;
@@ -130,8 +136,6 @@ static u32 WaitHere(u32 u, u32 delay) {
   return 0;
 }
  
-
-
 //=============-------------->
 
 static u32 SPI_MIO_Start(u32 u, u32 BitMask) {

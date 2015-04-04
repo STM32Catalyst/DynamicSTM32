@@ -17,8 +17,10 @@ void TestSebUART(void) {
   
   char* pu8;
   u32 tmp = 0;
+  Rs232.Clocks = &MCU_Clocks;
   NewRs232HW(&Rs232, USART1, NewIO_Pin(&Rs232RX,PB7), NewIO_Pin(&Rs232TX, PB6)); // The HW connectivity, handle, register base, RX pin, TX pin, CTS pin, RTS pin, if non null.
   SetRs232Timings(&Rs232, 115200, 2, 1); // Things depending on time and internal clocks
+  SetRs232Format(&Rs232);
   // we have also to initialize the BV_TX and BV_RX at higher level...
   // initialize the BV first!
   NewBV(&BV_TX, (u32)Rs232TXBuf, sizeof(Rs232TXBuf));

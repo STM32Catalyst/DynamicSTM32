@@ -81,6 +81,9 @@ typedef struct {
   
   I2C_Symbols I2C_Symbol; // updated from pin edge events (EXTI+GPIO source)
   u8 EventMask; // debug
+
+  RangedValue_t Bps; // input
+  MCU_Clocks_t* Clocks; // This includes everything about clocks, and Vdd.
   
 //===--- spy members: (can be indirect later)
   ByteVein_t* BV; // this is where we will output the strings decoded by the spy.
@@ -108,6 +111,8 @@ typedef struct {
 
 
 void NewI2C_SlaveIO_SDA_SCL(I2C_SlaveIO_t* S, IO_Pin_t* SDA, IO_Pin_t* SCL);
+void SetI2C_SlaveIO_Timings(I2C_SlaveIO_t* S, u32 MinBps, u32 MaxBps );
+void SetI2C_SlaveIO_Format(I2C_SlaveIO_t* S);
 void EmulateMemoryI2C_SlaveIO(I2C_SlaveIO_t* S, u8* SlaveAddresses, u8 SlaveAddressesCountof, u8* pMemory, u32 MemoryCountof);
 void ConfigureI2C_SlaveIO(I2C_SlaveIO_t* S);
 void EnableI2C_SlaveIO(I2C_SlaveIO_t* S);

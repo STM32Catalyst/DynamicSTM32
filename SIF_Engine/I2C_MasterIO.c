@@ -25,33 +25,35 @@ u32 TimerCountdownWait(u32 u);
 u32 NopsWait(u32 u);
 //--------- this will become later global resources --------
 
-u32 NewI2C_MasterIO_SDA_SCL(I2C_MasterIO_t* M, IO_Pin_t* SDA, IO_Pin_t* SCL) {
+void NewI2C_MasterIO_SDA_SCL(I2C_MasterIO_t* M, IO_Pin_t* SDA, IO_Pin_t* SCL) {
 
   if((SDA==0)||(SCL==0)) while(1); // define the 2 pins please.
   if(M==0) while(1); // define a RAM structure for the I2C Master!
   
   M->SDA = SDA;
   M->SCL = SCL;
- 
-  return 0;
 }
 
 //
-u32 SetI2C_MasterIO_Timings(I2C_MasterIO_t* M, u32 MaxBps, MCUClocks_t* T ) { 
+void SetI2C_MasterIO_Timings(I2C_MasterIO_t* M, u32 MinBps, u32 MaxBps) { 
 
   u32 HalfClockPeriod_Hz;
   u32 HalfClockPeriod_us;
   
-  M->MaxBps = MaxBps; // 400khz
-
-  HalfClockPeriod_Hz = MaxBps*2; // Timers runs at 1MHz max overflow speed. 500kHz = 2us
+  if(M->Clocks==0) while(1); // you must link this to the clock tree BEFOREhands
+  
+  if(MinBps>400000) while(1); // max 400kbps
+  if(MinBps==0) MinBps = 50000;  // if not defined, 50kHz minimum
+  M->Bps.Min = MinBps; // 400khz
+  
+  HalfClockPeriod_Hz = MinBps*2; // Timers runs at 1MHz max overflow speed. 500kHz = 2us
   
   if(M->Timer) {
     
     M->WaitParam = 1000000 / ( M->Timer->OverflowPeriod_us * HalfClockPeriod_Hz);
     if(M->WaitParam) {
       M->fnWaitMethod = TimerCountdownWait; // here we should take care of the timings, and choose the best scheme based on CPU MHz and bps of bus...    
-      return 0; // found a tick period compatible with this Basic Timer
+      return; // found a tick period compatible with this Basic Timer
     };
     // otherwise, the strategy will be NOPs.
   }
@@ -61,27 +63,34 @@ u32 SetI2C_MasterIO_Timings(I2C_MasterIO_t* M, u32 MaxBps, MCUClocks_t* T ) {
   // Later, we will use the help of the BT with precise time to tune it dynamically.... more high tech and requires some time to tune.
   M->fnWaitMethod = NopsWait;
   
-  HalfClockPeriod_us = (T->CoreClk_Hz )/(MaxBps*12); // Here the feedclock is the core speed for IO emulated we assume 1 cycle per instruction which is not realistic.
-  // it should not be zero or the delays won't scale for the communication
-  M->WaitParam = HalfClockPeriod_us;
-  
-  return 0;
+  // Here 2 options:
+  // Case 1: The Value is zero = update only min/max for future computation
+  // Case 2: The Value is non zero = tune the cell for this frequency
+  if(M->Clocks->OutCoreClk_Hz.Value) { // clock is known, compute local timings and prescalers for it
+    HalfClockPeriod_us = (M->Clocks->OutCoreClk_Hz.Value)/(MinBps*12); // Here the feedclock is the core speed for IO emulated we assume 1 cycle per instruction which is not realistic.
+    // it should not be zero or the delays won't scale for the communication
+    M->WaitParam = HalfClockPeriod_us;
+  }else{ // clock is not defined, narrow down min and max if necessary
+    // estimate the minimum Core frequency for this emulated bitbanging IO scheme
+    MakeItNoLessThan(M->Clocks->OutCoreClk_Hz.Min, MinBps * 12 * 20);
+  }
 }
 
+void SetI2C_MasterIO_Format(I2C_MasterIO_t* M) {
+  
+}
 
 //=============================================
-u32 ConfigureI2C_MasterIO(I2C_MasterIO_t* M) { // configure the HW registers
+void ConfigureI2C_MasterIO(I2C_MasterIO_t* M) { // configure the HW registers
 
   // configure SDA pin
   ConfigurePinAsOpenDrainPU(M->SDA);
   // configure SCL pin
   ConfigurePinAsOpenDrainPU(M->SCL);
-  return 0;
 }
 
-u32 EnableI2C_MasterIO(I2C_MasterIO_t* M) {
+void EnableI2C_MasterIO(I2C_MasterIO_t* M) {
   
-  return 0;
 }
 //==============================================
 //=============== These are the optional I2C spy mode to see what is happening on a bus.

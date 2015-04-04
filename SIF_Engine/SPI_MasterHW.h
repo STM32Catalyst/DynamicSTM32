@@ -16,28 +16,25 @@ typedef struct {
   IO_Pin_t* MOSI; // we need the pointer to the pin 
   IO_Pin_t* SCK; // we need the pointer to the pin
   IO_Pin_t* NSSs[16]; // list of NSS pins, can be more than one (max 16 pins)
-  
-//  u32 TX_Channel;
+//====  
   DMA_StreamInfo_t* DMA_TX; // this point to a const structure based on datasheet info
-  
-//  u32 RX_Channel;
   DMA_StreamInfo_t* DMA_RX; // this point to a const structure based on datasheet info
+  
   SPI_TypeDef* SPI; // debug
   
   SPI_InitTypeDef SPII;
   DMA_InitTypeDef DMA_TXI, DMA_RXI;
-
-  u32 MaxBps; // this is the maximum required baudrate
-  u32 ActualBps; // HW bit rate (does not include delays between bytes)
-//  u32 AverageBps; // Averate bit rate per job
-  u32 FeedClockHz; // SPI Clock feed. Internally only plays with PSC = 2^(n+1)
-  
+//====
+  RangedValue_t Bps; // input
+  MCU_Clocks_t* Clocks;
+//====  
   StuffsArtery_t* SA; // this points to Job feeding
 
 } SPI_MasterHW_t;
 
 void NewSPI_MasterHW(SPI_MasterHW_t* S, SPI_TypeDef* SPI, IO_Pin_t* MISO, IO_Pin_t* MOSI, IO_Pin_t* SCK, IO_Pin_t* NSS0);
-u32 SetSPI_MasterHW_Timings(SPI_MasterHW_t* S, u32 MaxBps, u32 CPol, u32 CPha, u32 FirstBit ); // 1200000, SPI_CPOL_Low, SPI_CPHA_1Edge, SPI_FirstBit_MSB
+void SetSPI_MasterHW_Timings(SPI_MasterHW_t* S, u32 MinBps, u32 MaxBps); // 1200000, SPI_CPOL_Low, SPI_CPHA_1Edge, SPI_FirstBit_MSB
+void SetSPI_MasterHW_Format(SPI_MasterHW_t* S, u32 CPol, u32 CPha, u32 FirstBit );
 void ConfigureSPI_MasterHW(SPI_MasterHW_t* S);
 
 // GPIOs?

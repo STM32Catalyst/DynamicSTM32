@@ -87,14 +87,35 @@ typedef __IO uint8_t  vu8;
 #define CLAMP(x,min,max)       {if ((x) <= (min)) (x) = (min); else if ((x) >= (max)) (x) = (max);}
 #define min2(x,y)		(((x) < (y)) ? (x) : (y)) 
 #define max2(x,y)		(((x) > (y)) ? (x) : (y)) 
-
 #endif
 
+
+//
+#ifndef Absolute_Difference
+#define Absolute_Difference(x,y) (((x) < (y)) ? ((y) - (x)) : ((x) - (y)))
+#endif
+#ifndef Min
+#define Min(x,y)		(((x) < (y)) ? (x) : (y)) 
+#endif
+#ifndef Max
+#define Max(x,y)		(((x) > (y)) ? (x) : (y)) 
+#endif
+
+#define MakeItNoLessThan(a,b) if((a)<(b)) (a) = (b)
+#define MakeItNoMoreThan(a,b) if((a)>(b)) (a) = (b)
+
+typedef struct {
+  u32 Min;
+  u32 Max;
+  u32 Value;
+} RangedValue_t;
 
 // There is a specific include order to follow here
 #include "alternates.h"
 #include "myMCU.h"
+#include "ClockTree.h"
 #include "SebClocks.h"
+
 #include "SebNVIC.h"
 #include "SebDMA.h"
 #include "SebEXTI.h"

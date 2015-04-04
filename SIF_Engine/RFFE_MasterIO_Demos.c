@@ -73,14 +73,15 @@ void RFFE_Test(void) {
   
   StuffsArtery_t* P = &mySequenceRFFE; // program
   myRFFE.SA = NewSA(P, (u32)&RFFE_List[0], countof(RFFE_List));
-  
+//  Timer.Clocks = &MCU_Clocks;  
 //  NewTimer(&Timer, TIM6);
-//  SetTimerTimings(&Timer, 1, GetMCUClockTree());
+//  SetTimerTimings_us(&Timer, 1);
 //  ConfigureTimer(&Timer);
 //  myRFFE.Timer = &Timer;
-  
+  myRFFE.Clocks = &MCU_Clocks;
   NewRFFE_MasterIO_RX_TX_SCLK_SDATA(&myRFFE, NewIO_Pin(&RFFE_SCLK,PI5), NewIO_Pin(&RFFE_SDATA,PI6)); // this will configure the IO pins too.
-  SetRFFE_MasterIO_Timings(&myRFFE, 26000000, GetMCUClockTree() ); // RFFE max clock speed is 26Mhz
+  SetRFFE_MasterIO_Timings(&myRFFE, 1000000, 26000000 ); // RFFE max clock speed is 26Mhz
+  SetRFFE_MasterIO_Format(&myRFFE);
   ConfigureRFFE_MasterIO(&myRFFE);
   EnableRFFE_MasterIO(&myRFFE);
   

@@ -7,7 +7,7 @@
 /*
 typedef struct {
 
-  MCU_SignalList        KeySignalName;
+  MCU_NodeList        KeySignalName;
   u32                   PPP_Adr;
   u32                   PPP_fnClk;
   u32                   PPP_ctClk;

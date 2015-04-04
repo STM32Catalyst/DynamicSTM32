@@ -20,13 +20,15 @@ void Test_SPI_MasterHW(void);;
 void Test_ConcurrentSPI_MasterHW(void);
 void TestCode(void);
 void ADC_Demo(void);
-
+void DAC_Test(void);
 void I2C_MasterIO_Test(void);
 void RFFE_Test(void);
+void ButtonsTest(void);
+void SSD1306_Test(void);
 
 static Timer_t Timer6_us, Timer7_ms;
 //*************
-vu8 choice=7; // default choice after reset
+vu8 choice=8; // default choice after reset
 //*************
 void SebMainTest(void) {
   
@@ -44,7 +46,7 @@ void SebMainTest(void) {
     case 5:      RFFE_Test();      break; // Tested ok on Feb 10, 2015 using ST HVDAC device example
     case 6:      I2C_MasterIO_Test();      break;
     case 7:      NHD_LCD16x2Test();      break;
-    case 8:      TestCode();      break;
+    case 8:      TestPLL();//SSD1306_Test();break;
     case 9:      ButtonsTest();      break;
     case 10:     Timer_T1_T2_Test();      break;
     case 11:     Timer_T3_T4_Test();      break;
@@ -57,6 +59,27 @@ void SebMainTest(void) {
     case 18:     DAC_Test();      break;
     case 19:     ADC_Demo();      break;
     case 20:     Clocks_Demo();      break;
+    case 21:  break;
+    case 22:  break;
+    case 23:  break;
+    case 24:  break;
+    case 25:  break;
+    case 26:  break;
+    case 27:  break;
+    case 28:  break;
+    case 29:  break;
+    case 30:  break;
+    case 31:  break;
+    case 32:  break;
+    case 33:  break;
+    case 34:  break;
+    case 35:  break;
+    case 36:  break;
+    case 37:  break;
+    case 38:  break;
+    case 39:  break;
+    case 40:  break;
+     
     default:while(1);
     };
   };
@@ -95,8 +118,10 @@ void I2C_SlaveIO_Rs232_Test(void) {
   // This is the data byte vein flowing from I2C Spy to UART TX, and acts as a FIFO
   NewBV(&myBV_TX, (u32)myBV_I2CSpyToTX1, sizeof(myBV_I2CSpyToTX1));
   mySlave.BV = &myBV_TX;
-  
+  mySlave.Clocks = &MCU_Clocks;
   NewI2C_SlaveIO_SDA_SCL(&mySlave, NewIO_Pin(&mySDA,PH10), NewIO_Pin(&mySCL,PH12));
+  SetI2C_SlaveIO_Timings(&mySlave, 150000, 400000);
+  SetI2C_SlaveIO_Format(&mySlave);
   EmulateMemoryI2C_SlaveIO(&mySlave, (u8*)mySlaveAdresses, countof(mySlaveAdresses), mySlaveMemory, countof(mySlaveMemory));
   ConfigureI2C_SlaveIO(&mySlave);
   SpyI2C_SlaveIO(&mySlave); // this is to go to spy code as well
@@ -107,6 +132,7 @@ void I2C_SlaveIO_Rs232_Test(void) {
   // Hook the pins to the RS232 USART (if pin not used, put null pointer)
   myRs232.RTS = 0;
   myRs232.CTS = 0;
+  myRs232.Clocks = &MCU_Clocks;
   NewRs232HW( &myRs232, USART1, NewIO_Pin(&myRs232RX,PB7), NewIO_Pin(&myRs232TX, PB6)); // The HW connectivity, handle, register base, RX pin, TX pin, CTS pin, RTS pin, if non null.
   // we have also to initialize the BV_TX and BV_RX at higher level...
   // Initialize the Byte Vein from RX1 to fill up until full for now. (depends if you short RX/TX or not)
@@ -117,7 +143,7 @@ void I2C_SlaveIO_Rs232_Test(void) {
 
   // Setup the timings and enable the cell
   SetRs232Timings(&myRs232, 115200, 2, 1); // Things depending on time and internal clocks [This Enables the cell]
-  
+  SetRs232Format(&myRs232);  
   ConfigureRs232HW(&myRs232);
   EnableRs232HW(&myRs232);
   
@@ -168,7 +194,10 @@ void SebExample2(void) {
   NewBV(&myBV_TX, (u32)myBV_I2CSpyToTX1, sizeof(myBV_I2CSpyToTX1));
   mySlave.BV = &myBV_TX;
   
+  mySlave.Clocks = &MCU_Clocks;
   NewI2C_SlaveIO_SDA_SCL(&mySlave, NewIO_Pin(&mySDA, PH10), NewIO_Pin(&mySCL,PH12));
+  SetI2C_SlaveIO_Timings(&mySlave, 150000, 400000 );   
+  SetI2C_SlaveIO_Format(&mySlave);
   EmulateMemoryI2C_SlaveIO(&mySlave, (u8*)mySlaveAdresses, countof(mySlaveAdresses), mySlaveMemory, countof(mySlaveMemory));
   ConfigureI2C_SlaveIO(&mySlave);
   SpyI2C_SlaveIO(&mySlave); // this is to go to spy code as well
@@ -180,6 +209,7 @@ void SebExample2(void) {
   // Hook the pins to the RS232 USART (if pin not used, put null pointer)
   myRs232.RTS = 0;
   myRs232.CTS = 0;
+  myRs232.Clocks = &MCU_Clocks;
   NewRs232HW( &myRs232, USART1, NewIO_Pin(&Rs232RX,PB7), NewIO_Pin(&Rs232TX, PB6)); // The HW connectivity, handle, register base, RX pin, TX pin, CTS pin, RTS pin, if non null.
   // we have also to initialize the BV_TX and BV_RX at higher level...
   // Initialize the Byte Vein from RX1 to fill up until full for now. (depends if you short RX/TX or not)
@@ -190,20 +220,24 @@ void SebExample2(void) {
 
   // Setup the timings and enable the cell
   SetRs232Timings(&myRs232, 115200, 2, 1); // Things depending on time and internal clocks [This Enables the cell]
-  
+  SetRs232Format(&myRs232);
   ConfigureRs232HW(&myRs232);
   EnableRs232HW(&myRs232);
   
   //====----> Now we setup the I2C master
+  Timer.Clocks = &MCU_Clocks;
   NewTimer(&Timer, TIM6);
-  SetTimerTimings(&Timer, 1, GetMCUClockTree());
+  SetTimerTimings_us(&Timer, 1);
   ConfigureTimer(&Timer);
   gMIO.Job = &Job;
   gMIO.Timer = &Timer;
   gMIO.Cn = 0; // use Countdown[0]
+
+  gMIO.Clocks = &MCU_Clocks; // Attach the global clocktree info to the cell. (the clock tree is unique)  
+  NewI2C_MasterIO_SDA_SCL( &gMIO, NewIO_Pin(&MIO_SDA,PH7), NewIO_Pin(&MIO_SCL,PH8));
+  SetI2C_MasterIO_Timings( &gMIO, 100000, 400000);
+  SetI2C_MasterIO_Format( &gMIO );
   
-  NewI2C_MasterIO_SDA_SCK( &gMIO, NewIO_Pin(&MIO_SDA,PH7), NewIO_Pin(&MIO_SCL,PH8));
-  SetI2C_MasterIO_Timings( &gMIO, 400*1000, GetMCUClockTree());
   ConfigureI2C_MasterIO(&gMIO);
   EnableI2C_MasterIO(&gMIO);
   
@@ -330,41 +364,36 @@ void Test_SPI_MasterHW(void) {
   NewSA(P, (u32)&List[0], countof(List));
 //================== Pinout assignment
 // ====---> SPI6
+  mySPI6.Clocks = &MCU_Clocks;
   mySPI6.SA = &mySequence;
-  mySPI6.FeedClockHz = 48000000;
   NewSPI_MasterHW(&mySPI6, SPI6, NewIO_Pin(&MISO6,PG12), NewIO_Pin(&MOSI6,PG14), NewIO_Pin(&SCK6,PG13), NewIO_Pin(&NSS6,PG8));
-  SetSPI_MasterHW_Timings(&mySPI6, 20*1000000, SPI_CPOL_Low, SPI_CPHA_1Edge, SPI_FirstBit_MSB ); // 1200000, SPI_CPOL_Low, SPI_CPHA_1Edge, SPI_FirstBit_MSB
+  SetSPI_MasterHW_Timings(&mySPI6, MHzToHz(20), MHzToHz(80) ); // 1200000, SPI_CPOL_Low, SPI_CPHA_1Edge, SPI_FirstBit_MSB
+  SetSPI_MasterHW_Format(&mySPI6, SPI_CPOL_Low, SPI_CPHA_1Edge, SPI_FirstBit_MSB );
   ConfigureSPI_MasterHW(&mySPI6);
 // Link the SPI to the corresponding sequencer
 
 // ====---> SPI5
-// SPI5_NSS = PF6
-// SPI5_MISO = PF8
-// SPI5_MOSI = PF9
-// SPI5_CLK = PF7
+// SPI5_NSS = PF6, SPI5_MISO = PF8, SPI5_MOSI = PF9, SPI5_CLK = PF7
 // INT = PA1
-// SPI5 RX is DMA2 Stream3 channel 2
-// SPI5 TX is DMA2 Stream4 channel 2
+// SPI5 RX is DMA2 Stream3 channel 2, SPI5 TX is DMA2 Stream4 channel 2
 // Attach a HW SPI to the entity
+  mySPI5.Clocks = &MCU_Clocks;
   mySPI5.SA = &mySequence;
-  mySPI5.FeedClockHz = 48000000;
   NewSPI_MasterHW(&mySPI5, SPI5, NewIO_Pin(&MISO5,PF8), NewIO_Pin(&MOSI5,PF9), NewIO_Pin(&SCK5,PF7), NewIO_Pin(&NSS5,PF6));
-  SetSPI_MasterHW_Timings(&mySPI5, 10*1000000, SPI_CPOL_Low, SPI_CPHA_1Edge, SPI_FirstBit_MSB ); // 1200000, SPI_CPOL_Low, SPI_CPHA_1Edge, SPI_FirstBit_MSB  
+  SetSPI_MasterHW_Timings(&mySPI5, MHzToHz(10), MHzToHz(80) ); // 1200000, SPI_CPOL_Low, SPI_CPHA_1Edge, SPI_FirstBit_MSB  
+  SetSPI_MasterHW_Format(&mySPI5, SPI_CPOL_Low, SPI_CPHA_1Edge, SPI_FirstBit_MSB );
   ConfigureSPI_MasterHW(&mySPI5);
 // Link the SPI to the corresponding sequencer
 
 // ====---> SPI4
-// SPI4_NSS = PE11
-// SPI4_MISO = PE13
-// SPI4_MOSI = PE14
-// SPI4_CLK = PE12
+// SPI4_NSS = PE11, SPI4_MISO = PE13, SPI4_MOSI = PE14, SPI4_CLK = PE12
 // INT = PG2
-// SPI4 RX is DMA2 Stream0 channel 4
-// SPI1 TX is DMA2 Stream1 channel 4
+// SPI4 RX is DMA2 Stream0 channel 4, SPI1 TX is DMA2 Stream1 channel 4
+  mySPI4.Clocks = &MCU_Clocks;
   mySPI4.SA = &mySequence;
-  mySPI4.FeedClockHz = 48000000;
   NewSPI_MasterHW(&mySPI4, SPI4, NewIO_Pin(&MISO4,PE13), NewIO_Pin(&MOSI4,PE14), NewIO_Pin(&SCK4,PE12), NewIO_Pin(&NSS4,PE11));
-  SetSPI_MasterHW_Timings(&mySPI4, 5*1000000, SPI_CPOL_Low, SPI_CPHA_1Edge, SPI_FirstBit_MSB ); // 1200000, SPI_CPOL_Low, SPI_CPHA_1Edge, SPI_FirstBit_MSB  
+  SetSPI_MasterHW_Timings(&mySPI4, MHzToHz(5), MHzToHz(80) ); // 1200000, SPI_CPOL_Low, SPI_CPHA_1Edge, SPI_FirstBit_MSB  
+  SetSPI_MasterHW_Format(&mySPI4, SPI_CPOL_Low, SPI_CPHA_1Edge, SPI_FirstBit_MSB );
   ConfigureSPI_MasterHW(&mySPI4);
 // Link the SPI to the corresponding sequencer
   
@@ -412,70 +441,53 @@ void Test_ConcurrentSPI_MasterHW(void) {
   NewSA(C, (u32)&ListC[0], countof(ListC));
 //================== Pinout assignment
 // ====---> SPI6
+  mySPI6.Clocks = &MCU_Clocks;
   mySPI6.SA = &mySequenceC;
-  mySPI6.FeedClockHz = 48000000;
   NewSPI_MasterHW(&mySPI6, SPI6, NewIO_Pin(&MISO6,PG12), NewIO_Pin(&MOSI6,PG14), NewIO_Pin(&SCK6,PG13), NewIO_Pin(&NSS6,PG8));
-  SetSPI_MasterHW_Timings(&mySPI6, 20*1000000, SPI_CPOL_Low, SPI_CPHA_1Edge, SPI_FirstBit_MSB ); // 1200000, SPI_CPOL_Low, SPI_CPHA_1Edge, SPI_FirstBit_MSB
+  SetSPI_MasterHW_Timings(&mySPI6, MHzToHz(20), MHzToHz(80) ); // 1200000, SPI_CPOL_Low, SPI_CPHA_1Edge, SPI_FirstBit_MSB
+  SetSPI_MasterHW_Format(&mySPI6, SPI_CPOL_Low, SPI_CPHA_1Edge, SPI_FirstBit_MSB );
   ConfigureSPI_MasterHW(&mySPI6);
 // Link the SPI to the corresponding sequencer
   
   // INT6 setupS
-  NewIO_Pin(&INT6, PG6);
-  IO_PinClockEnable(&INT6);
-  IO_PinSetInput(&INT6);    
-//  IO_PinSetLow(RS->fRX);//  IO_PinSetSpeedMHz(RS->fRX, 1);//  IO_PinEnableHighDrive(RS->fRX, ENABLE);
-  IO_PinEnablePullUpDown(&INT6, ENABLE, DISABLE);
+  ConfigurePinAsInputTrigger(NewIO_Pin(&INT6, PG6));
   EXTI_SetEdgesEnable(INT6.Name, DISABLE, ENABLE);
   
 
 // ====---> SPI5
-// SPI5_NSS = PF6
-// SPI5_MISO = PF8
-// SPI5_MOSI = PF9
-// SPI5_CLK = PF7
+// SPI5_NSS = PF6, SPI5_MISO = PF8, SPI5_MOSI = PF9, SPI5_CLK = PF7
 // INT = PA1
-// SPI5 RX is DMA2 Stream3 channel 2
-// SPI5 TX is DMA2 Stream4 channel 2
+// SPI5 RX is DMA2 Stream3 channel 2, SPI5 TX is DMA2 Stream4 channel 2
   StuffsArtery_t* B = &mySequenceB; // program
   NewSA(B, (u32)&ListB[0], countof(ListB));  
+  mySPI5.Clocks = &MCU_Clocks;
   mySPI5.SA = &mySequenceB;
-  mySPI5.FeedClockHz = 48000000;
   NewSPI_MasterHW(&mySPI5, SPI5, NewIO_Pin(&MISO5,PF8), NewIO_Pin(&MOSI5,PF9), NewIO_Pin(&SCK5,PF7), NewIO_Pin(&NSS5,PF6));
-  SetSPI_MasterHW_Timings(&mySPI5, 10*1000000, SPI_CPOL_Low, SPI_CPHA_1Edge, SPI_FirstBit_MSB ); // 1200000, SPI_CPOL_Low, SPI_CPHA_1Edge, SPI_FirstBit_MSB  
+  SetSPI_MasterHW_Timings(&mySPI5, MHzToHz(10), MHzToHz(80) ); // 1200000, SPI_CPOL_Low, SPI_CPHA_1Edge, SPI_FirstBit_MSB  
+  SetSPI_MasterHW_Format(&mySPI5,  SPI_CPOL_Low, SPI_CPHA_1Edge, SPI_FirstBit_MSB );
   ConfigureSPI_MasterHW(&mySPI5);
 // Link the SPI to the corresponding sequencer
 
   // INT5 setupS
-  NewIO_Pin(&INT5, PA1);
-  IO_PinClockEnable(&INT5);
-  IO_PinSetInput(&INT5);    
-//  IO_PinSetLow(RS->fRX);//  IO_PinSetSpeedMHz(RS->fRX, 1);//  IO_PinEnableHighDrive(RS->fRX, ENABLE);
-  IO_PinEnablePullUpDown(&INT5, ENABLE, DISABLE);
+  ConfigurePinAsInputTrigger(NewIO_Pin(&INT5, PA1));
   EXTI_SetEdgesEnable(INT5.Name, DISABLE, ENABLE);
   
 // ====---> SPI4
-// SPI4_NSS = PE11
-// SPI4_MISO = PE13
-// SPI4_MOSI = PE14
-// SPI4_CLK = PE12
+// SPI4_NSS = PE11, SPI4_MISO = PE13, SPI4_MOSI = PE14, SPI4_CLK = PE12
 // INT = PG2
-// SPI4 RX is DMA2 Stream0 channel 4
-// SPI1 TX is DMA2 Stream1 channel 4
+// SPI4 RX is DMA2 Stream0 channel 4, SPI1 TX is DMA2 Stream1 channel 4
   StuffsArtery_t* A = &mySequenceA; // program
   NewSA(A, (u32)&ListA[0], countof(ListA));  
+  mySPI4.Clocks = &MCU_Clocks;
   mySPI4.SA = &mySequenceA;
-  mySPI4.FeedClockHz = 48000000;
   NewSPI_MasterHW(&mySPI4, SPI4, NewIO_Pin(&MISO4,PE13), NewIO_Pin(&MOSI4,PE14), NewIO_Pin(&SCK4,PE12), NewIO_Pin(&NSS4,PE11));
-  SetSPI_MasterHW_Timings(&mySPI4, 5*1000000, SPI_CPOL_Low, SPI_CPHA_1Edge, SPI_FirstBit_MSB ); // 1200000, SPI_CPOL_Low, SPI_CPHA_1Edge, SPI_FirstBit_MSB  
+  SetSPI_MasterHW_Timings(&mySPI4, MHzToHz(5), MHzToHz(80) ); // 1200000, SPI_CPOL_Low, SPI_CPHA_1Edge, SPI_FirstBit_MSB  
+  SetSPI_MasterHW_Format(&mySPI4, SPI_CPOL_Low, SPI_CPHA_1Edge, SPI_FirstBit_MSB );
   ConfigureSPI_MasterHW(&mySPI4);
 // Link the SPI to the corresponding sequencer
 
   // INT4 setup
-  NewIO_Pin(&INT4, PG2);
-  IO_PinClockEnable(&INT4);
-  IO_PinSetInput(&INT4);    
-//  IO_PinSetLow(RS->fRX);//  IO_PinSetSpeedMHz(RS->fRX, 1);//  IO_PinEnableHighDrive(RS->fRX, ENABLE);
-  IO_PinEnablePullUpDown(&INT4, ENABLE, DISABLE);
+  ConfigurePinAsInputTrigger(NewIO_Pin(&INT4, PG2));
   EXTI_SetEdgesEnable(INT4.Name, DISABLE, ENABLE);
   
   // put the hooks in place
@@ -487,11 +499,13 @@ void Test_ConcurrentSPI_MasterHW(void) {
   
 //===========
   // here we test the Basic Timer delays
+  Timer6_us.Clocks = &MCU_Clocks;
   NewTimer(&Timer6_us, TIM6);
-  SetTimerTimings(&Timer6_us, 10, GetMCUClockTree());
+  SetTimerTimings_us(&Timer6_us, 10);
   ConfigureTimer(&Timer6_us);
+  Timer7_ms.Clocks = &MCU_Clocks;
   NewTimer(&Timer7_ms, TIM7);
-  SetTimerTimings(&Timer7_ms, 1000, GetMCUClockTree());
+  SetTimerTimings_us(&Timer7_ms, 1000);
   ConfigureTimer(&Timer7_ms);
   NVIC_TimersEnable(ENABLE);
   
@@ -562,31 +576,3 @@ void SebMainTest(void) {
 }
 
 #endif
-u8 Utl_FrameCompare(int16_t* s16p_rawFrame, int16_t* s16p_calibFrame, int16_t s16_hiThres, int16_t s16_loThres, int16_t s16_nodeThers, int16_t s32_len);
-
-
-
-volatile int16_t* s16p_rawFrameV;
-volatile int16_t* s16p_calibFrameV;
-volatile int16_t s16_hiThresV;
-volatile int16_t s16_loThresV;
-volatile int16_t s16_nodeThersV;
-volatile int32_t s32_lenV;
-u8 result;
-
-void TestCode(void) {
-  
-int16_t* s16p_rawFrame = (int16_t*) s16p_rawFrameV;
-int16_t* s16p_calibFrame = (int16_t*) s16p_calibFrameV;
-int16_t s16_hiThres = s16_hiThresV;
-int16_t s16_loThres = s16_loThresV;
-int16_t s16_nodeThers = s16_nodeThersV;
-int32_t s32_len = s32_lenV;
-  
-  result = Utl_FrameCompare(s16p_rawFrame, s16p_calibFrame, s16_hiThres, s16_loThres, s16_nodeThers, (u16)s32_len);
-  
-}
-u8 Utl_FrameCompare(int16_t* s16p_rawFrame, int16_t* s16p_calibFrame, int16_t s16_hiThres, int16_t s16_loThres, int16_t s16_nodeThers, int16_t s32_len)
-{
-             return FALSE;
-}

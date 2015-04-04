@@ -33,7 +33,9 @@ void DAC_Test(void) {
   DAC_WaveGeneratePredefined(DAC1_Wave, 11, countof(DAC1_Wave));// How many sine periods in the wave RAM
 //  DAC_WaveGeneratePredefined(DAC2_Wave, 13);// How many sine periods in the wave RAM
 
+  Dac1->Clocks = &MCU_Clocks;
   NewDAC_Pin_Buffer_VRef_mV(Dac1, (u32)DAC, NewIO_Pin(&Dac1_PA4, PA4), ENABLE, 3300); // DAC1 on PA4, DAC2 on PA5
+  //Dac2->Clocks = &MCU_Clocks;
 //  NewDAC_Pin_Buffer_VRef_mV(Dac2, (u32)DAC, NewIO_Pin(&Dac2_PA5, PA5), ENABLE, 3300); // DAC1 on PA4, DAC2 on PA5  
   
 #if 0

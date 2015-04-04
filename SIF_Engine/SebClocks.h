@@ -2,8 +2,8 @@
 #ifndef _CLOCKS_H_
 #define _CLOCKS_H_
 
-
-
+#define MHzToHz(a) (((u32)a)*1000000)
+#if 0
 typedef struct {
 
 u32 HSE_Hz; // if zero means no clock feed from external oscin/oscout
@@ -27,13 +27,15 @@ u32 Pll_Clk_Hz;
 //  IO_Pin_t* SDA; // we need the pointer to the pin
 //  u32 (*fnWaitMethod)(u32);
 //  u32 ctWaitMethod;
-  
+
 } MCUClocks_t; // there should be only one globally for this one
-
+#endif
 void MCUInitClocks(void);
-
+#if 0
 MCUClocks_t* GetMCUClockTree(void);
-
+#else
+MCU_Clocks_t* GetMCUClockTree(void);
+#endif
 //
 void FTM_Generate48MHzOnMCO2_PC9(void);
 

@@ -173,7 +173,7 @@ void IO_PinConfiguredAs(IO_Pin_t* Pin, u32 AF) {
 //#define ETH 257
 
 const PinAlternateDescription_t PAD[] = {
-
+  
 { PA0, (u32) TIM2, TIM2_CH1, 1, "TIM2_CH1" },
 { PA0, (u32) TIM2, TIM2_ETR, 1, "TIM2_ETR" },
 { PA0, (u32) TIM5, TIM5_CH1, 2, "TIM5_CH1" },
@@ -182,6 +182,9 @@ const PinAlternateDescription_t PAD[] = {
 { PA0, (u32) UART4, UART4_TX, 8, "UART4_TX" },
 { PA0, (u32) ETH, ETH_MII_CRS, 11, "ETH_MII_CRS" },
 { PA0, (u32) SYS, EVENTOUT, 15, "EVENTOUT" },
+{ PA0, (u32) ADC1, ADC1_IN0, 0, "ADC1_IN0" }, // *** ADC
+{ PA0, (u32) ADC2, ADC2_IN0, 0, "ADC2_IN0" }, // *** ADC
+{ PA0, (u32) ADC3, ADC3_IN0, 0, "ADC3_IN0" }, // *** ADC
 
 { PA1, (u32) TIM2, TIM2_CH2, 1, "TIM2_CH2" },
 { PA1, (u32) TIM5, TIM5_CH2, 2, "TIM5_CH2" },
@@ -190,6 +193,9 @@ const PinAlternateDescription_t PAD[] = {
 { PA1, (u32) ETH, ETH_MII_RX_CLK, 11, "ETH_MII_RX_CLK" },
 { PA1, (u32) ETH, ETH_RMII_REF_CLK, 11, "ETH_RMII_REF_CLK"},
 { PA1, (u32) SYS, EVENTOUT, 15, "EVENTOUT" },
+{ PA1, (u32) ADC1, ADC1_IN1, 0, "ADC1_IN1" }, // *** ADC
+{ PA1, (u32) ADC2, ADC2_IN1, 0, "ADC2_IN1" }, // *** ADC
+{ PA1, (u32) ADC3, ADC3_IN1, 0, "ADC3_IN1" }, // *** ADC
 
 { PA2, (u32) TIM2, TIM2_CH3, 1, "TIM2_CH3" },
 { PA2, (u32) TIM5, TIM5_CH3, 2, "TIM5_CH2" },
@@ -197,6 +203,9 @@ const PinAlternateDescription_t PAD[] = {
 { PA2, (u32) USART2, USART2_TX, 7, "USART2_TX" },
 { PA2, (u32) ETH, ETH_MDIO, 11, "ETH_MDIO" },
 { PA2, (u32) SYS, EVENTOUT, 15, "EVENTOUT" },
+{ PA2, (u32) ADC1, ADC1_IN2, 0, "ADC1_IN2" }, // *** ADC
+{ PA2, (u32) ADC2, ADC2_IN2, 0, "ADC2_IN2" }, // *** ADC
+{ PA2, (u32) ADC3, ADC3_IN2, 0, "ADC3_IN2" }, // *** ADC
 
 { PA3, (u32) TIM2, TIM2_CH4, 1, "TIM2_CH4" },
 { PA3, (u32) TIM5, TIM5_CH4, 2, "TIM5_CH4" },
@@ -206,6 +215,10 @@ const PinAlternateDescription_t PAD[] = {
 { PA3, (u32) ETH, ETH_MII_COL, 11, "ETH_MII_COL" },
 { PA3, (u32) LCD, LCD_B5, 14, "LCD_B5" },
 { PA3, (u32) SYS, EVENTOUT, 15, "EVENTOUT" },
+{ PA3, (u32) ADC1, ADC1_IN3, 0, "ADC1_IN3" }, // *** ADC
+{ PA3, (u32) ADC2, ADC2_IN3, 0, "ADC2_IN3" }, // *** ADC
+{ PA3, (u32) ADC3, ADC3_IN3, 0, "ADC3_IN3" }, // *** ADC
+
 
 { PA4, (u32) SPI1, SPI1_NSS, 5, "SPI1_NSS" },
 { PA4, (u32) SPI3, SPI3_NSS, 6, "SPI3_NSS" },
@@ -215,6 +228,10 @@ const PinAlternateDescription_t PAD[] = {
 { PA4, (u32) DCMI, DCMI_HSYNC, 13, "DCMI_HSYNC" },
 { PA4, (u32) LCD, LCD_VSYNC, 14, "LCD_VSYNC" },
 { PA4, (u32) SYS, EVENTOUT, 15, "EVENTOUT" },
+{ PA4, (u32) ADC1, ADC1_IN4, 0, "ADC1_IN4" }, // *** ADC
+{ PA4, (u32) ADC2, ADC2_IN4, 0, "ADC2_IN4" }, // *** ADC
+{ PA4, (u32) DAC/*1*/, DAC1_ANALOG, 0, "DAC1_ANALOG" }, // TBD
+
 
 { PA5, (u32) TIM2, TIM2_CH1, 1, "TIM2_CH1" },
 { PA5, (u32) TIM2, TIM2_ETR, 1, "TIM2_ETR" },
@@ -222,6 +239,9 @@ const PinAlternateDescription_t PAD[] = {
 { PA5, (u32) SPI1, SPI1_SCK, 5, "SPI1_SCK" },
 // ULPI_CLK
 { PA5, (u32) SYS, EVENTOUT, 15, "EVENTOUT" },
+{ PA5, (u32) ADC1, ADC1_IN5, 0, "ADC1_IN5" }, // *** ADC
+{ PA5, (u32) ADC2, ADC2_IN5, 0, "ADC2_IN5" }, // *** ADC
+{ PA5, (u32) DAC/*2*/, DAC2_ANALOG, 0, "DAC2_ANALOG" }, // TBD
 
 { PA6, (u32) TIM1, TIM1_BKIN, 1, "TIM1_BKIN" },
 { PA6, (u32) TIM3, TIM3_CH1, 2, "TIM3_CH1" },
@@ -231,6 +251,8 @@ const PinAlternateDescription_t PAD[] = {
 { PA6, (u32) DCMI, DCMI_PIXCLK, 13, "DCMI_PIXCLK" },
 { PA6, (u32) LCD, LCD_G2, 14, "LCD_G2" },
 { PA6, (u32) SYS, EVENTOUT, 15, "EVENTOUT" },
+{ PA6, (u32) ADC1, ADC1_IN6, 0, "ADC1_IN6" }, // *** ADC
+{ PA6, (u32) ADC2, ADC2_IN6, 0, "ADC2_IN6" }, // *** ADC
 
 { PA7, (u32) TIM1, TIM1_CH1N, 1, "TIM1_CH1N" },
 { PA7, (u32) TIM3, TIM3_CH2, 2, "TIM3_CH2" },
@@ -240,6 +262,8 @@ const PinAlternateDescription_t PAD[] = {
 { PA7, (u32) ETH, ETH_MII_RX_DV, 11, "ETH_MII_RX_DV" },
 { PA7, (u32) ETH, ETH_RMII_CRS_DV, 11, "ETH_RMII_CRS_DV" },
 { PA7, (u32) SYS, EVENTOUT, 15, "EVENTOUT" },
+{ PA7, (u32) ADC1, ADC1_IN7, 0, "ADC1_IN7" }, // *** ADC
+{ PA7, (u32) ADC2, ADC2_IN7, 0, "ADC2_IN7" }, // *** ADC
 
 { PA8, (u32) RCC, MCO1, 0, "MCO1" },
 { PA8, (u32) TIM1, TIM1_CH1, 1, "TIM1_CH1" },
@@ -296,6 +320,9 @@ const PinAlternateDescription_t PAD[] = {
 //{ PB0, (u32) , OTG_HS_ULPI_D1, 10, "OTG_HS_ULPI_D1" },
 { PB0, (u32) ETH, ETH_MII_RXD2, 11, "ETH_MII_RXD2" },
 { PB0, (u32) SYS, EVENTOUT, 15, "EVENTOUT" },
+{ PB0, (u32) ADC1, ADC1_IN8, 0, "ADC1_IN8" }, // *** ADC
+{ PB0, (u32) ADC2, ADC2_IN8, 0, "ADC2_IN8" }, // *** ADC
+
 
 { PB1, (u32) TIM1, TIM1_CH3N, 1, "TIM1_CH3N" },
 { PB1, (u32) TIM3, TIM3_CH4, 2, "TIM3_CH4" },
@@ -304,6 +331,9 @@ const PinAlternateDescription_t PAD[] = {
 //{ PB1, (u32) , , OTG_HS_ULPI_D2, 10, "OTG_HS_ULPI_D2" },
 { PB1, (u32) ETH, ETH_MII_RXD3, 11, "ETH_MII_RXD3" },
 { PB1, (u32) SYS, EVENTOUT, 15, "EVENTOUT" },
+{ PB1, (u32) ADC1, ADC1_IN9, 0, "ADC1_IN9" }, // *** ADC
+{ PB1, (u32) ADC2, ADC2_IN9, 0, "ADC2_IN9" }, // *** ADC
+
 
 { PB2, (u32) SYS, EVENTOUT, 15, "EVENTOUT" },
 
@@ -384,7 +414,7 @@ const PinAlternateDescription_t PAD[] = {
 { PB11, (u32) USART3, USART3_RX, 7, "USART3_RX" },
 //{ PB11, (u32) , OTG_HS_ULPI_D4, 10, "OTG_HS_ULPI_D4" },
 { PB11, (u32) ETH, ETH_MII_TX_EN, 11, "ETH_MII_TX_EN" },
-{ PB11, (u32) ETH, ETH_RMMII_TX_EN, 11, "ETH_RMMII_TX_EN" },
+{ PB11, (u32) ETH, ETH_RMII_TX_EN, 11, "ETH_RMII_TX_EN" },
 { PB11, (u32) LCD, LCD_G5, 14, "LCD_G5" },
 { PB11, (u32) SYS, EVENTOUT, 15, "EVENTOUT" },
 
@@ -431,9 +461,15 @@ const PinAlternateDescription_t PAD[] = {
 //{ PC0, (u32) , OTG_HS_ULPI_STP, 10, "OTG_HS_ULPI_STP" },
 //{ PC0, (u32) FMC, FMC_SDN_WE, 12, "FMC_SDN_WE" },
 { PC0, (u32) SYS, EVENTOUT, 15, "EVENTOUT" },
+{ PC0, (u32) ADC1, ADC1_IN10, 0, "ADC1_IN10" }, // *** ADC
+{ PC0, (u32) ADC2, ADC2_IN10, 0, "ADC2_IN10" }, // *** ADC
+{ PC0, (u32) ADC3, ADC3_IN10, 0, "ADC3_IN10" }, // *** ADC
 
 { PC1, (u32) ETH, ETH_MDC, 11, "ETH_MDC" },
 { PC1, (u32) SYS, EVENTOUT, 15, "EVENTOUT" },
+{ PC1, (u32) ADC1, ADC1_IN11, 0, "ADC1_IN11" }, // *** ADC
+{ PC1, (u32) ADC2, ADC2_IN11, 0, "ADC2_IN11" }, // *** ADC
+{ PC1, (u32) ADC3, ADC3_IN11, 0, "ADC3_IN11" }, // *** ADC
 
 { PC2, (u32) SPI2, SPI2_MISO, 5, "SPI2_MISO" },
 { PC2, (u32) I2S2ext, I2S2_EXT_SD, 6, "I2S2_EXT_SD" },
@@ -441,6 +477,9 @@ const PinAlternateDescription_t PAD[] = {
 { PC2, (u32) ETH, ETH_MII_TXD2, 11, "ETH_MII_TXD2" },
 //{ PC2, (u32) FMC, FMC_SDNE0, 12, "FMC_SDNE0" },
 { PC2, (u32) SYS, EVENTOUT, 15, "EVENTOUT" },
+{ PC2, (u32) ADC1, ADC1_IN12, 0, "ADC1_IN12" }, // *** ADC
+{ PC2, (u32) ADC2, ADC2_IN12, 0, "ADC2_IN12" }, // *** ADC
+{ PC2, (u32) ADC3, ADC3_IN12, 0, "ADC3_IN12" }, // *** ADC
 
 { PC3, (u32) SPI2, SPI2_MOSI, 5, "SPI2_MOSI" },
 { PC3, (u32) I2S2ext, I2S2_SD, 5, "I2S2_SD" },
@@ -448,14 +487,21 @@ const PinAlternateDescription_t PAD[] = {
 { PC3, (u32) ETH, ETH_MII_TX_CLK, 11, "ETH_MII_TX_CLK" },
 //{ PC3, (u32) FMC, FMC_SDCKE0, 12, "FMC_SDCKE0" },
 { PC3, (u32) SYS, EVENTOUT, 15, "EVENTOUT" },
+{ PC3, (u32) ADC1, ADC1_IN13, 0, "ADC1_IN13" }, // *** ADC
+{ PC3, (u32) ADC2, ADC2_IN13, 0, "ADC2_IN13" }, // *** ADC
+{ PC3, (u32) ADC3, ADC3_IN13, 0, "ADC3_IN13" }, // *** ADC
 
 { PC4, (u32) ETH, ETH_MII_RXD0, 11, "ETH_MII_RXD0" },
 { PC4, (u32) ETH, ETH_RMII_RXD0, 11, "ETH_RMII_RXD0" },
 { PC4, (u32) SYS, EVENTOUT, 15, "EVENTOUT" },
+{ PC4, (u32) ADC1, ADC1_IN14, 0, "ADC1_IN14" }, // *** ADC
+{ PC4, (u32) ADC2, ADC2_IN14, 0, "ADC2_IN14" }, // *** ADC
 
 { PC5, (u32) ETH, ETH_MII_RXD1, 11, "ETH_MII_RXD1" },
 { PC5, (u32) ETH, ETH_RMII_RXD1, 11, "ETH_RMII_RXD1" },
 { PC5, (u32) SYS, EVENTOUT, 15, "EVENTOUT" },
+{ PC5, (u32) ADC1, ADC1_IN5, 0, "ADC1_IN5" }, // *** ADC
+{ PC5, (u32) ADC2, ADC2_IN5, 0, "ADC2_IN5" }, // *** ADC
 
 { PC6, (u32) TIM3, TIM3_CH1, 2, "TIM3_CH1" },
 { PC6, (u32) TIM8, TIM8_CH1, 3, "TIM8_CH1" },
@@ -708,12 +754,15 @@ const PinAlternateDescription_t PAD[] = {
 
 //{ PF3, (u32) FMC, FMC_A3, 12, "FMC_A3" },
 { PF3, (u32) SYS, EVENTOUT, 15, "EVENTOUT" },
+{ PF3, (u32) ADC3, ADC3_IN9, 0, "ADC3_IN9" }, // *** ADC
 
 //{ PF4, (u32) FMC, FMC_A4, 12, "FMC_A4" },
 { PF4, (u32) SYS, EVENTOUT, 15, "EVENTOUT" },
+{ PF4, (u32) ADC3, ADC3_IN14, 0, "ADC3_IN14" }, // *** ADC
 
 //{ PF5, (u32) FMC, FMC_A5, 12, "FMC_A5" },
 { PF5, (u32) SYS, EVENTOUT, 15, "EVENTOUT" },
+{ PF5, (u32) ADC3, ADC3_IN15, 0, "ADC3_IN15" }, // *** ADC
 
 { PF6, (u32) TIM10, TIM10_CH1, 3, "TIM10_CH1" },
 { PF6, (u32) SPI5, SPI5_NSS, 5, "SPI5_NSS" },
@@ -721,6 +770,7 @@ const PinAlternateDescription_t PAD[] = {
 //?{ PF6, (u32) UART7, UART7_TX, 8, "UART7_TX" },
 //{ PF6, (u32) FMC, FMC_NIORD, 12, "FMC_NIORD" },
 { PF6, (u32) SYS, EVENTOUT, 15, "EVENTOUT" },
+{ PF6, (u32) ADC3, ADC3_IN4, 0, "ADC3_IN4" }, // *** ADC
 
 { PF7, (u32) TIM11, TIM11_CH1, 3, "TIM11_CH1" },
 { PF7, (u32) SPI5, SPI5_SCK, 5, "SPI5_SCK" },
@@ -728,23 +778,27 @@ const PinAlternateDescription_t PAD[] = {
 //{ PF7, (u32) UART7, UART7_RX, 8, "UART7_RX" },
 //{ PF7, (u32) FMC, FMC_NREG, 12, "FMC_NREG" },
 { PF7, (u32) SYS, EVENTOUT, 15, "EVENTOUT" },
+{ PF7, (u32) ADC3, ADC3_IN5, 0, "ADC3_IN5" }, // *** ADC
 
 { PF8, (u32) SPI5, SPI5_MISO, 5, "SPI5_MISO" },
 //{ PF8, (u32) SAI1, SAI1_SCK_B, 6, "SAI1_SCK_B" },
 { PF8, (u32) TIM13, TIM13_CH1, 9, "TIM13_CH1" },
 //{ PF8, (u32) FMC, FMC_NIOWR, 12, "FMC_NIOWR" },
 { PF8, (u32) SYS, EVENTOUT, 15, "EVENTOUT" },
+{ PF8, (u32) ADC3, ADC3_IN6, 0, "ADC3_IN6" }, // *** ADC
 
 { PF9, (u32) SPI5, SPI5_MOSI, 5, "SPI5_MOSI" },
 //{ PF9, (u32) SAI1, SAI1_FS_B, 6, "SAI1_FS_B" },
 { PF9, (u32) TIM14, TIM14_CH1, 9, "TIM14_CH1" },
 //{ PF9, (u32) FMC, FMC_CD, 12, "FMC_CD" },
 { PF9, (u32) SYS, EVENTOUT, 15, "EVENTOUT" },
+{ PF9, (u32) ADC3, ADC3_IN7, 0, "ADC3_IN7" }, // *** ADC
 
 //{ PF10, (u32) FMC, FMC_INTR, 12, "FMC_INTR" },
 { PF10, (u32) DCMI, DCMI_D11, 13, "DCMI_D11" },
 { PF10, (u32) LCD, LCD_DE, 14, "LCD_DE" },
 { PF10, (u32) SYS, EVENTOUT, 15, "EVENTOUT" },
+{ PF10, (u32) ADC3, ADC3_IN8, 0, "ADC3_IN8" }, // *** ADC
 
 { PF11, (u32) SPI5, SPI5_MOSI, 5, "SPI5_MOSI" },
 //{ PF11, (u32) FMC, FMC_SDNRAS, 12, "FMC_SDNRAS" },
@@ -1144,6 +1198,46 @@ PinAlternateDescription_t* GetSignalDescription(PinNameDef PinName, u32 PPP_Adr)
   while(1); // nothing found...
 }
 
+//=========================== Functions for searching solutions ====================
+// The only globals we can use are the constant ones.
+// When "x" is found, any possible number will be used to get a match (increasing index number)
+// It is recursive as long as an x exist.
+// it returns -1 if nothing is found. Recursive 2 levels usually
+
+u32 DoLabelMatch(char* l, char*s) {
+  
+  for(u8 n=0;n<32;n++) { // max 32 char to compare
+
+      if((l[n]==0)&&(s[n]==0))
+        return TRUE; // everything same till end char
+      
+      if(l[n]!=s[n])
+        return FALSE; // mismatch, failed.
+  }
+  
+  // too long size, failed
+  return FALSE;
+}
+
+//==============================================================
+// This function assumes the signal name "s" is unique
+s32 ScanSignalDescriptions(u32 StartIndex, char* s) {
+
+  for(u16 n=StartIndex;n<countof(PAD);n++)
+    if(DoLabelMatch(PAD[n].SignalNameString,s))
+      return n;
+    
+  return -1;
+}
+
+//===============================================================
+// Now we need to find out all the possible solutions for this label (and try all of them)
+
+
+// Wild Character management
+const char* Numbers[] = {"0","1","2","3","4","5","6","7","8","9","10","11","12","13","14","15" };
+
+
 //=============================================================================
 // Resource allocation, conflict detection
 
@@ -1261,3 +1355,204 @@ u32 ConfigurePinAsOpenDrainPU(IO_Pin_t* P) {
 }
 
 
+//=====================================
+// Interpreter
+typedef struct {
+  const PinNameDef Name;
+  const char* sName;
+} PinNameAndString_t;
+
+const PinNameAndString_t hmPinNameAndString[] = {
+  { PA0, "PA0" },  
+  { PA1, "PA1" },
+  { PA2, "PA2" },
+  { PA3, "PA3" },
+  { PA4, "PA4" },
+  { PA5, "PA5" },
+  { PA6, "PA6" },
+  { PA7, "PA7" },
+  { PA8, "PA8" },
+  { PA9, "PA9" },
+  { PA10, "PA10" },
+  { PA11, "PA11" },
+  { PA12, "PA12" },
+  { PA13, "PA13" },
+  { PA14, "PA14" },
+  { PA15, "PA15" },
+  //==============
+  { PB0, "PB0" },  
+  { PB1, "PB1" },
+  { PB2, "PB2" },
+  { PB3, "PB3" },
+  { PB4, "PB4" },
+  { PB5, "PB5" },
+  { PB6, "PB6" },
+  { PB7, "PB7" },
+  { PB8, "PB8" },
+  { PB9, "PB9" },
+  { PB10, "PB10" },
+  { PB11, "PB11" },
+  { PB12, "PB12" },
+  { PB13, "PB13" },
+  { PB14, "PB14" },
+  { PB15, "PB15" },
+  //==============
+  { PC0, "PC0" },  
+  { PC1, "PC1" },
+  { PC2, "PC2" },
+  { PC3, "PC3" },
+  { PC4, "PC4" },
+  { PC5, "PC5" },
+  { PC6, "PC6" },
+  { PC7, "PC7" },
+  { PC8, "PC8" },
+  { PC9, "PC9" },
+  { PC10, "PC10" },
+  { PC11, "PC11" },
+  { PC12, "PC12" },
+  { PC13, "PC13" },
+  { PC14, "PC14" },
+  { PC15, "PC15" },
+  //==============
+  { PD0, "PD0" },  
+  { PD1, "PD1" },
+  { PD2, "PD2" },
+  { PD3, "PD3" },
+  { PD4, "PD4" },
+  { PD5, "PD5" },
+  { PD6, "PD6" },
+  { PD7, "PD7" },
+  { PD8, "PD8" },
+  { PD9, "PD9" },
+  { PD10, "PD10" },
+  { PD11, "PD11" },
+  { PD12, "PD12" },
+  { PD13, "PD13" },
+  { PD14, "PD14" },
+  { PD15, "PD15" },
+  //==============
+  { PE0, "PE0" },  
+  { PE1, "PE1" },
+  { PE2, "PE2" },
+  { PE3, "PE3" },
+  { PE4, "PE4" },
+  { PE5, "PE5" },
+  { PE6, "PE6" },
+  { PE7, "PE7" },
+  { PE8, "PE8" },
+  { PE9, "PE9" },
+  { PE10, "PE10" },
+  { PE11, "PE11" },
+  { PE12, "PE12" },
+  { PE13, "PE13" },
+  { PE14, "PE14" },
+  { PE15, "PE15" },
+  //==============
+  { PF0, "PF0" },  
+  { PF1, "PF1" },
+  { PF2, "PF2" },
+  { PF3, "PF3" },
+  { PF4, "PF4" },
+  { PF5, "PF5" },
+  { PF6, "PF6" },
+  { PF7, "PF7" },
+  { PF8, "PF8" },
+  { PF9, "PF9" },
+  { PF10, "PF10" },
+  { PF11, "PF11" },
+  { PF12, "PF12" },
+  { PF13, "PF13" },
+  { PF14, "PF14" },
+  { PF15, "PF15" },
+  //==============
+  { PG0, "PG0" },  
+  { PG1, "PG1" },
+  { PG2, "PG2" },
+  { PG3, "PG3" },
+  { PG4, "PG4" },
+  { PG5, "PG5" },
+  { PG6, "PG6" },
+  { PG7, "PG7" },
+  { PG8, "PG8" },
+  { PG9, "PG9" },
+  { PG10, "PG10" },
+  { PG11, "PG11" },
+  { PG12, "PG12" },
+  { PG13, "PG13" },
+  { PG14, "PG14" },
+  { PG15, "PG15" },
+  //==============
+  { PH0, "PH0" },  
+  { PH1, "PH1" },
+  { PH2, "PH2" },
+  { PH3, "PH3" },
+  { PH4, "PH4" },
+  { PH5, "PH5" },
+  { PH6, "PH6" },
+  { PH7, "PH7" },
+  { PH8, "PH8" },
+  { PH9, "PH9" },
+  { PH10, "PH10" },
+  { PH11, "PH11" },
+  { PH12, "PH12" },
+  { PH13, "PH13" },
+  { PH14, "PH14" },
+  { PH15, "PH15" },
+  //==============
+  { PI0, "PI0" },  
+  { PI1, "PI1" },
+  { PI2, "PI2" },
+  { PI3, "PI3" },
+  { PI4, "PI4" },
+  { PI5, "PI5" },
+  { PI6, "PI6" },
+  { PI7, "PI7" },
+  { PI8, "PI8" },
+  { PI9, "PI9" },
+  { PI10, "PI10" },
+  { PI11, "PI11" },
+  { PI12, "PI12" },
+  { PI13, "PI13" },
+  { PI14, "PI14" },
+  { PI15, "PI15" },
+  //==============
+  { PJ0, "PJ0" },  
+  { PJ1, "PJ1" },
+  { PJ2, "PJ2" },
+  { PJ3, "PJ3" },
+  { PJ4, "PJ4" },
+  { PJ5, "PJ5" },
+  { PJ6, "PJ6" },
+  { PJ7, "PJ7" },
+  { PJ8, "PJ8" },
+  { PJ9, "PJ9" },
+  { PJ10, "PJ10" },
+  { PJ11, "PJ11" },
+  { PJ12, "PJ12" },
+  { PJ13, "PJ13" },
+  { PJ14, "PJ14" },
+  { PJ15, "PJ15" },
+  //==============
+  { PK0, "PK0" },  
+  { PK1, "PK1" },
+  { PK2, "PK2" },
+  { PK3, "PK3" },
+  { PK4, "PK4" },
+  { PK5, "PK5" },
+  { PK6, "PK6" },
+  { PK7, "PK7" },
+  //==============
+  
+};
+
+// With above table we can convert from pinname to string (human-machine hm)
+const char* hmPinNameToString(PinNameDef Name) {
+  
+  for(u16 n=0;n<countof(hmPinNameAndString);n++)
+    if(hmPinNameAndString[n].Name == Name)
+      return hmPinNameAndString[n].sName;
+    
+  return 0; // not found
+}
+
+// on the other way around, it's about string matching... to check if helper function exists
